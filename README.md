@@ -293,6 +293,34 @@ music-ai-lab/
 204 ms/片段推理。详见 [`docs/ast.md`](docs/ast.md)、
 [`results/ast_metrics.json`](results/ast_metrics.json)。
 
+### 6.5 主实验：FMA-small（8,000 首）
+
+FMA-small 含 8,000 首、8 个流派（每类 1,000 首），采样率混合（44.1k/48k/22.05k），
+审计后 **7,994 首可解码**。按曲目划分时测试集有 **971/1,199（81.0%）** 曲目与训练集
+共享艺术家，会高估模型能力；因此主实验改为**按艺术家分离**划分（5,596/1,199/1,199，
+测试集与训练集艺术家重叠为 0），曲目级划分保留为泄漏对照。
+
+| 模型 | Acc（3 seeds） | Macro-F1 | 训练(s)/seed |
+|---|---|---|---|
+| AST（预训练，迁移组） | **0.596** | **0.590** | 头 4.6 |
+| CRNN | 0.502 ± 0.009 | 0.492 ± 0.006 | 371 |
+| CNN | 0.480 ± 0.005 | 0.470 ± 0.002 | 334 |
+| SVM | 0.446 | 0.440 | 16 |
+| MLP | 0.428 ± 0.011 | 0.422 ± 0.012 | 4 |
+| Transformer | 0.387 ± 0.010 | 0.378 ± 0.019 | 80 |
+
+关键发现：
+
+- **预训练依然最强**：冻结 AST 主干 + 线性头取得 Macro-F1 0.590，比最好的自建模型
+  CRNN 高 9.8 个百分点；代价是 345 MB 权重与约 231 ms/片段推理。
+- **泄漏对照**：同一批特征、仅换成曲目级划分，CNN 的 Macro-F1 从 0.470 虚高到
+  0.568（**+9.9 个百分点**）——按艺术家划分是 FMA 上不可省略的一步。
+- **优化消融**：SpecAugment 单独使用无提升，SpecAugment+标签平滑+dropout0.4 仅提升
+  0.7 个百分点，落在单次运行波动内；CRNN/Transformer 同样无显著收益。说明 FMA 的
+  瓶颈更像是标签边界模糊与音乐多样性，而非单纯过拟合，因此主表保留基线配置。
+- **难度差异**：FMA 比 GTZAN 难得多（CNN 0.470 vs 0.753），8 个流派中
+  Experimental / International 等标签本身覆盖多种风格。
+
 ---
 
 ## 七、快速开始
@@ -320,6 +348,13 @@ $PY -m src.train_cnn --model transformer --seeds 42 123 2024 --epochs 30
 # 5) 图表与汇总
 $PY -m src.evaluate
 
+# 6) 主实验（FMA-small，需先准备数据）
+bash scripts/run_fma.sh 42 123 2024
+$PY scripts/ast_fma_fast.py --reuse-feats --half
+
+# 7) 技术报告（LaTeX）
+cd docs/report && bash build.sh
+
 # 6) 协议测试
 $PY -m pytest -q tests
 
@@ -328,6 +363,12 @@ $PY -m streamlit run app/demo.py
 ```
 
 一键脚本：`bash scripts/run_all.sh`（可用 `PYTHON=...` 覆盖解释器）。
+
+主实验与报告：
+
+- 数据卡：`docs/fma_data.md`
+- 主实验日志：`docs/experiment_log.md`「主实验（FMA-small）」
+- 技术报告（LaTeX 源码 + PDF）：`docs/report/main.tex`、`docs/Music_AI_Lab_Technical_Report.pdf`
 
 单文件推理：
 

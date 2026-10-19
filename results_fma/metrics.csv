@@ -1,0 +1,17 @@
+model,seed,split,n_samples,accuracy,macro_f1,train_time_s,infer_ms_per_clip,n_params,model_size_mb,notes
+ast,42,test,1199,0.5963,0.5903,4.63,230.68,86193416,344.78,frozen_backbone;embed_extract=0.0s;best_C=0.003;featurize=0.0s;gpu=0.0s;FMA-small;artist-disjoint;16k;5s-pad-10.24s;latency_median_ms=230.7;fp16_forward
+cnn,42,test,1199,0.4746,0.4712,314.25,0.707,590504,2.384,best_ep=12;best_val_f1=0.4972;cuda
+cnn,123,test,1199,0.4804,0.4701,328.53,0.743,590504,2.384,best_ep=13;best_val_f1=0.4774;cuda
+cnn,2024,test,1199,0.4862,0.4675,357.91,0.76,590504,2.384,best_ep=15;best_val_f1=0.4893;cuda
+crnn,42,test,1199,0.4912,0.4871,451.54,0.799,418600,1.693,best_ep=30;best_val_f1=0.5253;cuda
+crnn,123,test,1199,0.5138,0.5006,390.73,0.731,418600,1.693,best_ep=18;best_val_f1=0.5373;cuda
+crnn,2024,test,1199,0.5013,0.4886,271.51,0.746,418600,1.693,best_ep=10;best_val_f1=0.4927;cuda
+mlp,42,test,1199,0.4429,0.4377,3.98,0.012,87688,1.067,val_acc=0.4420;val_f1=0.4250
+mlp,123,test,1199,0.4204,0.4169,3.77,0.011,87688,1.067,val_acc=0.4012;val_f1=0.3887
+mlp,2024,test,1199,0.4195,0.4101,3.47,0.023,87688,1.067,val_acc=0.4162;val_f1=0.3959
+svm,42,test,1199,0.4462,0.4404,16.14,0.556,1112089,9.522,val_acc=0.4304;val_f1=0.4106
+svm,123,test,1199,0.4462,0.4404,16.34,0.63,1112089,9.522,val_acc=0.4304;val_f1=0.4106
+svm,2024,test,1199,0.4462,0.4404,16.43,0.53,1112089,9.522,val_acc=0.4304;val_f1=0.4106
+transformer,42,test,1199,0.3928,0.3974,77.45,0.253,302216,1.22,best_ep=5;best_val_f1=0.3942;cuda
+transformer,123,test,1199,0.3728,0.3524,78.33,0.269,302216,1.22,best_ep=5;best_val_f1=0.3988;cuda
+transformer,2024,test,1199,0.3953,0.3855,83.56,0.249,302216,1.22,best_ep=6;best_val_f1=0.3993;cuda

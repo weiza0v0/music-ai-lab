@@ -57,12 +57,14 @@ PAD_SAMPLES = int(SR * PAD_SECONDS)        # 163_840
 PREPROC = "gtzan-16k-5s-center-zero-pad-10.24s-v1"
 C_GRID = [0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1.0, 3.0, 10.0]
 
-DATA = ROOT / "data/splits/splits.csv"
-CACHE = ROOT / "data/processed/ast_embeddings.npz"
-RESULTS = ROOT / "results"
+DATA = Path(os.environ.get("MUSIC_SPLITS", ROOT / "data/splits/splits.csv"))
+CACHE = Path(os.environ.get("MUSIC_AST_CACHE", ROOT / "data/processed/ast_embeddings.npz"))
+RESULTS = Path(os.environ.get("MUSIC_RESULTS", ROOT / "results"))
 FIG = RESULTS / "figures"
 METRICS_CSV = RESULTS / "metrics.csv"
 DOCS = ROOT / "docs"
+DOC_PATH = Path(os.environ.get("MUSIC_AST_DOC", DOCS / "ast.md"))
+DATASET_NAME = os.environ.get("MUSIC_DATASET_NAME", "GTZAN")
 
 
 def _seed_everything(seed: int) -> None:
@@ -84,7 +86,7 @@ def _pick_device() -> torch.device:
 
 def load_split() -> pd.DataFrame:
     df = pd.read_csv(DATA)
-    assert len(df) == 985, f"expected 985 tracks, found {len(df)}"
+    assert len(df) > 0, "empty split file"
     assert set(df["split"]) == {"train", "val", "test"}
     print(f"[data] {len(df)} tracks | train={(df.split == 'train').sum()} "
           f"val={(df.split == 'val').sum()} test={(df.split == 'test').sum()}")
@@ -467,8 +469,8 @@ def write_docs(path: Path, df: pd.DataFrame, test_res: dict, val_res: dict,
         "",
         "## 一句话结论",
         "",
-        f"在 GTZAN 985 首、按曲目固定的 70/15/15 划分上，冻结 AST 主干、只训练 "
-        f"{head['head_params']:,} 个参数（768→10 逻辑回归）后，测试集 n={n_test} 的 "
+        f"在 {DATASET_NAME} {len(df)} 首、按曲目固定的 70/15/15 划分上，冻结 AST 主干、只训练 "
+        f"{head['head_params']:,} 个参数（768→{len(test_res['per_class_f1'])} 逻辑回归）后，测试集 n={n_test} 的 "
         f"Accuracy = **{test_res['accuracy']:.4f}**，Macro-F1 = **{test_res['macro_f1']:.4f}**。"
         f"{delta}",
         "",
@@ -549,7 +551,7 @@ def write_docs(path: Path, df: pd.DataFrame, test_res: dict, val_res: dict,
         "## 额外成本（真实测量）",
         "",
         f"- 权重下载/缓存：{cost['backbone_mb']:.1f} MB（safetensors）。",
-        f"- 985 首 embedding 提取：{timing['embedding_extract_s']:.1f} s"
+        f"- {len(df)} 首 embedding 提取：{timing['embedding_extract_s']:.1f} s"
         f"（约 {timing['embedding_extract_s'] / len(df) * 1000:.1f} ms/首，"
         f"含 CPU 解码/重采样/特征化与 GPU 前向；"
         f"{'本次复用缓存，耗时来自首次提取' if cache_reused else '本次重新计算'}）。",
@@ -578,8 +580,7 @@ def write_docs(path: Path, df: pd.DataFrame, test_res: dict, val_res: dict,
         "- **只做线性探针**：没有微调，也没有数据增强或多片段投票；"
         "这测量的是「冻结表征的线性可分性」，不是 AST 的上限。",
         f"- **单 seed**：AST 只跑了 seed {seed}；线性头本身方差小，但没有多 seed 的稳定性估计。",
-        "- **GTZAN 本身的问题**：985 首、10 类、存在标签噪声与重复曲目（已按 MD5 去重），"
-        "绝对准确率不宜过度解读。",
+        f"- **{DATASET_NAME} 本身的问题**：标签噪声与类别边界模糊，绝对准确率不宜过度解读。",
         f"- **成本**：{cost['n_params'] / 1e6:.1f}M 参数、{cost['model_size_mb']:.0f} MB 权重、"
         f"约 {throughput['ms_per_clip'] / 1000:.2f} s/片段"
         + (f"，与 CNN 的 {cnn['params'] / 1e6:.2f}M 参数、{cnn['size_mb']:.1f} MB、"
@@ -696,7 +697,8 @@ def main() -> None:
     val_res["n_samples"] = int((splits == "val").sum())
     test_res, predictions, predict_s = run_test(head, embeddings, y, splits,
                                                 track_ids, classes)
-    assert int((splits == "test").sum()) == 147, "protocol expects n_test=147"
+    n_test = int((splits == "test").sum())
+    assert n_test > 0, "empty test split"
 
     # ---- inference latency + on-disk cost (evaluated after the head is frozen) ----
     if model is None:
@@ -803,7 +805,7 @@ def main() -> None:
         draw_figure(test_res, classes, figure_path)
 
     cnn = _cnn_reference()
-    write_docs(DOCS / "ast.md", df, test_res, val_res, head, timing, latency,
+    write_docs(DOC_PATH, df, test_res, val_res, head, timing, latency,
                throughput, cost, cache_reused, cnn, args.seed,
                figure_written=figure_path.exists())
 

@@ -4,6 +4,7 @@ The demo must call real weights; nothing here hard-codes a prediction.
 """
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import joblib
@@ -11,7 +12,7 @@ import numpy as np
 import torch
 
 ROOT = Path(__file__).resolve().parents[1]
-CKPT = ROOT / "checkpoints"
+CKPT = Path(os.environ.get("MUSIC_CKPT", ROOT / "checkpoints"))
 CLASSICAL = {"svm", "mlp"}
 DEEP = {"cnn", "crnn", "transformer"}
 

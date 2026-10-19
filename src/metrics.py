@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import os
 import time
 from pathlib import Path
 
@@ -12,7 +13,7 @@ from sklearn.metrics import (accuracy_score, classification_report,
 from sklearn.preprocessing import LabelEncoder
 
 ROOT = Path(__file__).resolve().parents[1]
-RESULTS = ROOT / "results"
+RESULTS = Path(os.environ.get("MUSIC_RESULTS", ROOT / "results"))
 PRED_DIR = RESULTS / "predictions"
 FIG_DIR = RESULTS / "figures"
 METRICS_CSV = RESULTS / "metrics.csv"

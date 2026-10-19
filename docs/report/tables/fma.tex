@@ -1,0 +1,17 @@
+\begin{table}[H]
+\centering\small
+\caption{FMA-small 主实验结果（3 seeds，均值$\pm$标准差；AST 训练时间仅计线性头）。}
+\label{tab:fma}
+\begin{tabular}{lcccccc}
+\toprule
+模型 & Acc & Macro-F1 & 训练(s) & 推理(ms) & 参数量 & 大小(MB)\\
+\midrule
+AST（预训练） & 0.596 & 0.590 & 4.6 & 230.68 & 86.2M & 344.78\\
+CNN & 0.480$\pm$0.005 & 0.470$\pm$0.002 & 333.6 & 0.74 & 591K & 2.38\\
+CRNN & 0.502$\pm$0.009 & 0.492$\pm$0.006 & 371.3 & 0.76 & 419K & 1.69\\
+SVM & 0.446$\pm$0.000 & 0.440$\pm$0.000 & 16.3 & 0.57 & 1.1M & 9.52\\
+MLP & 0.428$\pm$0.011 & 0.422$\pm$0.012 & 3.7 & 0.02 & 88K & 1.07\\
+Transformer & 0.387$\pm$0.010 & 0.378$\pm$0.019 & 79.8 & 0.26 & 302K & 1.22\\
+\bottomrule
+\end{tabular}
+\end{table}

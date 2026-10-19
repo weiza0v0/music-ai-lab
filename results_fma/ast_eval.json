@@ -1,0 +1,172 @@
+{
+  "model": "ast",
+  "seed": 42,
+  "split": "test",
+  "n_samples": 1199,
+  "accuracy": 0.5963,
+  "macro_f1": 0.5903,
+  "class_names": [
+    "Electronic",
+    "Experimental",
+    "Folk",
+    "Hip-Hop",
+    "Instrumental",
+    "International",
+    "Pop",
+    "Rock"
+  ],
+  "per_class_f1": {
+    "Electronic": 0.6790123456790124,
+    "Experimental": 0.48936170212765956,
+    "Folk": 0.5769230769230769,
+    "Hip-Hop": 0.7969924812030075,
+    "Instrumental": 0.3657587548638132,
+    "International": 0.6686567164179105,
+    "Pop": 0.43037974683544306,
+    "Rock": 0.7150837988826816
+  },
+  "confusion_matrix": [
+    [
+      110,
+      3,
+      0,
+      2,
+      14,
+      3,
+      6,
+      1
+    ],
+    [
+      17,
+      69,
+      6,
+      4,
+      17,
+      17,
+      10,
+      7
+    ],
+    [
+      1,
+      6,
+      75,
+      0,
+      25,
+      11,
+      13,
+      6
+    ],
+    [
+      19,
+      3,
+      0,
+      106,
+      2,
+      2,
+      0,
+      3
+    ],
+    [
+      4,
+      20,
+      20,
+      1,
+      47,
+      12,
+      6,
+      16
+    ],
+    [
+      10,
+      8,
+      2,
+      6,
+      6,
+      112,
+      11,
+      1
+    ],
+    [
+      22,
+      19,
+      15,
+      10,
+      10,
+      19,
+      68,
+      28
+    ],
+    [
+      2,
+      7,
+      5,
+      2,
+      10,
+      3,
+      11,
+      128
+    ]
+  ],
+  "classification_report": "               precision    recall  f1-score   support\n\n   Electronic      0.595     0.791     0.679       139\n Experimental      0.511     0.469     0.489       147\n         Folk      0.610     0.547     0.577       137\n      Hip-Hop      0.809     0.785     0.797       135\n Instrumental      0.359     0.373     0.366       126\nInternational      0.626     0.718     0.669       156\n          Pop      0.544     0.356     0.430       191\n         Rock      0.674     0.762     0.715       168\n\n     accuracy                          0.596      1199\n    macro avg      0.591     0.600     0.590      1199\n weighted avg      0.593     0.596     0.589      1199\n",
+  "val": {
+    "n_samples": 1199,
+    "accuracy": 0.6013344453711427,
+    "macro_f1": 0.5789928556049552
+  },
+  "head": {
+    "selected_C": 0.003,
+    "grid": [
+      {
+        "C": 0.001,
+        "val_macro_f1": 0.5782
+      },
+      {
+        "C": 0.003,
+        "val_macro_f1": 0.579
+      },
+      {
+        "C": 0.01,
+        "val_macro_f1": 0.5564
+      },
+      {
+        "C": 0.03,
+        "val_macro_f1": 0.5439
+      },
+      {
+        "C": 0.1,
+        "val_macro_f1": 0.5079
+      },
+      {
+        "C": 0.3,
+        "val_macro_f1": 0.489
+      },
+      {
+        "C": 1.0,
+        "val_macro_f1": 0.4691
+      },
+      {
+        "C": 3.0,
+        "val_macro_f1": 0.4528
+      },
+      {
+        "C": 10.0,
+        "val_macro_f1": 0.4511
+      }
+    ],
+    "scaler_fit_on": "train only",
+    "selection_metric": "val_macro_f1"
+  },
+  "cost": {
+    "n_params": 86193416,
+    "model_size_mb": 344.78
+  },
+  "notes": [
+    "Backbone frozen; only a logistic head is fit.",
+    "C selected on validation macro-F1; test evaluated once.",
+    "Preprocessing matches src/train_ast.py (16 kHz, 5 s centre, pad 10.24 s)."
+  ],
+  "timing": {
+    "latency_median_ms": 230.68,
+    "n_clips": 20
+  }
+}

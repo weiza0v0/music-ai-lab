@@ -1,0 +1,377 @@
+{
+  "stats": {
+    "svm": {
+      "n": 1199,
+      "accuracy": 0.4462,
+      "mean_conf_correct": 0.5217,
+      "mean_conf_wrong": 0.3963,
+      "n_wrong": 664,
+      "wrong_conf_ge_0.9": 1,
+      "wrong_conf_ge_0.5": 140
+    },
+    "mlp": {
+      "n": 1199,
+      "accuracy": 0.4429,
+      "mean_conf_correct": 0.6396,
+      "mean_conf_wrong": 0.5079,
+      "n_wrong": 668,
+      "wrong_conf_ge_0.9": 33,
+      "wrong_conf_ge_0.5": 290
+    },
+    "cnn": {
+      "n": 1199,
+      "accuracy": 0.4746,
+      "mean_conf_correct": 0.6866,
+      "mean_conf_wrong": 0.5194,
+      "n_wrong": 630,
+      "wrong_conf_ge_0.9": 23,
+      "wrong_conf_ge_0.5": 279
+    },
+    "crnn": {
+      "n": 1199,
+      "accuracy": 0.4912,
+      "mean_conf_correct": 0.8044,
+      "mean_conf_wrong": 0.634,
+      "n_wrong": 610,
+      "wrong_conf_ge_0.9": 90,
+      "wrong_conf_ge_0.5": 416
+    },
+    "transformer": {
+      "n": 1199,
+      "accuracy": 0.3928,
+      "mean_conf_correct": 0.4971,
+      "mean_conf_wrong": 0.4084,
+      "n_wrong": 728,
+      "wrong_conf_ge_0.9": 1,
+      "wrong_conf_ge_0.5": 156
+    }
+  },
+  "examples": [
+    {
+      "track_id": "016158",
+      "true": "Pop",
+      "pred": "Folk",
+      "confidence": 0.9892
+    },
+    {
+      "track_id": "104780",
+      "true": "Pop",
+      "pred": "Folk",
+      "confidence": 0.9671
+    },
+    {
+      "track_id": "108881",
+      "true": "Instrumental",
+      "pred": "Folk",
+      "confidence": 0.928
+    },
+    {
+      "track_id": "095724",
+      "true": "Instrumental",
+      "pred": "Folk",
+      "confidence": 0.8979
+    }
+  ],
+  "pairs": [
+    {
+      "model": "svm",
+      "y_true": "Hip-Hop",
+      "y_pred": "Electronic",
+      "count": 30
+    },
+    {
+      "model": "svm",
+      "y_true": "Pop",
+      "y_pred": "International",
+      "count": 30
+    },
+    {
+      "model": "svm",
+      "y_true": "International",
+      "y_pred": "Hip-Hop",
+      "count": 26
+    },
+    {
+      "model": "svm",
+      "y_true": "Pop",
+      "y_pred": "Hip-Hop",
+      "count": 25
+    },
+    {
+      "model": "svm",
+      "y_true": "Instrumental",
+      "y_pred": "Folk",
+      "count": 24
+    },
+    {
+      "model": "svm",
+      "y_true": "Folk",
+      "y_pred": "Instrumental",
+      "count": 24
+    },
+    {
+      "model": "svm",
+      "y_true": "Pop",
+      "y_pred": "Rock",
+      "count": 24
+    },
+    {
+      "model": "svm",
+      "y_true": "Experimental",
+      "y_pred": "Instrumental",
+      "count": 22
+    },
+    {
+      "model": "svm",
+      "y_true": "Pop",
+      "y_pred": "Folk",
+      "count": 22
+    },
+    {
+      "model": "svm",
+      "y_true": "Instrumental",
+      "y_pred": "Experimental",
+      "count": 20
+    },
+    {
+      "model": "mlp",
+      "y_true": "Pop",
+      "y_pred": "International",
+      "count": 34
+    },
+    {
+      "model": "mlp",
+      "y_true": "Experimental",
+      "y_pred": "Pop",
+      "count": 30
+    },
+    {
+      "model": "mlp",
+      "y_true": "Pop",
+      "y_pred": "Hip-Hop",
+      "count": 26
+    },
+    {
+      "model": "mlp",
+      "y_true": "Pop",
+      "y_pred": "Rock",
+      "count": 26
+    },
+    {
+      "model": "mlp",
+      "y_true": "International",
+      "y_pred": "Hip-Hop",
+      "count": 22
+    },
+    {
+      "model": "mlp",
+      "y_true": "Folk",
+      "y_pred": "Pop",
+      "count": 22
+    },
+    {
+      "model": "mlp",
+      "y_true": "Electronic",
+      "y_pred": "International",
+      "count": 21
+    },
+    {
+      "model": "mlp",
+      "y_true": "Instrumental",
+      "y_pred": "Experimental",
+      "count": 21
+    },
+    {
+      "model": "mlp",
+      "y_true": "Instrumental",
+      "y_pred": "Folk",
+      "count": 21
+    },
+    {
+      "model": "mlp",
+      "y_true": "Rock",
+      "y_pred": "Pop",
+      "count": 20
+    },
+    {
+      "model": "cnn",
+      "y_true": "Pop",
+      "y_pred": "Folk",
+      "count": 52
+    },
+    {
+      "model": "cnn",
+      "y_true": "Instrumental",
+      "y_pred": "Folk",
+      "count": 45
+    },
+    {
+      "model": "cnn",
+      "y_true": "Pop",
+      "y_pred": "Rock",
+      "count": 33
+    },
+    {
+      "model": "cnn",
+      "y_true": "International",
+      "y_pred": "Folk",
+      "count": 24
+    },
+    {
+      "model": "cnn",
+      "y_true": "Experimental",
+      "y_pred": "Folk",
+      "count": 23
+    },
+    {
+      "model": "cnn",
+      "y_true": "Pop",
+      "y_pred": "International",
+      "count": 23
+    },
+    {
+      "model": "cnn",
+      "y_true": "Experimental",
+      "y_pred": "Instrumental",
+      "count": 21
+    },
+    {
+      "model": "cnn",
+      "y_true": "Electronic",
+      "y_pred": "Instrumental",
+      "count": 21
+    },
+    {
+      "model": "cnn",
+      "y_true": "International",
+      "y_pred": "Pop",
+      "count": 20
+    },
+    {
+      "model": "cnn",
+      "y_true": "Instrumental",
+      "y_pred": "Rock",
+      "count": 19
+    },
+    {
+      "model": "crnn",
+      "y_true": "Pop",
+      "y_pred": "Rock",
+      "count": 29
+    },
+    {
+      "model": "crnn",
+      "y_true": "Pop",
+      "y_pred": "Electronic",
+      "count": 25
+    },
+    {
+      "model": "crnn",
+      "y_true": "Pop",
+      "y_pred": "International",
+      "count": 24
+    },
+    {
+      "model": "crnn",
+      "y_true": "Instrumental",
+      "y_pred": "Pop",
+      "count": 22
+    },
+    {
+      "model": "crnn",
+      "y_true": "Folk",
+      "y_pred": "Pop",
+      "count": 22
+    },
+    {
+      "model": "crnn",
+      "y_true": "Hip-Hop",
+      "y_pred": "Electronic",
+      "count": 22
+    },
+    {
+      "model": "crnn",
+      "y_true": "Pop",
+      "y_pred": "Hip-Hop",
+      "count": 19
+    },
+    {
+      "model": "crnn",
+      "y_true": "Instrumental",
+      "y_pred": "Folk",
+      "count": 19
+    },
+    {
+      "model": "crnn",
+      "y_true": "Instrumental",
+      "y_pred": "Rock",
+      "count": 19
+    },
+    {
+      "model": "crnn",
+      "y_true": "Pop",
+      "y_pred": "Experimental",
+      "count": 18
+    },
+    {
+      "model": "transformer",
+      "y_true": "Instrumental",
+      "y_pred": "Experimental",
+      "count": 41
+    },
+    {
+      "model": "transformer",
+      "y_true": "Hip-Hop",
+      "y_pred": "Electronic",
+      "count": 34
+    },
+    {
+      "model": "transformer",
+      "y_true": "Folk",
+      "y_pred": "Instrumental",
+      "count": 31
+    },
+    {
+      "model": "transformer",
+      "y_true": "Pop",
+      "y_pred": "Experimental",
+      "count": 31
+    },
+    {
+      "model": "transformer",
+      "y_true": "Rock",
+      "y_pred": "Experimental",
+      "count": 31
+    },
+    {
+      "model": "transformer",
+      "y_true": "Experimental",
+      "y_pred": "Instrumental",
+      "count": 29
+    },
+    {
+      "model": "transformer",
+      "y_true": "International",
+      "y_pred": "Pop",
+      "count": 28
+    },
+    {
+      "model": "transformer",
+      "y_true": "Pop",
+      "y_pred": "Rock",
+      "count": 27
+    },
+    {
+      "model": "transformer",
+      "y_true": "Pop",
+      "y_pred": "International",
+      "count": 25
+    },
+    {
+      "model": "transformer",
+      "y_true": "Pop",
+      "y_pred": "Electronic",
+      "count": 23
+    }
+  ]
+}

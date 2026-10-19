@@ -329,3 +329,93 @@ python -m src.train_ast
 - 新增 `scripts/robustness_flips.py` 与 `results/robustness_flips.csv`，
   重算预测翻转数（SVM clip_3s 46、noise_0db 98 等）。
 - 同步更新 `docs/robustness.md` 中所有受影响的表格与结论。
+
+## 2026-10-19 14:13
+
+**FMA-small 下载完成并检查**
+
+- 元数据 342 MB、音频 7.2 GiB，下载约 25 分钟（~5 MB/s）。
+- 两个 zip 均通过 CRC 校验（metadata 12 项、audio 8002 项）。
+- 音频 8000 首，8 流派各 1000；采样率 44.1k/48k/22.05k 混合，统一重采样到 22.05 kHz。
+
+## 2026-10-19 14:20
+
+**发现艺术家级泄漏，主实验改用艺术家分离划分**
+
+- 按曲目分层划分后，测试集 971/1199 首（81.0%）与训练集共享艺术家；
+  同一乐队的音色与录音会成为「捷径」。
+- 改为按艺术家分离的划分：每位艺术家整体进入一个集合，测试集与训练集艺术家重叠 0；
+  整体 5596/1199/1199，逐流派比例不完全均衡（测试 126–191 首）。
+- 保留曲目级划分 `splits_tracklevel.csv` 作为泄漏对照实验。
+- 6 首解码失败，最终 7994 首可用。
+
+## 2026-10-19 14:38
+
+**FMA 特征缓存**
+
+```
+python scripts/extract_features.py --splits data/splits_fma/splits.csv \
+  --out data/fma/processed/features.npz --workers 12
+```
+- 7994 首 ×（209 维人工特征 + 64×216 Log-Mel），535 秒。
+- 另生成 `features_tracklevel.npz`（同一批特征、对照划分标签）用于泄漏实验。
+
+## 2026-10-19 14:40
+
+**启动 FMA 主实验**
+
+```
+bash scripts/run_fma.sh 42 123 2024
+```
+- 5 个模型 × 3 seeds，训练/验证/测试 = 5596/1199/1199。
+- 环境：RTX 4060 8 GB；深度模型 AdamW、batch 32、30 epoch、按 val Macro-F1 早停。
+- 结果写入 `results_fma/`，随后做优化消融、泄漏对照与 AST 迁移。
+
+## 2026-10-19 15:27
+
+**FMA 主实验基线完成（5 模型 × 3 seeds）**
+
+- CNN: Acc 0.480 ± 0.005 / Macro-F1 0.470 ± 0.002，训练 334 s/seed。
+- CRNN: Acc 0.502 ± 0.009 / Macro-F1 0.492 ± 0.006，训练 371 s/seed。
+- SVM: 0.446 / 0.440；MLP: 0.428 / 0.422；Transformer: 0.387 / 0.378。
+- 与 GTZAN 相比整体低 20–30 个百分点：FMA 的 8 个流派边界更宽（Experimental、
+  International），且按艺术家分离划分消除了「认乐队」的捷径。
+- CNN 训练损失降到 ~0.7、验证损失 ~1.5，存在明显过拟合。
+
+## 2026-10-19 15:50
+
+**优化消融：SpecAugment 与标签平滑（仅验证集）**
+
+- CNN 基线 val Macro-F1 0.5218；+SpecAug 0.5197；+SpecAug+标签平滑+dropout0.4 0.5289。
+- CRNN +SpecAug+LS 0.5242（基线 0.5253）；Transformer 0.3936（基线约 0.394）。
+- 最大提升仅 +0.7 个百分点，落在单次运行波动范围内；因此主实验保留基线配置。
+- 结论：FMA 的瓶颈更像是标签边界模糊与音乐多样性，而不是单纯过拟合。
+
+## 2026-10-19 15:55
+
+**启动 FMA 上的 AST 迁移与泄漏对照**
+
+- AST：16 kHz、中心 5 秒补零到 10.24 秒，冻结 86M 主干 + 线性头；
+  embedding 缓存 `data/fma/processed/ast_embeddings.npz`。
+- 泄漏对照：同一批特征、仅把划分换成曲目级（81% 测试曲目与训练集共享艺术家），
+  训练 CNN seed 42，用于量化泄漏带来的虚高。
+
+## 2026-10-19 16:04
+
+**泄漏对照结果：曲目级划分虚高 9.8 个百分点**
+
+- 同一批特征、仅把划分换成曲目级（971/1199 测试曲目与训练集共享艺术家），
+  CNN seed 42：Acc 0.5663 / Macro-F1 0.5682。
+- 对比艺术家分离划分的 CNN（Acc 0.480 / Macro-F1 0.470），Macro-F1 **虚高 +9.9 pp**。
+- 结论：FMA 这类带艺术家元数据的语料必须按艺术家划分；主表全部采用艺术家分离结果。
+
+## 2026-10-19 17:06
+
+**FMA 上的 AST 迁移完成**
+
+- 冻结 AudioSet AST（86M 参数）+ 线性头，多进程特征化 + GPU fp16 批量前向。
+- test n=1,199：Acc **0.5963** / Macro-F1 **0.5903**，比最好的自建模型 CRNN
+  （0.492）高 9.8 个百分点。
+- 成本：权重 345 MB、推理约 231 ms/片段；embedding 提取约 7 分钟（fp16）。
+- 期间修复：sklearn 1.9 移除 `multi_class`、断点复用特征/嵌入、HF 离线模式。
+- 产物：`docs/ast_fma.md`、`results_fma/ast_metrics.json`、`ast_eval.json`。

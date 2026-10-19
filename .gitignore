@@ -6,3 +6,8 @@ data/processed/
 checkpoints/
 *.log
 .pytest_cache/
+data/fma/
+checkpoints_fma*/
+docs/report/*.aux
+docs/report/*.log
+docs/report/*.out

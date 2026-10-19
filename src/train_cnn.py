@@ -6,6 +6,7 @@ touched after early stopping has picked an epoch using the validation split.
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 import time
 from pathlib import Path
@@ -22,8 +23,31 @@ from src.metrics import (append_metrics, encode_labels, evaluate, save_json,  # 
                          save_predictions)
 from src.models.cnn import build, count_params  # noqa: E402
 
-DATA = ROOT / "data/processed/features.npz"
-CKPT = ROOT / "checkpoints"
+DATA = Path(os.environ.get("MUSIC_FEATURES", ROOT / "data/processed/features.npz"))
+CKPT = Path(os.environ.get("MUSIC_CKPT", ROOT / "checkpoints"))
+RES = Path(os.environ.get("MUSIC_RESULTS", ROOT / "results"))
+
+
+def spec_augment(x: torch.Tensor, n_freq: int = 2, f_width: int = 8,
+                 n_time: int = 2, t_width: int = 16) -> torch.Tensor:
+    """Mask random frequency bands / time spans (normalised input, mask=0=mean)."""
+    if n_freq == 0 and n_time == 0:
+        return x
+    b, _, n_mels, n_frames = x.shape
+    for i in range(b):
+        for _ in range(n_freq):
+            w = int(torch.randint(0, f_width + 1, (1,)).item())
+            if w == 0:
+                continue
+            f0 = int(torch.randint(0, max(1, n_mels - w), (1,)).item())
+            x[i, :, f0:f0 + w, :] = 0.0
+        for _ in range(n_time):
+            w = int(torch.randint(0, t_width + 1, (1,)).item())
+            if w == 0:
+                continue
+            t0 = int(torch.randint(0, max(1, n_frames - w), (1,)).item())
+            x[i, :, :, t0:t0 + w] = 0.0
+    return x
 
 
 def load_mel():
@@ -58,7 +82,9 @@ def macro_f1(y_true, y_pred, n_classes):
 
 
 def run(model_name: str, seed: int, epochs: int, bs: int, lr: float,
-        patience: int, monitor: str = "macro_f1") -> dict:
+        patience: int, monitor: str = "macro_f1", augment: str = "none",
+        label_smoothing: float = 0.0, dropout: float = 0.3,
+        val_only: bool = False, out_name: str | None = None) -> dict | None:
     torch.manual_seed(seed)
     np.random.seed(seed)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -79,11 +105,12 @@ def run(model_name: str, seed: int, epochs: int, bs: int, lr: float,
     val_loader = make_loader(Xn[va], y[va], bs, False, None, device)
     test_loader = make_loader(Xn[te], y[te], bs, False, None, device)
 
-    model = build(model_name, n_classes=len(le.classes_)).to(device)
+    model = build(model_name, n_classes=len(le.classes_), dropout=dropout).to(device)
+    name = out_name or model_name
     n_params = count_params(model)
     opt = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=epochs)
-    crit = nn.CrossEntropyLoss()
+    crit = nn.CrossEntropyLoss(label_smoothing=label_smoothing)
 
     hist, best, best_state, bad = [], -1.0, None, 0
     best_ep, best_val = 0, {}
@@ -95,6 +122,8 @@ def run(model_name: str, seed: int, epochs: int, bs: int, lr: float,
         for xb, yb in train_loader:
             xb = xb.to(device, non_blocking=True)
             yb = yb.to(device, non_blocking=True)
+            if augment == "specaug":
+                xb = spec_augment(xb)
             opt.zero_grad(set_to_none=True)
             loss = crit(model(xb), yb)
             loss.backward()
@@ -130,6 +159,16 @@ def run(model_name: str, seed: int, epochs: int, bs: int, lr: float,
     train_time = time.time() - t0
     model.load_state_dict(best_state)
 
+    if val_only:
+        save_json({"history": hist, "val": best_val, "best_epoch": best_ep,
+                   "test": None, "classes": list(le.classes_),
+                   "config": {"augment": augment, "label_smoothing": label_smoothing,
+                              "dropout": dropout}},
+                  RES / f"{name}_seed{seed}_eval.json")
+        print(f"[{name}] seed={seed} VAL-only macroF1={best:.4f} "
+              f"(aug={augment}, ls={label_smoothing}, dropout={dropout})")
+        return None
+
     # ---- test, once ----
     t0 = time.time()
     logits, yt = infer(model, test_loader, device)
@@ -138,8 +177,8 @@ def run(model_name: str, seed: int, epochs: int, bs: int, lr: float,
     pred = proba.argmax(1)
     res = evaluate(yt.numpy(), pred, proba, list(le.classes_))
 
-    CKPT.mkdir(exist_ok=True)
-    path = CKPT / f"{model_name}_seed{seed}.pt"
+    CKPT.mkdir(parents=True, exist_ok=True)
+    path = CKPT / f"{name}_seed{seed}.pt"
     torch.save({"model": model_name,
                 "state_dict": {k: v.cpu() for k, v in model.state_dict().items()},
                 "classes": list(le.classes_), "norm": {"mean": mu, "std": sd},
@@ -149,17 +188,19 @@ def run(model_name: str, seed: int, epochs: int, bs: int, lr: float,
                "val": best_val, "best_epoch": best_ep,
                "test": {k: v for k, v in res.items() if k != "report"},
                "test_report": res["report"], "classes": list(le.classes_)},
-              ROOT / "results" / f"{model_name}_seed{seed}_eval.json")
-    save_predictions(model_name, seed, "test", track_ids[te],
+              RES / f"{model_name}_seed{seed}_eval.json")
+    save_predictions(name, seed, "test", track_ids[te],
                      le.inverse_transform(yt.numpy()), le.inverse_transform(pred),
                      proba, list(le.classes_))
 
-    row = {"model": model_name, "seed": seed, "split": "test", "n_samples": int(te.sum()),
+    row = {"model": name, "seed": seed, "split": "test", "n_samples": int(te.sum()),
            "accuracy": round(res["accuracy"], 4), "macro_f1": round(res["macro_f1"], 4),
            "train_time_s": round(train_time, 2), "infer_ms_per_clip": round(infer_ms, 3),
            "n_params": n_params, "model_size_mb": round(path.stat().st_size / 1e6, 3),
-           "notes": f"best_ep={best_ep};best_val_f1={best:.4f};{device.type}"}
-    print(f"[{model_name}] seed={seed} TEST acc={row['accuracy']:.4f} "
+           "notes": f"best_ep={best_ep};best_val_f1={best:.4f};{device.type}"
+                    f"{';specaug' if augment == 'specaug' else ''}"
+                    f"{';ls=%.2f' % label_smoothing if label_smoothing else ''}"}
+    print(f"[{name}] seed={seed} TEST acc={row['accuracy']:.4f} "
           f"macroF1={row['macro_f1']:.4f} params={n_params:,} "
           f"train={train_time:.1f}s size={row['model_size_mb']:.2f}MB")
     return row
@@ -174,12 +215,25 @@ def main() -> None:
     ap.add_argument("--lr", type=float, default=1e-3)
     ap.add_argument("--patience", type=int, default=8)
     ap.add_argument("--threads", type=int, default=8)
+    ap.add_argument("--augment", default="none", choices=["none", "specaug"])
+    ap.add_argument("--label-smoothing", type=float, default=0.0)
+    ap.add_argument("--dropout", type=float, default=0.3)
+    ap.add_argument("--out-name", default=None,
+                    help="log/checkpoint name when the architecture differs from the run name")
+    ap.add_argument("--val-only", action="store_true",
+                    help="optimisation study: never evaluate the test split")
     args = ap.parse_args()
     torch.set_num_threads(args.threads)
     rows = []
     for seed in args.seeds:
-        rows.append(run(args.model, seed, args.epochs, args.batch_size, args.lr, args.patience))
-    append_metrics(rows)
+        row = run(args.model, seed, args.epochs, args.batch_size, args.lr,
+                  args.patience, augment=args.augment,
+                  label_smoothing=args.label_smoothing, dropout=args.dropout,
+                  val_only=args.val_only, out_name=args.out_name)
+        if row is not None:
+            rows.append(row)
+    if rows:
+        append_metrics(rows)
 
 
 if __name__ == "__main__":

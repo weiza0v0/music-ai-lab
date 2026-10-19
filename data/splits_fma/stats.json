@@ -1,0 +1,74 @@
+{
+  "dataset": "FMA-small",
+  "n_metadata_tracks": 8000,
+  "n_decodable": 7994,
+  "per_genre_all": {
+    "Hip-Hop": 1000,
+    "Pop": 1000,
+    "Folk": 1000,
+    "Experimental": 1000,
+    "Rock": 1000,
+    "International": 1000,
+    "Electronic": 1000,
+    "Instrumental": 1000
+  },
+  "per_genre_ok": {
+    "Hip-Hop": 997,
+    "Pop": 1000,
+    "Folk": 1000,
+    "Experimental": 999,
+    "Rock": 999,
+    "International": 1000,
+    "Electronic": 999,
+    "Instrumental": 1000
+  },
+  "sample_rates": {
+    "44100.0": 7569,
+    "48000.0": 411,
+    "22050.0": 14
+  },
+  "duration_seconds": {
+    "min": 29.965,
+    "max": 30.003,
+    "mean": 29.988511133350006
+  },
+  "decode_failures": [
+    {
+      "track_id": "098565",
+      "path": "data/fma/fma_small/098/098565.mp3"
+    },
+    {
+      "track_id": "098567",
+      "path": "data/fma/fma_small/098/098567.mp3"
+    },
+    {
+      "track_id": "098569",
+      "path": "data/fma/fma_small/098/098569.mp3"
+    },
+    {
+      "track_id": "099134",
+      "path": "data/fma/fma_small/099/099134.mp3"
+    },
+    {
+      "track_id": "108925",
+      "path": "data/fma/fma_small/108/108925.mp3"
+    },
+    {
+      "track_id": "133297",
+      "path": "data/fma/fma_small/133/133297.mp3"
+    }
+  ],
+  "split": {
+    "seed": 42,
+    "ratio": "70/15/15",
+    "level": "artist_disjoint",
+    "note": "primary split groups every artist into exactly one split",
+    "test_artists": 344,
+    "test_tracks_with_train_artist": 0,
+    "track_level_comparison": {
+      "level": "track",
+      "test_tracks_with_train_artist": 971,
+      "test_tracks": 1199
+    }
+  }
+}

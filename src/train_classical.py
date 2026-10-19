@@ -8,6 +8,7 @@ Protocol rules enforced here:
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 import time
 from pathlib import Path
@@ -26,8 +27,9 @@ sys.path.insert(0, str(ROOT))
 from src.metrics import (append_metrics, encode_labels, evaluate, save_json,  # noqa: E402
                          save_predictions)
 
-DATA = ROOT / "data/processed/features.npz"
-CKPT = ROOT / "checkpoints"
+DATA = Path(os.environ.get("MUSIC_FEATURES", ROOT / "data/processed/features.npz"))
+CKPT = Path(os.environ.get("MUSIC_CKPT", ROOT / "checkpoints"))
+RES = Path(os.environ.get("MUSIC_RESULTS", ROOT / "results"))
 
 
 def load():
@@ -87,7 +89,7 @@ def run(kind: str, seed: int, X, y, splits, le, track_ids, latency_clips: int = 
     test_proba = model.predict_proba(X[te])
     test = evaluate(y[te], test_pred, test_proba, list(le.classes_))
     path = CKPT / f"{kind}_seed{seed}.joblib"
-    CKPT.mkdir(exist_ok=True)
+    CKPT.mkdir(parents=True, exist_ok=True)
     bundle = {"kind": kind, "seed": seed, "model": model,
               "classes": list(le.classes_), "protocol": "gtzan-5s-center-v1"}
     joblib.dump(bundle, path)
@@ -97,7 +99,7 @@ def run(kind: str, seed: int, X, y, splits, le, track_ids, latency_clips: int = 
                "test": {k: v for k, v in test.items() if k != "report"},
                "test_report": test["report"],
                "class_names": list(le.classes_)},
-              ROOT / "results" / f"{kind}_seed{seed}_eval.json")
+              RES / f"{kind}_seed{seed}_eval.json")
     save_predictions(kind, seed, "val", track_ids[va], le.inverse_transform(y[va]),
                      le.inverse_transform(val_pred), model.predict_proba(X[va]), list(le.classes_))
     save_predictions(kind, seed, "test", track_ids[te], le.inverse_transform(y[te]),

@@ -1,0 +1,16 @@
+\begin{table}[H]
+\centering\small
+\caption{优化消融（FMA-small 验证集，seed 42，20 epoch；测试集未参与选型）。}
+\label{tab:ablation}
+\begin{tabular}{lccc}
+\toprule
+配置 & val Acc & val Macro-F1 & best epoch\\
+\midrule
+CNN baseline & 0.542 & 0.522 & 17\\
+CNN + SpecAug & 0.540 & 0.520 & 16\\
+CNN + SpecAug + LS & 0.554 & 0.529 & 16\\
+CRNN + SpecAug + LS & 0.560 & 0.524 & 20\\
+Transformer + SpecAug + LS & 0.422 & 0.394 & 20\\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -9,13 +9,14 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
-RES = ROOT / "results"
+RES = Path(os.environ.get("MUSIC_RESULTS", ROOT / "results"))
 COLUMNS = ["model", "seed", "split", "n_samples", "accuracy", "macro_f1",
            "train_time_s", "infer_ms_per_clip", "n_params", "model_size_mb", "notes"]
 
@@ -46,7 +47,7 @@ def main() -> None:
     row["model"] = "ast"
     row["seed"] = 42
     row["split"] = "test"
-    row["n_samples"] = 147
+    row["n_samples"] = int(ev["n_samples"])
     row["notes"] = metrics.get("notes", "")
     df = pd.DataFrame([row], columns=COLUMNS)
     if (RES / "metrics.csv").exists():

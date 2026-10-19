@@ -1,0 +1,17 @@
+\begin{table}[H]
+\centering\small
+\caption{GTZAN 测试集结果（3 seeds；AST 为单 seed 迁移组，训练时间仅计线性头）。}
+\label{tab:gtzan}
+\begin{tabular}{lcccccc}
+\toprule
+模型 & Acc & Macro-F1 & 训练(s) & 推理(ms) & 参数量 & 大小(MB)\\
+\midrule
+AST（预训练） & 0.823 & 0.814 & 23.4 & 204.06 & 86.2M & 346.45\\
+CNN & 0.755$\pm$0.006 & 0.753$\pm$0.005 & 57.5 & 0.76 & 593K & 2.39\\
+CRNN & 0.726$\pm$0.027 & 0.723$\pm$0.028 & 56.0 & 0.76 & 419K & 1.69\\
+SVM & 0.708$\pm$0.000 & 0.699$\pm$0.000 & 0.2 & 0.07 & 141K & 1.23\\
+MLP & 0.633$\pm$0.042 & 0.630$\pm$0.045 & 0.6 & 0.02 & 88K & 1.07\\
+Transformer & 0.544$\pm$0.020 & 0.541$\pm$0.015 & 14.9 & 0.26 & 302K & 1.22\\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -32,16 +32,18 @@ for _f in _FONT_CANDIDATES:
 plt.rcParams["axes.unicode_minus"] = False
 
 ROOT = Path(__file__).resolve().parents[1]
-RES = ROOT / "results"
+import os
+RES = Path(os.environ.get("MUSIC_RESULTS", ROOT / "results"))
 FIG = RES / "figures"
 FIG.mkdir(parents=True, exist_ok=True)
 plt.rcParams.update({"figure.dpi": 150, "font.size": 10, "axes.spines.top": False,
                      "axes.spines.right": False})
 
 MODEL_LABEL = {"svm": "SVM", "mlp": "MLP", "cnn": "CNN", "crnn": "CRNN",
-               "transformer": "Transformer", "ast": "AST(预训练)"}
+               "transformer": "Transformer", "ast": "AST(预训练)",
+               "cnn_aug": "CNN+SpecAug"}
 COLORS = {"svm": "#8a8f98", "mlp": "#6b8ea8", "cnn": "#c2703d", "crnn": "#9c6b8f",
-          "transformer": "#4f7a5f", "ast": "#b08d57"}
+          "transformer": "#4f7a5f", "ast": "#b08d57", "cnn_aug": "#8d5a3b"}
 
 
 def load_metrics() -> pd.DataFrame:
@@ -160,7 +162,7 @@ def training_curves() -> None:
 
 def summary(agg: pd.DataFrame) -> None:
     lines = ["# Music AI Lab — MVP 结果汇总", "",
-             "数据：GTZAN 原始 1000 首，清洗后 985 首（剔除 1 首损坏 + 14 首重复），"
+             f"数据：{os.environ.get('MUSIC_SUMMARY_DATA', 'GTZAN 原始 1000 首，清洗后 985 首（剔除 1 首损坏 + 14 首重复）')}，"
              "按曲目分层划分 70/15/15，seed=42。",
              "每个模型使用同一批 5 s 中心片段；表中为测试集结果，多 seed 时取均值。", "",
              "| 模型 | 测试 Accuracy | 测试 Macro-F1 | 训练耗时(s) | 单片段推理(ms) | 参数量 | 模型大小(MB) |",

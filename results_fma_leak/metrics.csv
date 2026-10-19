@@ -1,0 +1,2 @@
+model,seed,split,n_samples,accuracy,macro_f1,train_time_s,infer_ms_per_clip,n_params,model_size_mb,notes
+cnn,42,test,1199,0.5663,0.5682,455.41,1.307,590504,2.384,best_ep=17;best_val_f1=0.5451;cuda

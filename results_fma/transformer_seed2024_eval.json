@@ -1,0 +1,229 @@
+{
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 1.7813,
+      "val_loss": 1.8,
+      "val_acc": 0.3495,
+      "val_macro_f1": 0.3136,
+      "epoch_time_s": 6.11
+    },
+    {
+      "epoch": 2,
+      "train_loss": 1.6143,
+      "val_loss": 1.6856,
+      "val_acc": 0.392,
+      "val_macro_f1": 0.3761,
+      "epoch_time_s": 5.89
+    },
+    {
+      "epoch": 3,
+      "train_loss": 1.5342,
+      "val_loss": 1.7225,
+      "val_acc": 0.3978,
+      "val_macro_f1": 0.3689,
+      "epoch_time_s": 5.86
+    },
+    {
+      "epoch": 4,
+      "train_loss": 1.478,
+      "val_loss": 1.6753,
+      "val_acc": 0.3903,
+      "val_macro_f1": 0.3707,
+      "epoch_time_s": 6.56
+    },
+    {
+      "epoch": 5,
+      "train_loss": 1.4165,
+      "val_loss": 1.7247,
+      "val_acc": 0.407,
+      "val_macro_f1": 0.3896,
+      "epoch_time_s": 5.8
+    },
+    {
+      "epoch": 6,
+      "train_loss": 1.3517,
+      "val_loss": 1.6526,
+      "val_acc": 0.4195,
+      "val_macro_f1": 0.3993,
+      "epoch_time_s": 5.86
+    },
+    {
+      "epoch": 7,
+      "train_loss": 1.3036,
+      "val_loss": 1.9609,
+      "val_acc": 0.3528,
+      "val_macro_f1": 0.3441,
+      "epoch_time_s": 5.85
+    },
+    {
+      "epoch": 8,
+      "train_loss": 1.2513,
+      "val_loss": 1.9578,
+      "val_acc": 0.3628,
+      "val_macro_f1": 0.3681,
+      "epoch_time_s": 5.82
+    },
+    {
+      "epoch": 9,
+      "train_loss": 1.1954,
+      "val_loss": 1.9459,
+      "val_acc": 0.3711,
+      "val_macro_f1": 0.3586,
+      "epoch_time_s": 5.88
+    },
+    {
+      "epoch": 10,
+      "train_loss": 1.1377,
+      "val_loss": 1.991,
+      "val_acc": 0.372,
+      "val_macro_f1": 0.3654,
+      "epoch_time_s": 6.57
+    },
+    {
+      "epoch": 11,
+      "train_loss": 1.0674,
+      "val_loss": 1.9049,
+      "val_acc": 0.4078,
+      "val_macro_f1": 0.3884,
+      "epoch_time_s": 5.84
+    },
+    {
+      "epoch": 12,
+      "train_loss": 1.0184,
+      "val_loss": 2.0358,
+      "val_acc": 0.377,
+      "val_macro_f1": 0.3694,
+      "epoch_time_s": 5.78
+    },
+    {
+      "epoch": 13,
+      "train_loss": 0.9488,
+      "val_loss": 2.1773,
+      "val_acc": 0.3878,
+      "val_macro_f1": 0.3617,
+      "epoch_time_s": 5.87
+    },
+    {
+      "epoch": 14,
+      "train_loss": 0.8723,
+      "val_loss": 2.2427,
+      "val_acc": 0.3912,
+      "val_macro_f1": 0.3709,
+      "epoch_time_s": 5.87
+    }
+  ],
+  "val": {
+    "acc": 0.4195162635529608,
+    "macro_f1": 0.39933604919502835,
+    "loss": 1.6525834798812866
+  },
+  "best_epoch": 6,
+  "test": {
+    "accuracy": 0.39532944120100083,
+    "macro_f1": 0.38552807979766,
+    "confusion_matrix": [
+      [
+        63,
+        5,
+        6,
+        22,
+        13,
+        10,
+        12,
+        8
+      ],
+      [
+        20,
+        20,
+        25,
+        7,
+        26,
+        16,
+        19,
+        14
+      ],
+      [
+        6,
+        3,
+        59,
+        7,
+        28,
+        9,
+        17,
+        8
+      ],
+      [
+        19,
+        0,
+        2,
+        92,
+        1,
+        9,
+        10,
+        2
+      ],
+      [
+        6,
+        16,
+        30,
+        1,
+        34,
+        14,
+        12,
+        13
+      ],
+      [
+        11,
+        3,
+        15,
+        21,
+        15,
+        62,
+        24,
+        5
+      ],
+      [
+        24,
+        8,
+        25,
+        12,
+        10,
+        34,
+        51,
+        27
+      ],
+      [
+        10,
+        7,
+        14,
+        5,
+        12,
+        9,
+        18,
+        93
+      ]
+    ],
+    "per_class_f1": {
+      "Electronic": 0.4228187919463087,
+      "Experimental": 0.19138755980861244,
+      "Folk": 0.3769968051118211,
+      "Hip-Hop": 0.609271523178808,
+      "Instrumental": 0.25660377358490566,
+      "International": 0.3887147335423197,
+      "Pop": 0.288135593220339,
+      "Rock": 0.5502958579881657
+    }
+  },
+  "test_report": "               precision    recall  f1-score   support\n\n   Electronic      0.396     0.453     0.423       139\n Experimental      0.323     0.136     0.191       147\n         Folk      0.335     0.431     0.377       137\n      Hip-Hop      0.551     0.681     0.609       135\n Instrumental      0.245     0.270     0.257       126\nInternational      0.380     0.397     0.389       156\n          Pop      0.313     0.267     0.288       191\n         Rock      0.547     0.554     0.550       168\n\n     accuracy                          0.395      1199\n    macro avg      0.386     0.399     0.386      1199\n weighted avg      0.388     0.395     0.385      1199\n",
+  "classes": [
+    "Electronic",
+    "Experimental",
+    "Folk",
+    "Hip-Hop",
+    "Instrumental",
+    "International",
+    "Pop",
+    "Rock"
+  ]
+}

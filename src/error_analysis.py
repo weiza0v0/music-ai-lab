@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -35,7 +36,7 @@ for _f in ("/mnt/c/Windows/Fonts/msyh.ttc", "/mnt/c/Windows/Fonts/simhei.ttf"):
             pass
 plt.rcParams["axes.unicode_minus"] = False
 
-RES = ROOT / "results"
+RES = Path(os.environ.get("MUSIC_RESULTS", ROOT / "results"))
 PRED = RES / "predictions"
 FIG = RES / "figures"
 MODEL_LABEL = {"svm": "SVM", "mlp": "MLP", "cnn": "CNN", "crnn": "CRNN",
@@ -44,9 +45,15 @@ COLORS = {"svm": "#8a8f98", "mlp": "#6b8ea8", "cnn": "#c2703d", "crnn": "#9c6b8f
           "transformer": "#4f7a5f"}
 
 
+def _tid(x) -> str:
+    s = str(x)
+    return s.zfill(6) if s.isdigit() else s
+
+
 def load_preds(model: str, seed: int = 42) -> pd.DataFrame:
     p = PRED / f"{model}_seed{seed}_test.csv"
     df = pd.read_csv(p)
+    df["track_id"] = df["track_id"].map(_tid)
     df["confidence"] = df[[c for c in df.columns if c.startswith("p_")]].max(axis=1)
     return df
 
@@ -111,6 +118,8 @@ def spectrogram_cases(examples: list[dict], splits: pd.DataFrame) -> None:
     if n == 0:
         return
     fig, axes = plt.subplots(1, n, figsize=(3.1 * n, 2.9), squeeze=False)
+    splits = splits.copy()
+    splits["track_id"] = splits["track_id"].map(_tid)
     path_of = dict(zip(splits["track_id"], splits["path"]))
     for ax, ex in zip(axes[0], examples):
         y = load_clip(str(ROOT / path_of[ex["track_id"]]))
@@ -156,11 +165,14 @@ def _conclusions(frames: dict[str, pd.DataFrame]) -> list[str]:
 
 def write_doc(frames: dict[str, pd.DataFrame], stats: dict, examples: list[dict],
               splits: pd.DataFrame) -> None:
+    splits = splits.copy()
+    splits["track_id"] = splits["track_id"].map(_tid)
     path_of = dict(zip(splits["track_id"], splits["path"]))
     lines = [
         "# 错误分析（P0）",
         "",
-        "数据：GTZAN 测试集 147 首，模型为 seed 42 的 checkpoint。",
+        f"数据：{os.environ.get('MUSIC_DATASET_NAME', 'GTZAN')} 测试集 "
+        f"{next(iter(stats.values()))['n']} 首，模型为 seed 42 的 checkpoint。",
         "复现命令：`python -m src.error_analysis`。",
         "",
         "## 1. 各模型最容易混淆的流派对",
@@ -205,11 +217,14 @@ def write_doc(frames: dict[str, pd.DataFrame], stats: dict, examples: list[dict]
         "- `results/error_analysis.json`：混淆对、置信度统计、典型样例",
         "- `results/figures/error_confusions.png`、`results/figures/error_cases.png`",
     ]
-    (ROOT / "docs" / "error_analysis.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    doc = Path(os.environ.get("MUSIC_ERROR_DOC", ROOT / "docs" / "error_analysis.md"))
+    doc.parent.mkdir(parents=True, exist_ok=True)
+    doc.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 def main() -> None:
-    splits = pd.read_csv(ROOT / "data/splits/splits.csv")
+    splits = pd.read_csv(Path(os.environ.get("MUSIC_SPLITS",
+                                             ROOT / "data/splits/splits.csv")))
     frames = {m: load_preds(m) for m in MODEL_LABEL}
     stats = {m: confidence_stats(df) for m, df in frames.items()}
 
@@ -225,7 +240,8 @@ def main() -> None:
     if ("jazz", "classical") not in cnn_pairs:
         cnn_pairs.append(("jazz", "classical"))
     examples = pick_examples(frames, cnn_pairs, per_pair=2)
-    if not any(e["track_id"] == "jazz.00003" for e in examples):
+    known = set(splits["track_id"].map(_tid))
+    if "jazz.00003" in known and not any(e["track_id"] == "jazz.00003" for e in examples):
         examples.append({"track_id": "jazz.00003", "true": "jazz", "pred": "classical",
                          "confidence": 0.996})
 

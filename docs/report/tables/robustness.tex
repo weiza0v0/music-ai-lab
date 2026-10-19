@@ -1,0 +1,16 @@
+\begin{table}[H]
+\centering\small
+\caption{七种扰动下的测试准确率（GTZAN，seed 42，n=147）。}
+\label{tab:robust}
+\begin{tabular}{lccccccc}
+\toprule
+模型 & clean & 3s & 10s & 0.5$\times$ & 1.5$\times$ & 10dB & 0dB\\
+\midrule
+SVM & 0.708 & 0.578 & 0.748 & 0.701 & 0.673 & 0.333 & 0.299\\
+MLP & 0.639 & 0.531 & 0.701 & 0.612 & 0.633 & 0.272 & 0.218\\
+CNN & 0.748 & 0.408 & 0.537 & 0.748 & 0.748 & 0.211 & 0.122\\
+CRNN & 0.742 & 0.211 & 0.524 & 0.742 & 0.742 & 0.252 & 0.163\\
+Transformer & 0.565 & 0.531 & 0.599 & 0.565 & 0.565 & 0.231 & 0.150\\
+\bottomrule
+\end{tabular}
+\end{table}
