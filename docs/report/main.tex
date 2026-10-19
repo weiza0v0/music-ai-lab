@@ -174,49 +174,69 @@ Tempo & 估计值（归一化） & 1\\
 \begin{figure}[H]
   \centering
   \resizebox{\linewidth}{!}{%
-  \begin{tikzpicture}[font=\small, >=Stealth,
+  \begin{tikzpicture}[font=\small, >=Stealth, line cap=round, line join=round,
       box/.style={draw=black!55, rounded corners=2pt, align=center,
                   inner sep=4pt, minimum height=12mm},
-      feat/.style={box, fill=blue!7},
-      model/.style={box, fill=orange!9},
-      data/.style={box, fill=gray!10},
-      eval/.style={box, fill=green!8, minimum height=34mm}]
-    \node[data]  (data) at (0,0)     {GTZAN 985 首\\FMA-small 7,994 首};
-    \node[box]   (prep) at (3.1,0)   {中心 5 秒片段\\22,050 Hz 单声道};
+      feat/.style={box, fill=blue!7, minimum width=3.2cm},
+      model/.style={box, fill=orange!9, minimum width=3.0cm},
+      data/.style={box, fill=gray!10, minimum width=2.6cm},
+      eval/.style={box, fill=green!8, minimum height=36mm, minimum width=3.3cm}]
 
-    \node[feat]  (fhand) at (6.5,2.3) {209 维人工特征\\（MFCC / 谱 / 节奏）};
-    \node[feat]  (fmel)  at (6.5,0)   {64\,$\times$\,216 Log-Mel\\（增益归一化）};
-    \node[feat]  (fast)  at (6.5,-2.3){16 kHz 补零 10.24 s\\AST 频谱};
+    % 节点：x 坐标显式排布，保证三条支路等距
+    \node[data]  (data) at (0.0,0)    {GTZAN 985 首\\FMA-small 7,994 首};
+    \node[box, minimum width=2.9cm] (prep) at (3.4,0)
+        {中心 5 秒片段\\22,050 Hz 单声道};
 
-    \node[model] (mhand) at (10.0,2.3) {SVM / MLP};
-    \node[model] (mdeep) at (10.0,0)   {CNN / CRNN /\\轻量 Transformer};
-    \node[model] (mast)  at (10.0,-2.3){冻结 AST\\+ 线性分类头};
+    \node[feat]  (fhand) at (7.4,2.4)  {209 维人工特征\\（MFCC / 谱 / 节奏）};
+    \node[feat]  (fmel)  at (7.4,0)    {64\,$\times$\,216 Log-Mel\\（增益归一化）};
+    \node[feat]  (fast)  at (7.4,-2.4) {16 kHz 补零 10.24 s\\AST 频谱};
 
-    \node[eval]  (eval)  at (13.6,0)  {统一评估协议\\[2pt]
-                                      按曲目 / 艺术家划分\\[2pt]
-                                      验证集选型\\[2pt]
-                                      测试集单次评估\\[2pt]
-                                      Acc / Macro-F1 / 成本};
+    \node[model] (mhand) at (10.9,2.4)  {SVM / MLP};
+    \node[model] (mdeep) at (10.9,0)    {CNN / CRNN /\\轻量 Transformer};
+    \node[model] (mast)  at (10.9,-2.4) {冻结 AST\\+ 线性分类头};
 
-    \draw[->] (data) -- (prep);
-    \draw[->] (prep.east) -- ++(0.45,0) |- (fhand.west);
-    \draw[->] (prep.east) -- (fmel.west);
-    \draw[->] (prep.east) -- ++(0.45,0) |- (fast.west);
+    \node[eval]  (eval)  at (15.0,0)   {统一评估协议\\[2pt]
+                                       按曲目 / 艺术家划分\\[2pt]
+                                       验证集选型\\[2pt]
+                                       测试集单次评估\\[2pt]
+                                       Acc / Macro-F1 / 成本};
 
-    \draw[->] (fhand) -- (mhand);
-    \draw[->] (fmel)  -- (mdeep);
-    \draw[->] (fast)  -- (mast);
+    % 数据 -> 预处理
+    \draw[->] (data.east) -- (prep.west);
 
-    \draw[->] (mhand.east) -- ++(0.4,0) |- (eval.west);
-    \draw[->] (mdeep.east) -- (eval.west);
-    \draw[->] (mast.east)  -- ++(0.4,0) |- (eval.west);
+    % 分发母线：一条水平线 + 一条竖线，再分别进入三条支路
+    \coordinate (pbus) at (5.05,0);
+    \coordinate (ptop) at (5.05,2.4);
+    \coordinate (pbot) at (5.05,-2.4);
+    \draw (prep.east) -- (pbus);
+    \draw (ptop) -- (pbot);
+    \draw[->] (ptop) -- (fhand.west);
+    \draw[->] (pbus) -- (fmel.west);
+    \draw[->] (pbot) -- (fast.west);
 
-    \node[draw=black!35, dashed, rounded corners=2pt, fill=gray!5,
-          align=center, inner sep=4pt, minimum width=10.5cm]
-         at (6.4,-3.9) {同一划分、同一批 5 秒中心片段；所有预处理只在训练集上拟合};
+    % 特征 -> 模型
+    \draw[->] (fhand.east) -- (mhand.west);
+    \draw[->] (fmel.east)  -- (mdeep.west);
+    \draw[->] (fast.east)  -- (mast.west);
+
+    % 汇流母线：三个模型先并入竖线，再用单箭头进入评估
+    \coordinate (ctop) at (12.75,2.4);
+    \coordinate (cmid) at (12.75,0);
+    \coordinate (cbot) at (12.75,-2.4);
+    \draw (mhand.east) -- (ctop);
+    \draw (mdeep.east) -- (cmid);
+    \draw (mast.east)  -- (cbot);
+    \draw (ctop) -- (cbot);
+    \draw[->] (cmid) -- (eval.west);
+
+    % 母线交点：用实心圆点标明「连接」而不是「交叉」
+    \fill[black!70] (pbus) circle (0.055);
+    \fill[black!70] (cmid) circle (0.055);
+
   \end{tikzpicture}}
-  \caption{统一的实验流程：同一份按曲目（FMA 按艺术家）划分的数据，分别进入人工特征、
-  Log-Mel 与 AST 三条支路，最终在同一测试集上按统一协议评估。}
+  \caption{统一的实验流程：同一份按曲目（FMA 按艺术家）划分的数据，经分发母线进入人工特征、
+  Log-Mel 与 AST 三条支路，再由汇流母线进入统一评估协议；三条支路共享同一批 5 秒中心片段，
+  所有预处理只在训练集上拟合。}
   \label{fig:pipeline}
 \end{figure}
 
