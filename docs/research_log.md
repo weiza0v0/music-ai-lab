@@ -582,3 +582,20 @@ bash scripts/run_fma.sh 42 123 2024
 - 清理：删除已被 TikZ 取代的 `figures/pipeline.png`、审阅用 `figures/tikz_preview.png`
   及其生成脚本 `make_pipeline.py`（三者在仓库内均无引用）。
 - 产物：无新增实验结果；仅文档与死资源变动。
+
+## 2026-10-20 00:05
+
+**复核"预训练模型跑不通"的确切原因**
+
+- 结论：三个预训练模型（AST、EnCodec、MusicGen-small）**全部跑通**，报告数字均来自实跑。
+  真正装不上的是 MusicGen 的官方库 `audiocraft==1.3.0`。
+- 实测阻塞点：其 `requirements.txt` 把 `torch==2.1.0`、`av==11.0.0`、
+  `xformers<0.0.23`、`torchvision==0.16.0`、`torchtext==0.16.0` 全部钉死在 torch 2.1 一代。
+  其中 `av` 在 PyPI 上自 12.0.0 起才有包，**Python 3.12 没有 11.0.0 的 wheel**，
+  只能源码编译，缺 ffmpeg 开发头即失败（复现命令
+  `pip install --dry-run audiocraft` → `ERROR: Failed to build 'av'`）。
+- 绕过：`transformers` 5.16.1 自带 `MusicgenForConditionalGeneration` 与 `EncodecModel`，
+  用同一份权重完成续写，故模型能力未缺失；代价是需自拼 delay pattern、
+  且受位置编码上限只能续 3 秒。
+- 另一项非崩溃的负结果：`peft`/`accelerate` 同样未装，LoRA 为手写实现，
+  跑通但 loss 未收敛（10.4 → 7.63，均匀分布 7.62）。

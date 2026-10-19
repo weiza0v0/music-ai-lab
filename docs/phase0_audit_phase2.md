@@ -37,6 +37,21 @@
 处理原则：**优先用 transformers 已支持的路径**，不为一两个便利函数升级/降级 torch；
 若阶段二必须用 `audiocraft`，另建独立 conda 环境并锁版本，不动现有环境。
 
+`audiocraft` 的实际阻塞点（二期末实测复核，非推测）：官方 `audiocraft==1.3.0`
+的 `requirements.txt` 把版本钉死在 torch 2.1 那一代，本环境装不上——
+
+| 钉死的依赖 | 与本环境的冲突 |
+|---|---|
+| `torch==2.1.0` | 需把现有 2.12.1+cu130 降级，一期权重、确定性设置、AST 与全部产物作废 |
+| `av==11.0.0` | PyPI 上 `av` 自 12.0.0 起才有包，**Python 3.12 无 11.0.0 的 wheel**；只能源码编译，缺 ffmpeg 开发头文件即构建失败（实测 `ERROR: Failed to build 'av'`） |
+| `xformers<0.0.23` | 同上，锚定 torch 2.1 |
+| `torchvision==0.16.0`、`torchtext==0.16.0`、`torchaudio<2.1.2` | 全部锚定 torch 2.1 生态 |
+
+因此二期**不装 `audiocraft`**，改用 `transformers` 内置的
+`MusicgenForConditionalGeneration` 与 `EncodecModel`（同一份 `facebook/musicgen-small`
+权重）完成续写。代价是失去官方 continuation 开关，需自行拼 delay pattern，
+并受位置编码上限约束只能续 3 秒。
+
 ### 2.1 已知环境坑（复核时复现）
 
 - `no_proxy` 里同时含 `::1` 与 `[::1]` 会让 `httpx`（transformers 下载器）抛
