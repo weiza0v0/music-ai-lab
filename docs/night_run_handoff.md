@@ -88,7 +88,11 @@ pgrep -af overnight_queue                      # 还在跑吗
 
 **Token long**
 - `results/token_prediction_long/metrics.csv` 对比 `results/token_prediction/metrics.csv`；
-- 重点看 `free_top1` / `nll`，以及 `best_epoch` 是否还撞在 45 上限（若撞上说明仍未训够）。
+- 重点看 `free_top1` / `nll` 是否真提升。
+- **判断是否欠训练，不能只看 `best_epoch` 是否撞上限**（验收时踩过这个坑）：
+  曲线进入平台后，逐轮抖动会随机把 best_epoch 挑到最后一轮，看起来像"还在改善"。
+  正确做法是按 5 轮一段算平均下降量，看它是否呈几何衰减、外推的剩余可降幅度
+  是否已小于末几轮的抖动幅度。45 轮这一轮验收的结论就是"已收敛"。
 
 **分类 long**
 - 对比 `best_epoch` 是否远离 60、test `macro_f1` 是否提升；
