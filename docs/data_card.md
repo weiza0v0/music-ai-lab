@@ -27,8 +27,8 @@
 
 - 清洗后 **985 首**：train 689 / val 149 / test 147（按曲目分层 70/15/15，seed=42）。
 - 每首取**中心 5 秒**片段（22,050 Hz，110,250 采样点）。
-- 划分文件：`data/splits/splits.csv`；统计：`data/splits/stats.json`。
-- 特征缓存：`data/processed/features.npz`（209 维人工特征 + 64×216 Log-Mel）。
+- 划分文件：`data/splits/gtzan/splits.csv`；统计：`data/splits/gtzan/stats.json`。
+- 特征缓存：`data/features/gtzan/features.npz`（209 维人工特征 + 64×216 Log-Mel）。
 
 ## 引用
 

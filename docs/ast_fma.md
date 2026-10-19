@@ -3,7 +3,7 @@
 - 模型：`MIT/ast-finetuned-audioset-10-10-0.4593`，主干 86,187,264 参数（加线性头共
   86,193,416），AudioSet 预训练，**冻结主干**。
 - 输入：16 kHz、中心 5 秒、补零到 10.24 秒；`ASTFeatureExtractor`（128 mels × 1024 帧）。
-- 特征：`pooler_output`（768 维），缓存于 `data/fma/processed/ast_embeddings.npz`；
+- 特征：`pooler_output`（768 维），缓存于 `data/features/fma/ast_embeddings.npz`；
   中间频谱缓存 `ast_feats.npy`（4.0 GB，可复用）。
 - 分类头：StandardScaler（仅 train）+ LogisticRegression，C 在验证集上选择，**选中 C=0.003**；
   测试集只在选型完成后评估一次。

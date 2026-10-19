@@ -49,7 +49,7 @@
 - 清洗策略：剔除损坏文件；按 MD5 只保留重复组的第一首。
 - 划分：按曲目分层 70/15/15，seed=42 → **985 首**（train 689 / val 149 / test 147），
   每类 65–70 训练样本。
-- 产物：`data/splits/splits.csv`（含 md5、样本率、时长）、`stats.json`。
+- 产物：`data/splits/gtzan/splits.csv`（含 md5、样本率、时长）、`stats.json`。
 
 ## 阶段 C：特征与传统 Baseline
 
@@ -111,13 +111,13 @@ Transformer 训练 loss 迅速到 0、验证 loss 反升 → 985 首小数据上
 
 ## 阶段 E：评估与图表
 
-- `results/metrics.csv`：15 行（5 模型 × 3 seed；acc / macro-F1 / 训练时间 / 推理延迟 /
+- `results/gtzan/metrics.csv`：15 行（5 模型 × 3 seed；acc / macro-F1 / 训练时间 / 推理延迟 /
   参数量 / 大小）。`evaluate.py` 自动按模型聚合均值。
-- `results/*_seed42_eval.json`：混淆矩阵、逐类 F1、classification report、训练曲线。
-- `results/predictions/*.csv`：val/test 逐样本预测与 10 类概率。
+- `results/gtzan/*_seed42_eval.json`：混淆矩阵、逐类 F1、classification report、训练曲线。
+- `results/gtzan/predictions/*.csv`：val/test 逐样本预测与 10 类概率。
 - 图：`leaderboard.png`、`confusion_matrices.png`、`training_curves.png`（中文字体用
   Windows 微软雅黑，已避免方框乱码）。
-- `results/summary.md`：汇总表 + 最易混淆流派。
+- `results/gtzan/summary.md`：汇总表 + 最易混淆流派。
 
 ## 阶段 G：Demo
 
@@ -156,7 +156,7 @@ MVP 完成后按 `README.md`「下一步计划」继续做了三组实验：
 - CNN 最大混淆对：`reggae→pop`(3)、`blues→reggae`(2)、`hiphop→pop`(2)；
   `rock` F1 0.429 最低，`classical` 0.933 最高。
 - 置信度：Transformer 有 16/64 个错误样本置信度 ≥ 0.9；CNN 3/37。
-- 产物：`docs/error_analysis.md`、`results/error_analysis.csv/.json`、
+- 产物：`docs/error_analysis.md`、`results/gtzan/error_analysis.csv/.json`、
   `figures/error_confusions.png`、`figures/error_cases.png`。
 
 ### P0 鲁棒性
@@ -165,21 +165,21 @@ MVP 完成后按 `README.md`「下一步计划」继续做了三组实验：
 - clean 行与 `metrics.csv` 零误差；连跑两次 CSV 逐字节相同。
 - 噪声破坏最大（10 dB 平均约 −42 pp，0 dB 约 −50 pp）；深度模型对增益完全不敏感；
   3 s 片段最伤 CRNN（−53.1 pp）；除增益外每个扰动下第一名都是 SVM。
-- 产物：`docs/robustness.md`、`results/robustness.csv`、`figures/robustness.png`。
+- 产物：`docs/robustness.md`、`results/gtzan/robustness.csv`、`figures/robustness.png`。
 
 ### P1 AST 迁移
 
 - `python -m src.train_ast`；冻结 86M 主干，只训练 7,690 参数线性头。
 - test n=147：Acc 0.8231 / Macro-F1 0.8135；比 CNN 高 6.8 / 6.0 个百分点。
 - 成本：346 MB、embedding 提取 214 s、推理 204 ms/片段。
-- 产物：`docs/ast.md`、`results/ast_metrics.json`、`results/ast_eval.json`。
+- 产物：`docs/ast.md`、`results/gtzan/ast_metrics.json`、`results/gtzan/ast_eval.json`。
 
 ### P2 分段预测时间轴（功能 C）
 
 - `python -m src.timeline <audio> --model cnn`；5 秒窗、2.5 秒步长。
 - 147 首测试曲目中 88 首至少出现一次窗口级判断变化；`rock.00072` 改判 9 次。
 - 已集成进 Streamlit Demo 的「🎞 进阶」区。
-- 产物：`docs/timeline.md`、`results/timeline_scan.csv`、`figures/timeline_*.png`。
+- 产物：`docs/timeline.md`、`results/gtzan/timeline_scan.csv`、`figures/timeline_*.png`。
 
 ## 主实验（FMA-small）
 
@@ -225,4 +225,4 @@ MVP 完成后按 `README.md`「下一步计划」继续做了三组实验：
 - test n=1,199：Accuracy **0.5963** / Macro-F1 **0.5903**，比最好的自建模型 CRNN
   （0.492）高 9.8 个百分点；权重 345 MB，推理约 231 ms/片段。
 - 实现中改为多进程特征化 + GPU 批量前向（fp16），把 8,000 首的提取时间从预估
-  2 小时降到约 7 分钟；结果见 `docs/ast_fma.md`、`results_fma/ast_metrics.json`。
+  2 小时降到约 7 分钟；结果见 `docs/ast_fma.md`、`results/fma/ast_metrics.json`。

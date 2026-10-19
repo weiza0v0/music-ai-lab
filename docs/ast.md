@@ -1,7 +1,7 @@
 # AST 迁移学习（P1）：冻结 AudioSet 主干 + 线性分类头
 
 > 本文件由 `src/train_ast.py` 在实验结束时自动生成，所有数字来自本次真实运行，
-> 可追溯到 `results/ast_metrics.json` 与 `results/ast_eval.json`。
+> 可追溯到 `results/gtzan/ast_metrics.json` 与 `results/gtzan/ast_eval.json`。
 > 生成时间：2026-10-19T13:10:06+08:00；seed=42。
 
 ## 一句话结论
@@ -27,7 +27,7 @@ Transformer 架构优于 CNN；它多花的是预训练数据、下载体积与�
 2. 短于 5 秒补零；再在右侧补零到 **10.24 秒**（163840 个采样点 = 1024 帧 × 10 ms），以满足 AST 的固定输入长度。
 3. `ASTFeatureExtractor`：16 kHz、128 Mel bins、n_fft=1024、hop=160、`do_normalize=True`（mean=-4.2677393，std=4.5689974），输出 `(1024, 128)`。
 4. 主干输出取 `pooler_output`（768 维）= (CLS + distillation token) / 2，这正是原始 AudioSet 分类头使用的表征；不做任何微调。
-5. 所有曲目的 embedding 先缓存到 `data/processed/ast_embeddings.npz`（git 忽略），后续实验直接复用。
+5. 所有曲目的 embedding 先缓存到 `data/features/gtzan/ast_embeddings.npz`（git 忽略），后续实验直接复用。
 
 ## 冻结策略
 
@@ -60,7 +60,7 @@ Transformer 架构优于 CNN；它多花的是预训练数据、下载体积与�
 | jazz | 0.933 | 15 |
 | classical | 0.968 | 15 |
 
-最容易混淆的类别：rock → metal（3 首）；rock → blues（3 首）；rock → country（2 首）；reggae → pop（2 首）；reggae → disco（2 首）。混淆矩阵与逐类 F1 图见 `results/figures/ast.png`，完整矩阵见 `results/ast_eval.json`。
+最容易混淆的类别：rock → metal（3 首）；rock → blues（3 首）；rock → country（2 首）；reggae → pop（2 首）；reggae → disco（2 首）。混淆矩阵与逐类 F1 图见 `results/gtzan/figures/ast.png`，完整矩阵见 `results/gtzan/ast_eval.json`。
 
 ### 与 CNN baseline 对比
 
@@ -69,7 +69,7 @@ Transformer 架构优于 CNN；它多花的是预训练数据、下载体积与�
 | CNN（3 seeds，均值±标准差） | 无（从头训练） | 0.7551 ± 0.0068 | 0.7530 ± 0.0062 | 57.53 s | 0.76 ms | 592,554 | 2.39 MB |
 | AST（seed 42，本实验） | AudioSet（冻结） | 0.8231 | 0.8135 | 23.42 s（仅分类头） | 204.06 ms | 86,194,954 | 346.45 MB |
 
-CNN 数据取 `results/metrics.csv` 中 3 个 seed 的均值±标准差；AST 只有 seed 42。
+CNN 数据取 `results/gtzan/metrics.csv` 中 3 个 seed 的均值±标准差；AST 只有 seed 42。
 两者的训练耗时不可直接比较：CNN 是从头训练 30 epoch，AST 只训练线性头，但 AST 的 embedding 提取是一次性额外成本（见下）。
 
 ## 额外成本（真实测量）
@@ -105,10 +105,10 @@ $PY -m src.train_ast
 $PY -m src.train_ast --force-extract
 
 # 查看验证集 C 网格与最终结果
-cat results/ast_metrics.json results/ast_eval.json
+cat results/gtzan/ast_metrics.json results/gtzan/ast_eval.json
 ```
 
-脚本会写入：`data/processed/ast_embeddings.npz`（缓存）、`results/ast_metrics.json`、`results/ast_eval.json`、`results/figures/ast.png`（如未加 `--no-figure`）和本文件；不会修改 `results/metrics.csv`、README 或任何已有训练脚本。
+脚本会写入：`data/features/gtzan/ast_embeddings.npz`（缓存）、`results/gtzan/ast_metrics.json`、`results/gtzan/ast_eval.json`、`results/gtzan/figures/ast.png`（如未加 `--no-figure`）和本文件；不会修改 `results/gtzan/metrics.csv`、README 或任何已有训练脚本。
 
 ## 环境与排障记录
 

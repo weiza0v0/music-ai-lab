@@ -12,7 +12,7 @@ sys.path.insert(0, str(ROOT))
 
 
 def test_split_is_track_level_disjoint():
-    df = pd.read_csv(ROOT / "data/splits/splits.csv")
+    df = pd.read_csv(ROOT / "data/splits/gtzan/splits.csv")
     assert set(df["split"].unique()) == {"train", "val", "test"}
     # each track appears exactly once, so no track can straddle two splits
     assert df["track_id"].is_unique
@@ -22,8 +22,8 @@ def test_split_is_track_level_disjoint():
 
 
 def test_features_align_with_splits():
-    d = np.load(ROOT / "data/processed/features.npz", allow_pickle=True)
-    df = pd.read_csv(ROOT / "data/splits/splits.csv")
+    d = np.load(ROOT / "data/features/gtzan/features.npz", allow_pickle=True)
+    df = pd.read_csv(ROOT / "data/splits/gtzan/splits.csv")
     assert len(d["track_ids"]) == len(d["genres"]) == len(d["splits"]) == len(d["X_feat"])
     assert d["X_mel"].shape[1:] == (64, 216)
     assert set(d["track_ids"]).issubset(set(df["track_id"]))
@@ -36,10 +36,10 @@ def test_scaler_fitted_on_train_only():
     """StandardScaler must never see val/test statistics: reconstruct it."""
     import joblib
     from sklearn.preprocessing import StandardScaler
-    d = np.load(ROOT / "data/processed/features.npz", allow_pickle=True)
+    d = np.load(ROOT / "data/features/gtzan/features.npz", allow_pickle=True)
     tr = d["splits"] == "train"
     ref = StandardScaler().fit(d["X_feat"][tr])
-    bundle = joblib.load(ROOT / "checkpoints/svm_seed42.joblib")
+    bundle = joblib.load(ROOT / "checkpoints/gtzan/svm_seed42.joblib")
     got = bundle["model"].named_steps["standardscaler"]
     assert np.allclose(got.mean_, ref.mean_, atol=1e-5)
     assert np.allclose(got.scale_, ref.scale_, atol=1e-5)

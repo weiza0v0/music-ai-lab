@@ -1,7 +1,7 @@
 """Stage E — turn saved evaluation artefacts into the figures the deck needs.
 
-Reads results/metrics.csv + results/*_eval.json (never hard-codes numbers) and
-writes results/figures/*.png plus results/summary.md.
+Reads results/gtzan/metrics.csv + results/gtzan/*_eval.json (never hard-codes numbers) and
+writes results/gtzan/figures/*.png plus results/gtzan/summary.md.
 """
 from __future__ import annotations
 
@@ -33,7 +33,7 @@ plt.rcParams["axes.unicode_minus"] = False
 
 ROOT = Path(__file__).resolve().parents[1]
 import os
-RES = Path(os.environ.get("MUSIC_RESULTS", ROOT / "results"))
+RES = Path(os.environ.get("MUSIC_RESULTS", ROOT / "results" / "gtzan"))
 FIG = RES / "figures"
 FIG.mkdir(parents=True, exist_ok=True)
 plt.rcParams.update({"figure.dpi": 150, "font.size": 10, "axes.spines.top": False,

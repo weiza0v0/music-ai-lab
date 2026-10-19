@@ -80,7 +80,7 @@ EOF
 
 首次运行曾因 pandas 3.0 下 `itertuples()` 的属性命名差异报
 `AttributeError: 'Pandas' object has no attribute 'path'`（日志 `/tmp/fma_prep.log`），
-修复后重跑成功；**以 `data/splits_fma/*` 与 `stats.json` 的当前内容为准**。
+修复后重跑成功；**以 `data/splits/fma/*` 与 `stats.json` 的当前内容为准**。
 
 ---
 
@@ -156,7 +156,7 @@ FMA 的目录里同一 artist 往往有多首曲目：**2,304 个 artist**，每
 这与「先按曲目划分再切片」的协议并不矛盾——协议要求的是不泄漏**同一首曲目**，
 但 artist 泄漏是 FMA 特有的更强捷径，必须单独处理。
 
-### 4.2 主划分（`data/splits_fma/splits.csv`，artist-disjoint）
+### 4.2 主划分（`data/splits/fma/splits.csv`，artist-disjoint）
 
 - 算法：`make_artist_splits()`，seed = 42。把每个 artist 当作不可分割的整体，
   随机打乱后按曲目数从大到小，逐一组贪心分配到「相对缺口最大」的划分
@@ -194,7 +194,7 @@ FMA 的目录里同一 artist 往往有多首曲目：**2,304 个 artist**，每
 类别信息量充足；模型选择/评估时应同时报告 **Macro-F1** 与混淆矩阵，不要只看 Accuracy，
 并注意 val 上 Folk/Instrumental 的样本数差 3 倍，小类指标方差更大。
 
-### 4.4 对比划分（`data/splits_fma/splits_tracklevel.csv`，仅作泄漏对照）
+### 4.4 对比划分（`data/splits/fma/splits_tracklevel.csv`，仅作泄漏对照）
 
 - 曲目级分层 70/15/15：**5,595 / 1,200 / 1,199**，每流派每划分恰为 150/150/150（8×150=1200）。
 - **814 个 artist 跨划分出现**；测试集 **971/1,199（81.0%）** 曲目与训练共享 artist。
@@ -209,12 +209,12 @@ FMA 的目录里同一 artist 往往有多首曲目：**2,304 个 artist**，每
 
 ```bash
 $PY scripts/extract_features.py \
-    --splits data/splits_fma/splits.csv \
-    --out data/fma/processed/features.npz \
+    --splits data/splits/fma/splits.csv \
+    --out data/features/fma/features.npz \
     --workers 12
 ```
 
-`data/fma/processed/features.npz` 内容：
+`data/features/fma/features.npz` 内容：
 
 | 键 | 形状 / 类型 | 说明 |
 |---|---|---|
@@ -266,7 +266,7 @@ $PY scripts/extract_features.py \
 | 测试集 artist 泄漏 | 无法度量（无 artist 信息） | **0 首**（对照：曲目级划分 81.0%） |
 | 完全重复音频 | 28 首（MD5 相同） | **0 组** |
 | 每类 val 数量 | 均匀（约 15） | 82–249（artist 分组所致，见 4.3） |
-| 特征缓存 | `data/processed/features.npz`，985 条 | `data/fma/processed/features.npz`，7,994 条 |
+| 特征缓存 | `data/features/gtzan/features.npz`，985 条 | `data/features/fma/features.npz`，7,994 条 |
 
 对实验设计的三点影响：
 
@@ -301,8 +301,8 @@ cd data/fma/fma_small && sha1sum -c checksums | grep -v ': OK$'; cd ../../..
 
 # 4) 特征缓存（只对主划分 = artist-disjoint）
 $PY scripts/extract_features.py \
-    --splits data/splits_fma/splits.csv \
-    --out data/fma/processed/features.npz \
+    --splits data/splits/fma/splits.csv \
+    --out data/features/fma/features.npz \
     --workers 12
 ```
 
@@ -313,10 +313,10 @@ $PY scripts/extract_features.py \
 | `data/fma/raw/` | 两个 zip 原件 | 7.5 GiB |
 | `data/fma/fma_small/` | 8,000 个 MP3（`000/`…`155/`）+ 归档自带的 `README.txt`、`checksums` | 7.5 GiB |
 | `data/fma/metadata/` | `tracks.csv`、`genres.csv` | 0.26 GiB |
-| `data/fma/processed/features.npz` | 特征缓存 | 176 MB |
-| `data/splits_fma/splits.csv` | **主划分**（artist-disjoint） | 863 KB |
-| `data/splits_fma/splits_tracklevel.csv` | 泄漏对照划分 | 863 KB |
-| `data/splits_fma/stats.json` | 规模/采样率/失败清单/泄漏统计 | 1.6 KB |
+| `data/features/fma/features.npz` | 特征缓存 | 176 MB |
+| `data/splits/fma/splits.csv` | **主划分**（artist-disjoint） | 863 KB |
+| `data/splits/fma/splits_tracklevel.csv` | 泄漏对照划分 | 863 KB |
+| `data/splits/fma/stats.json` | 规模/采样率/失败清单/泄漏统计 | 1.6 KB |
 
 `data/fma` 合计约 **17 GB**（`.gitignore` 已排除 `data/`，音频与特征均不入库）。
 
@@ -351,4 +351,4 @@ $PY scripts/extract_features.py \
 
 - 代码与说明：<https://github.com/mdeff/fma>
 - 音频镜像：<https://os.unil.cloud.switch.ch/fma/>
-- 数据划分与统计：`data/splits_fma/splits.csv`、`splits_tracklevel.csv`、`stats.json`
+- 数据划分与统计：`data/splits/fma/splits.csv`、`splits_tracklevel.csv`、`stats.json`

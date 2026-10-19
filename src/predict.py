@@ -12,7 +12,7 @@ import numpy as np
 import torch
 
 ROOT = Path(__file__).resolve().parents[1]
-CKPT = Path(os.environ.get("MUSIC_CKPT", ROOT / "checkpoints"))
+CKPT = Path(os.environ.get("MUSIC_CKPT", ROOT / "checkpoints" / "gtzan"))
 CLASSICAL = {"svm", "mlp"}
 DEEP = {"cnn", "crnn", "transformer"}
 

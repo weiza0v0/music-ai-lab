@@ -36,7 +36,7 @@
 | 095724 | Instrumental | Folk | 89.8% | `data/fma/fma_small/095/095724.mp3` |
 
 听感对照建议：按上表顺序播放这几首，先让同学判断「像不像」，再揭晓模型的判断。
-波形/频谱对照见 `results/figures/error_cases.png`。
+波形/频谱对照见 `results/fma/figures/error_cases.png`。
 
 ## 4. 结论与解释
 
@@ -49,6 +49,6 @@
 
 ## 5. 产物
 
-- `results/error_analysis.csv`：逐模型混淆对计数
-- `results/error_analysis.json`：混淆对、置信度统计、典型样例
-- `results/figures/error_confusions.png`、`results/figures/error_cases.png`
+- `results/fma/error_analysis.csv`：逐模型混淆对计数
+- `results/fma/error_analysis.json`：混淆对、置信度统计、典型样例
+- `results/fma/figures/error_confusions.png`、`results/fma/figures/error_cases.png`

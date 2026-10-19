@@ -1,7 +1,7 @@
 """P1 — AST transfer learning: frozen AudioSet backbone + logistic-regression head.
 
 Protocol (same as every other model in this repo):
-  * the track-level split in data/splits/splits.csv is the single source of truth;
+  * the track-level split in data/splits/gtzan/splits.csv is the single source of truth;
   * the head's only hyper-parameter (C) is chosen on the validation split;
   * the test split is evaluated exactly once, after the head is frozen;
   * the StandardScaler is fit on TRAIN ONLY.
@@ -57,9 +57,9 @@ PAD_SAMPLES = int(SR * PAD_SECONDS)        # 163_840
 PREPROC = "gtzan-16k-5s-center-zero-pad-10.24s-v1"
 C_GRID = [0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1.0, 3.0, 10.0]
 
-DATA = Path(os.environ.get("MUSIC_SPLITS", ROOT / "data/splits/splits.csv"))
-CACHE = Path(os.environ.get("MUSIC_AST_CACHE", ROOT / "data/processed/ast_embeddings.npz"))
-RESULTS = Path(os.environ.get("MUSIC_RESULTS", ROOT / "results"))
+DATA = Path(os.environ.get("MUSIC_SPLITS", ROOT / "data/splits/gtzan/splits.csv"))
+CACHE = Path(os.environ.get("MUSIC_AST_CACHE", ROOT / "data/features/gtzan/ast_embeddings.npz"))
+RESULTS = Path(os.environ.get("MUSIC_RESULTS", ROOT / "results" / "gtzan"))
 FIG = RESULTS / "figures"
 METRICS_CSV = RESULTS / "metrics.csv"
 DOCS = ROOT / "docs"
@@ -442,8 +442,8 @@ def write_docs(path: Path, df: pd.DataFrame, test_res: dict, val_res: dict,
     pairs = sorted(((int(cm[i, j]), i, j) for i in range(len(classes))
                     for j in range(len(classes)) if i != j and cm[i, j] > 0),
                    reverse=True)[:5]
-    cnn_note = (f"CNN 数据取 `results/metrics.csv` 中 {cnn['n_seeds']} 个 seed 的均值±标准差；"
-                f"AST 只有 seed {seed}。") if cnn else "未找到 `results/metrics.csv` 中的 CNN 行。"
+    cnn_note = (f"CNN 数据取 `results/gtzan/metrics.csv` 中 {cnn['n_seeds']} 个 seed 的均值±标准差；"
+                f"AST 只有 seed {seed}。") if cnn else "未找到 `results/gtzan/metrics.csv` 中的 CNN 行。"
     pair_txt = "；".join(f"{classes[i]} → {classes[j]}（{n} 首）" for n, i, j in pairs) or "无"
 
     if cnn:
@@ -457,14 +457,14 @@ def write_docs(path: Path, df: pd.DataFrame, test_res: dict, val_res: dict,
                    f"{cnn['params']:,} | {cnn['size_mb']:.2f} MB |")
     else:
         cnn_acc = cnn_f1 = "—"
-        delta = "（未找到 results/metrics.csv 中的 CNN 行，未做对比。）"
+        delta = "（未找到 results/gtzan/metrics.csv 中的 CNN 行，未做对比。）"
         cnn_row = "| CNN | — | — | — | — | — | — | — |"
 
     lines = [
         "# AST 迁移学习（P1）：冻结 AudioSet 主干 + 线性分类头",
         "",
         "> 本文件由 `src/train_ast.py` 在实验结束时自动生成，所有数字来自本次真实运行，",
-        "> 可追溯到 `results/ast_metrics.json` 与 `results/ast_eval.json`。",
+        "> 可追溯到 `results/gtzan/ast_metrics.json` 与 `results/gtzan/ast_eval.json`。",
         f"> 生成时间：{datetime.now().astimezone().isoformat(timespec='seconds')}；seed={seed}。",
         "",
         "## 一句话结论",
@@ -499,7 +499,7 @@ def write_docs(path: Path, df: pd.DataFrame, test_res: dict, val_res: dict,
         "`do_normalize=True`（mean=-4.2677393，std=4.5689974），输出 `(1024, 128)`。",
         "4. 主干输出取 `pooler_output`（768 维）= (CLS + distillation token) / 2，"
         "这正是原始 AudioSet 分类头使用的表征；不做任何微调。",
-        "5. 所有曲目的 embedding 先缓存到 `data/processed/ast_embeddings.npz`（git 忽略），"
+        "5. 所有曲目的 embedding 先缓存到 `data/features/gtzan/ast_embeddings.npz`（git 忽略），"
         "后续实验直接复用。",
         "",
         "## 冻结策略",
@@ -530,9 +530,9 @@ def write_docs(path: Path, df: pd.DataFrame, test_res: dict, val_res: dict,
     lines += [
         "",
         f"最容易混淆的类别：{pair_txt}。"
-        + ("混淆矩阵与逐类 F1 图见 `results/figures/ast.png`，"
+        + ("混淆矩阵与逐类 F1 图见 `results/gtzan/figures/ast.png`，"
            if figure_written else "")
-        + "完整矩阵见 `results/ast_eval.json`。",
+        + "完整矩阵见 `results/gtzan/ast_eval.json`。",
         "",
         "### 与 CNN baseline 对比",
         "",
@@ -599,13 +599,13 @@ def write_docs(path: Path, df: pd.DataFrame, test_res: dict, val_res: dict,
         "$PY -m src.train_ast --force-extract",
         "",
         "# 查看验证集 C 网格与最终结果",
-        "cat results/ast_metrics.json results/ast_eval.json",
+        "cat results/gtzan/ast_metrics.json results/gtzan/ast_eval.json",
         "```",
         "",
-        "脚本会写入：`data/processed/ast_embeddings.npz`（缓存）、"
-        "`results/ast_metrics.json`、`results/ast_eval.json`、"
-        "`results/figures/ast.png`（如未加 `--no-figure`）和本文件；"
-        "不会修改 `results/metrics.csv`、README 或任何已有训练脚本。",
+        "脚本会写入：`data/features/gtzan/ast_embeddings.npz`（缓存）、"
+        "`results/gtzan/ast_metrics.json`、`results/gtzan/ast_eval.json`、"
+        "`results/gtzan/figures/ast.png`（如未加 `--no-figure`）和本文件；"
+        "不会修改 `results/gtzan/metrics.csv`、README 或任何已有训练脚本。",
         "",
         "## 环境与排障记录",
         "",

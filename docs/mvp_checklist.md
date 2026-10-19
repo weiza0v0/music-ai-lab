@@ -8,15 +8,15 @@
 | # | 条目 | 状态 | 证据 / 缺口 |
 |---|---|---|---|
 | 1 | 环境审计报告与可复现依赖 | ✅ | `docs/environment_report.md`、`requirements.txt`；含 GPU 沙箱排查全过程 |
-| 2 | 数据集说明、授权检查与固定划分 | ✅ | `docs/data_card.md`、`data/splits/splits.csv`、`stats.json` |
-| 3 | SVM、MLP、CNN、CRNN、Transformer + AST 均可运行 | ✅ | `checkpoints/*`（15 个权重）+ AST 主干；`results/metrics.csv` 16 行 |
+| 2 | 数据集说明、授权检查与固定划分 | ✅ | `docs/data_card.md`、`data/splits/gtzan/splits.csv`、`stats.json` |
+| 3 | SVM、MLP、CNN、CRNN、Transformer + AST 均可运行 | ✅ | `checkpoints/gtzan/*`（15 个权重）+ AST 主干；`results/gtzan/metrics.csv` 16 行 |
 | 4 | 训练日志、模型权重与配置文件完整 | ◐ | 权重 + 逐 epoch history（`*_eval.json`）+ `configs/`；缺独立 stdout 日志文件 |
 
 ## 实验结果
 
 | # | 条目 | 状态 | 证据 / 缺口 |
 |---|---|---|---|
-| 5 | Accuracy、Macro-F1 与混淆矩阵 | ✅ | `results/metrics.csv`、`figures/confusion_matrices.png`、逐类 F1 |
+| 5 | Accuracy、Macro-F1 与混淆矩阵 | ✅ | `results/gtzan/metrics.csv`、`figures/confusion_matrices.png`、逐类 F1 |
 | 6 | 至少三个随机种子的核心结果 | ✅ | 5 个自建模型 × 3 seed（42/123/2024）；AST 为单 seed 的迁移组，已在文档注明 |
 | 7 | 训练时间、推理延迟、模型大小和显存对比 | ◐ | 前三项全有；AST 记录了峰值 1139.7 MB，自建模型未单独记录 |
 | 8 | 至少两个错误案例及一次鲁棒性实验 | ✅ | `docs/error_analysis.md`（5 个案例）+ `docs/robustness.md`（5 模型 × 7 扰动） |

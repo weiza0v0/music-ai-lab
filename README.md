@@ -46,7 +46,7 @@
 **本项目实际选择**：MVP 阶段使用 GTZAN，原因是流水线验证优先、体积可控；
 FMA-small 作为后续主实验。GTZAN 的已知问题通过数据清洗处理：剔除 1 首无法解码的
 `jazz.00054`，按 MD5 去除 14 个重复副本，最终使用 **985 首**。切换原因与数据细节
-记录在 [`docs/data_card.md`](docs/data_card.md) 与 `data/splits/stats.json`。
+记录在 [`docs/data_card.md`](docs/data_card.md) 与 `data/splits/gtzan/stats.json`。
 
 > 注意：8 GB 显存不等于存储容量，FMA-small 的 7.2 GiB 是磁盘占用。若 WSL 磁盘
 > 紧张，先用 GTZAN 验证流水线，再决定是否下载完整 FMA-small。
@@ -127,9 +127,14 @@ AST 可能更好，但要计算额外成本并说明预训练数据来源。这�
 music-ai-lab/
 ├── configs/                 # dataset.yaml / baseline.yaml / experiments.yaml
 ├── data/
-│   ├── raw/                 # 原始音频（不提交）
-│   ├── processed/           # 特征缓存 features.npz（不提交）
-│   └── splits/              # splits.csv, stats.json
+│   ├── raw/                 # GTZAN 原始音频（不提交）
+│   ├── features/            # 提取好的特征缓存（不提交）
+│   │   ├── gtzan/           #   features.npz、ast_embeddings.npz
+│   │   └── fma/             #   features*.npz、ast_*.npz/npy
+│   ├── splits/              # 固定划分，两个数据集各一套
+│   │   ├── gtzan/           #   splits.csv, stats.json
+│   │   └── fma/             #   splits.csv, splits_tracklevel.csv, stats.json
+│   └── fma/                 # FMA-small 音频与元数据（不提交）
 ├── src/
 │   ├── data/                # prepare_dataset.py, audio_features.py
 │   ├── models/              # cnn.py（CNN / CRNN / Transformer）
@@ -146,15 +151,20 @@ music-ai-lab/
 │                            #   run_robustness.py, integrate_ast.py
 ├── app/demo.py              # Streamlit 音乐 AI 鉴定所
 ├── tests/                   # 协议测试
-├── checkpoints/             # 权重（不提交）
-├── results/                 # metrics.csv、预测、图表、summary.md
+├── checkpoints/             # 权重（不提交），按实验分子目录
+│                            #   gtzan/、fma/、fma_leak/、fma_ablation/
+├── results/                 # 结果，与 checkpoints 子目录一一对应
+│                            #   gtzan/、fma/、fma_leak/、fma_ablation/
+│                            #   每个含 metrics.csv、预测、图表、summary.md
 ├── docs/                    # 环境报告、研究日志、数据卡、审计、验收清单、
 │                            #   错误分析、鲁棒性、时间轴
 ├── requirements.txt
 └── README.md
 ```
 
-`configs/` 统一管理超参数，`results/` 保存原始实验结果，`checkpoints/` 保存权重。
+`configs/` 统一管理超参数；`results/` 保存原始实验结果，`checkpoints/` 保存权重，
+两者都按实验分子目录（`gtzan/`、`fma/`、`fma_leak/`、`fma_ablation/`），
+同一实验的权重与结果目录同名，便于对照与清理。
 所有结论写入文件，不允许只在聊天窗口里报告准确率，以便后续制作 PPT 时追溯。
 数据集与模型权重不提交进代码仓库。
 
@@ -212,7 +222,7 @@ music-ai-lab/
   另加 AST 预训练迁移组（冻结主干 + 线性头）。
 - P0 进阶：错误分析（混淆对、置信度、典型翻车案例）与 5 模型 × 7 种扰动鲁棒性。
 - P2 进阶：滑动窗口时间轴（功能 C），已集成进 Demo。
-- 评估：`results/metrics.csv`、逐类 F1、混淆矩阵、训练曲线、排行榜、预测 CSV。
+- 评估：`results/gtzan/metrics.csv`、逐类 F1、混淆矩阵、训练曲线、排行榜、预测 CSV。
 - Demo：Streamlit 上传音频实时推理，调用真实 checkpoint，已冒烟验证 HTTP 200。
 - 文档：环境报告、数据卡、研究日志、验收清单、独立审计报告。
 
@@ -227,7 +237,7 @@ music-ai-lab/
 | MLP | 0.633 ± 0.051 | 0.630 ± 0.055 | 0.6 s | 0.02 ms | 87,946 | 1.07 MB |
 | Transformer | 0.544 ± 0.025 | 0.541 ± 0.019 | 14.9 s | 0.26 ms | 302,474 | 1.22 MB |
 
-![模型排行榜](results/figures/leaderboard.png)
+![模型排行榜](results/gtzan/figures/leaderboard.png)
 
 可直接用于汇报的观察：
 
@@ -258,7 +268,7 @@ music-ai-lab/
 0.933。置信度不等于正确率：Transformer 有 16/64 个错误样本的置信度 ≥ 0.9。
 典型翻车案例包括 `jazz.00003` 被 CNN 以 99.6% 判成 classical。
 详见 [`docs/error_analysis.md`](docs/error_analysis.md) 与
-`results/figures/error_cases.png`。
+`results/gtzan/figures/error_cases.png`。
 
 **鲁棒性**：测试集 147 首 × 7 种扰动（3 s / 10 s 片段、增益 0.5× / 1.5×、
 白噪声 10 dB / 0 dB），五个模型只做推理：
@@ -276,14 +286,14 @@ music-ai-lab/
 且 CNN 从干净第一变成 0 dB 最差；**除增益外，每个扰动下绝对准确率第一都是 SVM**
 ——深度模型赢在干净输入，传统模型赢在输入变脏时。
 详见 [`docs/robustness.md`](docs/robustness.md) 与
-[`results/robustness.csv`](results/robustness.csv)。
+[`results/gtzan/robustness.csv`](results/gtzan/robustness.csv)。
 
 **片段时间轴（功能 C）**：把一首歌切成 5 秒窗口、步长 2.5 秒逐段预测。
 147 首测试曲目中 **88 首**至少出现一次窗口级判断变化；`rock.00072` 在 11 个窗口里
 改判 9 次（rock / disco / blues / country 交替），而 classical 曲目全程稳定。
 该功能已集成进 Streamlit Demo，详见 [`docs/timeline.md`](docs/timeline.md)。
 
-![时间轴示例](results/figures/timeline_rock.00072.png)
+![时间轴示例](results/gtzan/figures/timeline_rock.00072.png)
 
 **AST 预训练迁移（P1）**：使用 `MIT/ast-finetuned-audioset-10-10-0.4593`
 （86M 参数，AudioSet 预训练），16 kHz、中心 5 秒补零到 10.24 秒，冻结主干提取
@@ -291,7 +301,7 @@ music-ai-lab/
 （C 由 val 选择，test 只评一次）。结果 **Acc 0.823 / Macro-F1 0.814**，
 比 CNN 高 6.8 / 6.0 个百分点；代价是 346 MB 权重、214 秒 embedding 提取、
 204 ms/片段推理。详见 [`docs/ast.md`](docs/ast.md)、
-[`results/ast_metrics.json`](results/ast_metrics.json)。
+[`results/gtzan/ast_metrics.json`](results/gtzan/ast_metrics.json)。
 
 ### 6.5 主实验：FMA-small（8,000 首）
 
@@ -453,15 +463,15 @@ Failed to initialize NVML: GPU access blocked by the operating system
 | # | 条目 | 状态 | 证据 / 缺口 |
 |---|---|---|---|
 | 1 | 环境审计报告与可复现依赖 | ✅ | `docs/environment_report.md`、`requirements.txt` |
-| 2 | 数据集说明、授权检查与固定划分 | ✅ | `docs/data_card.md`、`data/splits/*` |
-| 3 | 五个 Baseline + AST 迁移组均可运行 | ✅ | `checkpoints/*`、`results/metrics.csv`（16 行） |
+| 2 | 数据集说明、授权检查与固定划分 | ✅ | `docs/data_card.md`、`data/splits/gtzan/*` |
+| 3 | 五个 Baseline + AST 迁移组均可运行 | ✅ | `checkpoints/gtzan/*`、`results/gtzan/metrics.csv`（16 行） |
 | 4 | 训练日志、权重与配置完整 | ◐ | 权重 + 逐 epoch history + configs；缺独立 stdout 日志 |
-| 5 | Accuracy、Macro-F1 与混淆矩阵 | ✅ | `results/metrics.csv`、`figures/confusion_matrices.png` |
+| 5 | Accuracy、Macro-F1 与混淆矩阵 | ✅ | `results/gtzan/metrics.csv`、`figures/confusion_matrices.png` |
 | 6 | 至少三个随机种子的核心结果 | ✅ | 5 模型 × 3 seed |
 | 7 | 训练时间、推理延迟、模型大小与显存 | ◐ | 前三项有；峰值显存未记录 |
 | 8 | 至少两个错误案例与一次鲁棒性实验 | ✅ | `docs/error_analysis.md`（含 5 个案例）、`docs/robustness.md`（7 条件 × 5 模型） |
 | 9 | 可上传音频的真实推理 Demo | ✅ | `app/demo.py` + `src/predict.py` |
-| 10 | 模型排行榜与可视化图表 | ✅ | `results/figures/*.png`、`results/summary.md` |
+| 10 | 模型排行榜与可视化图表 | ✅ | `results/gtzan/figures/*.png`、`results/gtzan/summary.md` |
 | 11 | PPT 数字可追溯到结果文件 | ◐ | 数字均来自 `results/`；PPT 未制作 |
 | 12 | 备用录屏、演示音频与彩排 | ⬜ | 未开始 |
 

@@ -25,7 +25,7 @@
 \captionsetup{font=small,labelfont=bf}
 \setlist{nosep,leftmargin=1.4em}
 \hypersetup{colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black}
-\graphicspath{{../../results/figures/}{../../results_fma/figures/}{figures/}}
+\graphicspath{{../../results/gtzan/figures/}{../../results/fma/figures/}{figures/}}
 \input{macros.tex}
 
 \title{\vspace{-1.2cm}\textbf{从传统机器学习到预训练 Transformer：\\音乐流派分类的系统性基准与优化}}
@@ -773,10 +773,11 @@ AST & 冻结主干，StandardScaler + LogisticRegression，$C\in\{0.001,\dots,10
 
 \subsection{仓库结构与复现命令}
 
+{\setmonofont{WenQuanYi Micro Hei Mono}%
 \begin{verbatim}
 MUSIC_AI/
 ├── configs/            dataset.yaml, baseline.yaml, experiments.yaml
-├── data/               raw/, processed/, splits/, fma/, splits_fma/
+├── data/               raw/, features/{gtzan,fma}/, splits/{gtzan,fma}/, fma/
 ├── src/
 │   ├── data/           prepare_dataset.py, prepare_fma.py, audio_features.py
 │   ├── models/         cnn.py (GenreCNN / CRNN / SmallTransformer)
@@ -787,13 +788,14 @@ MUSIC_AI/
 │                       ast_fma_fast.py, robustness_flips.py, …
 ├── app/demo.py         Streamlit 演示
 ├── tests/test_protocol.py
-├── results/             GTZAN 结果与图
-├── results_fma/         FMA 主实验结果与图
-├── results_fma_leak/    泄漏对照
+├── checkpoints/        gtzan/, fma/, fma_leak/, fma_ablation/
+├── results/            gtzan/, fma/, fma_leak/, fma_ablation/（与权重同名）
 ├── docs/                MD 文档 + report/（LaTeX 源与 PDF）
 └── README.md
 \end{verbatim}
+}
 
+{\setmonofont{WenQuanYi Micro Hei Mono}%
 \begin{verbatim}
 PY=/home/weizai0v0/.apps/anaconda3/envs/DataAnalysis/bin/python
 # GTZAN MVP
@@ -808,14 +810,15 @@ $PY -m src.evaluate
 bash scripts/run_fma.sh 42 123 2024
 $PY scripts/ast_fma_fast.py --reuse-feats --half
 # 泄漏对照
-MUSIC_FEATURES=data/fma/processed/features_tracklevel.npz \
-  MUSIC_RESULTS=results_fma_leak MUSIC_CKPT=checkpoints_fma_leak \
+MUSIC_FEATURES=data/features/fma/features_tracklevel.npz \
+  MUSIC_RESULTS=results/fma_leak MUSIC_CKPT=checkpoints/fma_leak \
   $PY -m src.train_cnn --model cnn --seeds 42 --epochs 30
 # 报告
 cd docs/report && bash build.sh
 # 测试
 $PY -m pytest -q tests
 \end{verbatim}
+}
 
 \subsection{结果文件说明}
 
@@ -827,13 +830,13 @@ $PY -m pytest -q tests
 \toprule
 文件 & 内容\\
 \midrule
-\texttt{results/metrics.csv} & GTZAN 逐 seed 指标（16 行，含 AST）\\
-\texttt{results/\_eval.json} & 混淆矩阵、逐类 F1、训练曲线\\
-\texttt{results/predictions/*.csv} & 逐样本预测与 10 类概率\\
-\texttt{results/robustness.csv} & 5 模型 × 7 扰动的 35 行结果\\
-\texttt{results\_fma/metrics.csv} & FMA 逐 seed 指标（16 行，含 AST）\\
-\texttt{results\_fma/ast\_metrics.json} & AST 迁移结果与成本\\
-\texttt{results\_fma\_leak/metrics.csv} & 曲目级划分的泄漏对照\\
+\texttt{results/gtzan/metrics.csv} & GTZAN 逐 seed 指标（16 行，含 AST）\\
+\texttt{results/gtzan/\_eval.json} & 混淆矩阵、逐类 F1、训练曲线\\
+\texttt{results/gtzan/predictions/*.csv} & 逐样本预测与 10 类概率\\
+\texttt{results/gtzan/robustness.csv} & 5 模型 × 7 扰动的 35 行结果\\
+\texttt{results/fma/metrics.csv} & FMA 逐 seed 指标（16 行，含 AST）\\
+\texttt{results/fma/ast\_metrics.json} & AST 迁移结果与成本\\
+\texttt{results/fma\_leak/metrics.csv} & 曲目级划分的泄漏对照\\
 \texttt{docs/audit\_report.md} & 独立只读审计报告\\
 \bottomrule
 \end{tabular}

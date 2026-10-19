@@ -1,8 +1,8 @@
 """把 AST 迁移学习结果并入统一结果体系。
 
-读取 results/ast_metrics.json / results/ast_eval.json（由 src/train_ast.py 产生），
-1) 生成与其它模型同 schema 的 results/ast_seed42_eval.json；
-2) 把 AST 行追加进 results/metrics.csv（按 model/seed/split 去重）。
+读取 results/gtzan/ast_metrics.json / results/gtzan/ast_eval.json（由 src/train_ast.py 产生），
+1) 生成与其它模型同 schema 的 results/gtzan/ast_seed42_eval.json；
+2) 把 AST 行追加进 results/gtzan/metrics.csv（按 model/seed/split 去重）。
 
 之后运行 `python -m src.evaluate` 即可让 AST 出现在排行榜与汇总里。
 """
@@ -16,7 +16,7 @@ from pathlib import Path
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
-RES = Path(os.environ.get("MUSIC_RESULTS", ROOT / "results"))
+RES = Path(os.environ.get("MUSIC_RESULTS", ROOT / "results" / "gtzan"))
 COLUMNS = ["model", "seed", "split", "n_samples", "accuracy", "macro_f1",
            "train_time_s", "infer_ms_per_clip", "n_params", "model_size_mb", "notes"]
 
@@ -37,7 +37,7 @@ def main() -> None:
         },
         "test_report": ev["classification_report"],
         "classes": ev["class_names"],
-        "source": "results/ast_eval.json",
+        "source": "results/gtzan/ast_eval.json",
         "note": "frozen AST backbone + logistic head (transfer-learning group)",
     }
     (RES / "ast_seed42_eval.json").write_text(

@@ -3,9 +3,9 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 PY=${PYTHON:-/home/weizai0v0/.apps/anaconda3/envs/DataAnalysis/bin/python}
-export MUSIC_FEATURES=data/fma/processed/features.npz
-export MUSIC_CKPT=checkpoints_fma
-export MUSIC_RESULTS=results_fma
+export MUSIC_FEATURES=data/features/fma/features.npz
+export MUSIC_CKPT=checkpoints/fma
+export MUSIC_RESULTS=results/fma
 export MUSIC_DATASET_NAME=FMA-small
 SEEDS=${*:-"42 123 2024"}
 

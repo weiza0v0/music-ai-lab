@@ -1,7 +1,7 @@
 """Recompute prediction flips (relative to clean_5s) for the robustness grid.
 
 Uses the same decision rule as src/robustness.py (classical .predict(), deep argmax).
-Writes results/robustness_flips.csv.
+Writes results/gtzan/robustness_flips.csv.
 """
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ sys.path.insert(0, str(ROOT))
 from src.robustness import (CONDITIONS, MODEL_ORDER, evaluate_all,  # noqa: E402
                             extract_features, load_models, test_frame)
 
-RES = ROOT / "results"
+RES = ROOT / "results" / "gtzan"
 
 
 def main() -> None:

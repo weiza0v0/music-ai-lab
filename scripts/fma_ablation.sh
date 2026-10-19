@@ -3,14 +3,14 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 PY=${PYTHON:-/home/weizai0v0/.apps/anaconda3/envs/DataAnalysis/bin/python}
-export MUSIC_FEATURES=data/fma/processed/features.npz
-mkdir -p checkpoints_fma_ablation results_fma_ablation
+export MUSIC_FEATURES=data/features/fma/features.npz
+mkdir -p checkpoints/fma_ablation results/fma_ablation
 
 run_cfg() {
   local name=$1; shift
   echo "== $name =="
-  MUSIC_RESULTS=results_fma_ablation/$name \
-  MUSIC_CKPT=checkpoints_fma_ablation/$name \
+  MUSIC_RESULTS=results/fma_ablation/$name \
+  MUSIC_CKPT=checkpoints/fma_ablation/$name \
   $PY -m src.train_cnn "$@"
 }
 

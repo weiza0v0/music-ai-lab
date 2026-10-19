@@ -5,10 +5,10 @@ tracks. Here feature extraction runs in a process pool, the frozen backbone
 runs in GPU batches, and only a logistic head is trained.
 
 Outputs (same schema as src/train_ast.py):
-  results_fma/ast_metrics.json
-  results_fma/ast_eval.json
+  results/fma/ast_metrics.json
+  results/fma/ast_eval.json
   docs/ast_fma.md
-  data/fma/processed/ast_embeddings.npz
+  data/features/fma/ast_embeddings.npz
 """
 from __future__ import annotations
 
@@ -24,11 +24,11 @@ import pandas as pd
 import torch
 
 ROOT = Path(__file__).resolve().parents[1]
-SPLITS = ROOT / "data/splits_fma/splits.csv"
-RES = Path(os.environ.get("MUSIC_RESULTS", ROOT / "results_fma"))
-CACHE = ROOT / "data/fma/processed/ast_embeddings.npz"
-FEAT = ROOT / "data/fma/processed/ast_feats.npy"
-EMB_RAW = ROOT / "data/fma/processed/ast_embeddings_raw.npy"
+SPLITS = ROOT / "data/splits/fma/splits.csv"
+RES = Path(os.environ.get("MUSIC_RESULTS", ROOT / "results/fma"))
+CACHE = ROOT / "data/features/fma/ast_embeddings.npz"
+FEAT = ROOT / "data/features/fma/ast_feats.npy"
+EMB_RAW = ROOT / "data/features/fma/ast_embeddings_raw.npy"
 DOC = ROOT / "docs/ast_fma.md"
 MODEL_ID = "MIT/ast-finetuned-audioset-10-10-0.4593"
 SR, CLIP, PAD_S = 16000, 5.0, 10.24
@@ -197,7 +197,7 @@ def main() -> None:
 
 - 模型：`{MODEL_ID}`，86M 参数，AudioSet 预训练，冻结主干。
 - 输入：16 kHz、中心 5 秒、补零到 10.24 秒；ASTFeatureExtractor（128 mels × 1024 帧）。
-- 特征：`pooler_output`（768 维），缓存 `data/fma/processed/ast_embeddings.npz`。
+- 特征：`pooler_output`（768 维），缓存 `data/features/fma/ast_embeddings.npz`。
 - 分类头：StandardScaler（仅 train）+ LogisticRegression，C 在验证集选择（选中 C={C}）。
 - 结果：test n={int(te.sum())}，Accuracy **{acc:.4f}**，Macro-F1 **{f1:.4f}**。
 - 成本：embedding 提取 {feat_s+gpu_s:.0f} s（特征化 {feat_s:.0f} s + GPU {gpu_s:.0f} s），

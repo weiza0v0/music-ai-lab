@@ -21,7 +21,7 @@ PY=/home/weizai0v0/.apps/anaconda3/envs/DataAnalysis/bin/python
 $PY -m src.timeline data/raw/gtzan/genres/rock/rock.00072.wav --model cnn
 ```
 
-产物：`results/timeline.csv`、`results/figures/timeline_rock.00072.png`。
+产物：`results/gtzan/timeline.csv`、`results/gtzan/figures/timeline_rock.00072.png`。
 
 ## 测试集扫描：模型真的会「改主意」吗？
 
@@ -32,13 +32,13 @@ $PY -m src.timeline data/raw/gtzan/genres/rock/rock.00072.wav --model cnn
   该曲目整首被 clip-level 判为 rock，但局部段落听起来更像 disco/country；
 - 最稳定的是 classical 类曲目，11 个窗口全部一致。
 
-完整扫描结果：`results/timeline_scan.csv`。
+完整扫描结果：`results/gtzan/timeline_scan.csv`。
 
 ## 两个对比例子
 
 **会变卦的摇滚：`rock.00072`**
 
-![rock.00072 时间轴](../results/figures/timeline_rock.00072.png)
+![rock.00072 时间轴](../results/gtzan/figures/timeline_rock.00072.png)
 
 - 0–2.5 s：rock（78%）
 - 2.5–10 s：disco / blues（置信度只有 38–40%，模型自己也不确定）

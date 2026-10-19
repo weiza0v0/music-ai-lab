@@ -13,7 +13,7 @@ from sklearn.metrics import (accuracy_score, classification_report,
 from sklearn.preprocessing import LabelEncoder
 
 ROOT = Path(__file__).resolve().parents[1]
-RESULTS = Path(os.environ.get("MUSIC_RESULTS", ROOT / "results"))
+RESULTS = Path(os.environ.get("MUSIC_RESULTS", ROOT / "results" / "gtzan"))
 PRED_DIR = RESULTS / "predictions"
 FIG_DIR = RESULTS / "figures"
 METRICS_CSV = RESULTS / "metrics.csv"

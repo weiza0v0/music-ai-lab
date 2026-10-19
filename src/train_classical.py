@@ -27,9 +27,9 @@ sys.path.insert(0, str(ROOT))
 from src.metrics import (append_metrics, encode_labels, evaluate, save_json,  # noqa: E402
                          save_predictions)
 
-DATA = Path(os.environ.get("MUSIC_FEATURES", ROOT / "data/processed/features.npz"))
-CKPT = Path(os.environ.get("MUSIC_CKPT", ROOT / "checkpoints"))
-RES = Path(os.environ.get("MUSIC_RESULTS", ROOT / "results"))
+DATA = Path(os.environ.get("MUSIC_FEATURES", ROOT / "data/features/gtzan/features.npz"))
+CKPT = Path(os.environ.get("MUSIC_CKPT", ROOT / "checkpoints" / "gtzan"))
+RES = Path(os.environ.get("MUSIC_RESULTS", ROOT / "results" / "gtzan"))
 
 
 def load():

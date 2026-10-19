@@ -7,8 +7,8 @@ CLI:
   python -m src.timeline data/raw/gtzan/genres/pop/pop.00000.wav \
       --model cnn --window 5 --hop 2.5
 输出：
-  results/timeline.csv              每个窗口的 top-1 与全类别概率
-  results/figures/timeline_<id>.png 时间轴热力图
+  results/gtzan/timeline.csv              每个窗口的 top-1 与全类别概率
+  results/gtzan/figures/timeline_<id>.png 时间轴热力图
 也可被 Streamlit Demo 直接 import。
 """
 from __future__ import annotations
@@ -37,7 +37,7 @@ import pandas as pd
 import torch
 
 ROOT = Path(__file__).resolve().parents[1]
-CKPT = ROOT / "checkpoints"
+CKPT = ROOT / "checkpoints" / "gtzan"
 CLASSICAL = {"svm", "mlp"}
 
 FRAME_SR = 22050
@@ -147,7 +147,7 @@ def main() -> None:
     ap.add_argument("--model", default="cnn", choices=["svm", "mlp", "cnn", "crnn", "transformer"])
     ap.add_argument("--window", type=float, default=5.0)
     ap.add_argument("--hop", type=float, default=2.5)
-    ap.add_argument("--csv", default=str(ROOT / "results/timeline.csv"))
+    ap.add_argument("--csv", default=str(ROOT / "results/gtzan/timeline.csv"))
     ap.add_argument("--figure", default=None)
     args = ap.parse_args()
 
@@ -157,7 +157,7 @@ def main() -> None:
     df.to_csv(args.csv, index=False)
 
     stem = Path(args.audio).stem
-    fig_path = Path(args.figure) if args.figure else ROOT / f"results/figures/timeline_{stem}.png"
+    fig_path = Path(args.figure) if args.figure else ROOT / f"results/gtzan/figures/timeline_{stem}.png"
     fig = plot_timeline(df, f"{stem} · {args.model.upper()} · 每 {args.window:g}s 一窗，步长 {args.hop:g}s",
                         fig_path)
     plt.close(fig)

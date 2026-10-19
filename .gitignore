@@ -1,13 +1,16 @@
 .venv/
 __pycache__/
 *.pyc
-data/raw/
-data/processed/
-checkpoints/
 *.log
 .pytest_cache/
+# 数据集（体积大，按需重新下载/提取）
+data/raw/
 data/fma/
-checkpoints_fma*/
+# 特征缓存（可由 split + 音频重建）
+data/features/
+# 模型权重（每个实验一个子目录：gtzan/ fma/ fma_leak/ fma_ablation/）
+checkpoints/
+# LaTeX 中间产物
 docs/report/*.aux
 docs/report/*.log
 docs/report/*.out

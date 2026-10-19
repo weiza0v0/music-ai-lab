@@ -16,8 +16,8 @@ noise_10db  + white Gaussian noise, SNR 10 dB
 noise_0db   + white Gaussian noise, SNR 0 dB
 
 `delta_acc` / `delta_f1` are `condition - clean` for the same model, so a
-negative number is a drop. Results are written to results/robustness.csv and
-results/figures/robustness.png.
+negative number is a drop. Results are written to results/gtzan/robustness.csv and
+results/gtzan/figures/robustness.png.
 
 Run:
     python -m src.robustness                 # full experiment
@@ -52,13 +52,13 @@ sys.path.insert(0, str(ROOT))
 from src.data.audio_features import (HOP, N_FFT, N_FRAMES, N_MELS,  # noqa: E402
                                      SAMPLE_RATE, handcrafted)
 
-SPLITS = ROOT / "data/splits/splits.csv"
-CKPT = ROOT / "checkpoints"
-RES = ROOT / "results"
+SPLITS = ROOT / "data/splits/gtzan/splits.csv"
+CKPT = ROOT / "checkpoints" / "gtzan"
+RES = ROOT / "results" / "gtzan"
 FIG = RES / "figures"
 OUT_CSV = RES / "robustness.csv"
 OUT_PNG = FIG / "robustness.png"
-CACHE = ROOT / "data/processed/features.npz"
+CACHE = ROOT / "data/features/gtzan/features.npz"
 
 MODEL_ORDER = ("svm", "mlp", "cnn", "crnn", "transformer")
 CLASSICAL = frozenset({"svm", "mlp"})
@@ -440,14 +440,14 @@ def check_clean_alignment(feats: dict, mels: dict, df: pd.DataFrame) -> dict | N
 
 
 def compare_with_metrics(acc_by_model: dict, seed: int) -> dict[str, float]:
-    """Clean accuracy should reproduce the seed-42 rows of results/metrics.csv."""
+    """Clean accuracy should reproduce the seed-42 rows of results/gtzan/metrics.csv."""
     path = RES / "metrics.csv"
     if not path.exists():
         return {}
     df = pd.read_csv(path)
     ref = df[(df["split"] == "test") & (df["seed"] == seed)]
     diffs = {}
-    print(f"[robustness] clean_5s vs results/metrics.csv (seed {seed}):")
+    print(f"[robustness] clean_5s vs results/gtzan/metrics.csv (seed {seed}):")
     for name in MODEL_ORDER:
         hit = ref[ref["model"] == name]
         if hit.empty:
@@ -517,7 +517,7 @@ def main(argv: list[str] | None = None) -> None:
     ap.add_argument("--limit", type=int, default=0,
                     help="debug: only the first N test tracks, results are NOT written")
     ap.add_argument("--plot-only", action="store_true",
-                    help="redraw results/figures/robustness.png from results/robustness.csv")
+                    help="redraw results/gtzan/figures/robustness.png from results/gtzan/robustness.csv")
     args = ap.parse_args(argv)
 
     if args.plot_only:

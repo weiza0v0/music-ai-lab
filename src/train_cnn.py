@@ -23,9 +23,9 @@ from src.metrics import (append_metrics, encode_labels, evaluate, save_json,  # 
                          save_predictions)
 from src.models.cnn import build, count_params  # noqa: E402
 
-DATA = Path(os.environ.get("MUSIC_FEATURES", ROOT / "data/processed/features.npz"))
-CKPT = Path(os.environ.get("MUSIC_CKPT", ROOT / "checkpoints"))
-RES = Path(os.environ.get("MUSIC_RESULTS", ROOT / "results"))
+DATA = Path(os.environ.get("MUSIC_FEATURES", ROOT / "data/features/gtzan/features.npz"))
+CKPT = Path(os.environ.get("MUSIC_CKPT", ROOT / "checkpoints" / "gtzan"))
+RES = Path(os.environ.get("MUSIC_RESULTS", ROOT / "results" / "gtzan"))
 
 
 def spec_augment(x: torch.Tensor, n_freq: int = 2, f_width: int = 8,

@@ -1,11 +1,11 @@
 """P0 错误分析：谁被谁骗了？——从已保存的预测文件里挖失败案例。
 
-不重新训练、不改动任何已有产物，只读取 results/predictions/*_seed42_test.csv
+不重新训练、不改动任何已有产物，只读取 results/gtzan/predictions/*_seed42_test.csv
 与原始音频，输出：
-  results/error_analysis.csv        每个模型的混淆对计数
-  results/error_analysis.json       混淆对 + 置信度统计 + 典型样例
-  results/figures/error_confusions.png  各模型 Top 混淆对
-  results/figures/error_cases.png      CNN 典型错误案例的 Log-Mel 对照
+  results/gtzan/error_analysis.csv        每个模型的混淆对计数
+  results/gtzan/error_analysis.json       混淆对 + 置信度统计 + 典型样例
+  results/gtzan/figures/error_confusions.png  各模型 Top 混淆对
+  results/gtzan/figures/error_cases.png      CNN 典型错误案例的 Log-Mel 对照
   docs/error_analysis.md            可直接用于 PPT 的结论与听感指引
 """
 from __future__ import annotations
@@ -36,7 +36,7 @@ for _f in ("/mnt/c/Windows/Fonts/msyh.ttc", "/mnt/c/Windows/Fonts/simhei.ttf"):
             pass
 plt.rcParams["axes.unicode_minus"] = False
 
-RES = Path(os.environ.get("MUSIC_RESULTS", ROOT / "results"))
+RES = Path(os.environ.get("MUSIC_RESULTS", ROOT / "results" / "gtzan"))
 PRED = RES / "predictions"
 FIG = RES / "figures"
 MODEL_LABEL = {"svm": "SVM", "mlp": "MLP", "cnn": "CNN", "crnn": "CRNN",
@@ -205,7 +205,7 @@ def write_doc(frames: dict[str, pd.DataFrame], stats: dict, examples: list[dict]
     lines += [
         "",
         "听感对照建议：按上表顺序播放这几首，先让同学判断「像不像」，再揭晓模型的判断。",
-        "波形/频谱对照见 `results/figures/error_cases.png`。",
+        "波形/频谱对照见 `results/gtzan/figures/error_cases.png`。",
         "",
         "## 4. 结论与解释",
         "",
@@ -213,9 +213,9 @@ def write_doc(frames: dict[str, pd.DataFrame], stats: dict, examples: list[dict]
         "",
         "## 5. 产物",
         "",
-        "- `results/error_analysis.csv`：逐模型混淆对计数",
-        "- `results/error_analysis.json`：混淆对、置信度统计、典型样例",
-        "- `results/figures/error_confusions.png`、`results/figures/error_cases.png`",
+        "- `results/gtzan/error_analysis.csv`：逐模型混淆对计数",
+        "- `results/gtzan/error_analysis.json`：混淆对、置信度统计、典型样例",
+        "- `results/gtzan/figures/error_confusions.png`、`results/gtzan/figures/error_cases.png`",
     ]
     doc = Path(os.environ.get("MUSIC_ERROR_DOC", ROOT / "docs" / "error_analysis.md"))
     doc.parent.mkdir(parents=True, exist_ok=True)
@@ -224,7 +224,7 @@ def write_doc(frames: dict[str, pd.DataFrame], stats: dict, examples: list[dict]
 
 def main() -> None:
     splits = pd.read_csv(Path(os.environ.get("MUSIC_SPLITS",
-                                             ROOT / "data/splits/splits.csv")))
+                                             ROOT / "data/splits/gtzan/splits.csv")))
     frames = {m: load_preds(m) for m in MODEL_LABEL}
     stats = {m: confidence_stats(df) for m, df in frames.items()}
 

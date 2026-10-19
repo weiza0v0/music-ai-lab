@@ -1,7 +1,7 @@
 # P0 鲁棒性实验：五个模型在七种扰动下的稳定性
 
 > 对应 `README.md`「下一步计划」中的 P0「鲁棒性实验」。本文所有数字来自一次真实运行
-> （`results/robustness.csv`，35 行），没有手工填写或估算的结果。
+> （`results/gtzan/robustness.csv`，35 行），没有手工填写或估算的结果。
 > 运行日期：2026-10-19；环境：WSL2 + conda `DataAnalysis`（Python 3.12 / torch 2.12.1+cu130 /
 > RTX 4060 8 GB）；评估对象：seed 42 的五个 checkpoint。
 
@@ -25,7 +25,7 @@
 
 | 项 | 设置 |
 |---|---|
-| 测试集 | `data/splits/splits.csv` 中 `split=test` 的 147 首（GTZAN 清洗后 985 首的 15%） |
+| 测试集 | `data/splits/gtzan/splits.csv` 中 `split=test` 的 147 首（GTZAN 清洗后 985 首的 15%） |
 | 权重 | `checkpoints/{svm,mlp}_seed42.joblib`、`{cnn,crnn,transformer}_seed42.pt` |
 | 传统模型输入 | 对扰动后的波形重新计算 209 维人工特征（`src.data.audio_features.handcrafted`） |
 | 深度模型输入 | 对扰动后的波形重新计算 64×216 log-Mel；归一化统计量取 checkpoint 内的 `norm`（训练集拟合值），**不在测试集重拟合** |
@@ -71,7 +71,7 @@ $PY -m src.robustness --workers 12
 # 等价入口（只补 sys.path）
 $PY scripts/run_robustness.py --workers 12
 
-# 只重画图（读 results/robustness.csv，不重算特征）
+# 只重画图（读 results/gtzan/robustness.csv，不重算特征）
 $PY -m src.robustness --plot-only
 
 # 冒烟测试：只跑前 6 首，且不写任何结果文件
@@ -83,8 +83,8 @@ $PY -m src.robustness --limit 6 --workers 4
 
 - `src/robustness.py`（模块，含 `main()`）
 - `scripts/run_robustness.py`（薄入口）
-- `results/robustness.csv`（35 行）
-- `results/figures/robustness.png`
+- `results/gtzan/robustness.csv`（35 行）
+- `results/gtzan/figures/robustness.png`
 - 本文档
 
 ---
@@ -95,9 +95,9 @@ $PY -m src.robustness --limit 6 --workers 4
 
 | 检查 | 结果 |
 |---|---|
-| 重算的 clean_5s 人工特征 vs `data/processed/features.npz` | 平均绝对误差 `7.06e-09` |
+| 重算的 clean_5s 人工特征 vs `data/features/gtzan/features.npz` | 平均绝对误差 `7.06e-09` |
 | 重算的 clean_5s log-Mel vs 缓存 `X_mel`（float16） | 平均绝对误差 `6.64e-03` dB（仅为缓存半精度舍入） |
-| clean_5s Accuracy vs `results/metrics.csv`（seed 42） | SVM 0.7075、MLP 0.6395、CNN 0.7483、CRNN 0.7415、Transformer 0.5646，**五个模型的差均为 0.0000** |
+| clean_5s Accuracy vs `results/gtzan/metrics.csv`（seed 42） | SVM 0.7075、MLP 0.6395、CNN 0.7483、CRNN 0.7415、Transformer 0.5646，**五个模型的差均为 0.0000** |
 
 也就是说，表中的 clean 行与此前报告的成绩逐位一致，下面的掉点可以放心归因于扰动本身。
 
@@ -132,7 +132,7 @@ $PY -m src.robustness --limit 6 --workers 4
 Macro-F1 的降幅普遍比 Accuracy 更大：噪声条件下模型不是「随机猜」，而是把多数样本
 推向少数几个流派，导致宏平均被拖垮（如 CNN 在 0 dB 时 F1 只剩 0.041）。
 
-![鲁棒性](../results/figures/robustness.png)
+![鲁棒性](../results/gtzan/figures/robustness.png)
 
 ### 5.3 每个模型的「干净 vs 最差」
 
@@ -267,9 +267,9 @@ Macro-F1 的降幅普遍比 Accuracy 更大：噪声条件下模型不是「随�
 |---|---|
 | `src/robustness.py` | 条件定义、音频加载/扰动/log-Mel 插值、并行特征提取、五模型推理、CSV/图生成 |
 | `scripts/run_robustness.py` | 薄入口，`python scripts/run_robustness.py --workers 12` |
-| `results/robustness.csv` | 35 行原始结果，列：`model,condition,n,accuracy,macro_f1,delta_acc,delta_f1` |
-| `results/robustness_flips.csv` | 相对 clean 的预测翻转数（35 行，`scripts/robustness_flips.py`） |
-| `results/figures/robustness.png` | 左：七条件分组柱状（Accuracy）；右：相对 clean 的 ΔAcc 热力图 |
+| `results/gtzan/robustness.csv` | 35 行原始结果，列：`model,condition,n,accuracy,macro_f1,delta_acc,delta_f1` |
+| `results/gtzan/robustness_flips.csv` | 相对 clean 的预测翻转数（35 行，`scripts/robustness_flips.py`） |
+| `results/gtzan/figures/robustness.png` | 左：七条件分组柱状（Accuracy）；右：相对 clean 的 ΔAcc 热力图 |
 | `docs/robustness.md` | 本文档 |
 
-表中每个数字都可用第三节的命令重跑得到；clean 行已与 `results/metrics.csv` 对账一致。
+表中每个数字都可用第三节的命令重跑得到；clean 行已与 `results/gtzan/metrics.csv` 对账一致。

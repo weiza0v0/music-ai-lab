@@ -1,6 +1,6 @@
 """Cache both representations for every track in the split file.
 
-Output: data/processed/features.npz
+Output: data/features/gtzan/features.npz
   track_ids  (N,)        global track id
   genres     (N,)        label string
   splits     (N,)        train / val / test
@@ -42,8 +42,8 @@ def _one(path: str):
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--workers", type=int, default=min(8, os.cpu_count() or 1))
-    ap.add_argument("--splits", default=str(ROOT / "data/splits/splits.csv"))
-    ap.add_argument("--out", default=str(ROOT / "data/processed/features.npz"))
+    ap.add_argument("--splits", default=str(ROOT / "data/splits/gtzan/splits.csv"))
+    ap.add_argument("--out", default=str(ROOT / "data/features/gtzan/features.npz"))
     args = ap.parse_args()
 
     df = pd.read_csv(args.splits)

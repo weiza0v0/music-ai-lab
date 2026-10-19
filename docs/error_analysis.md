@@ -37,7 +37,7 @@
 | jazz.00003 | jazz | classical | 99.6% | `data/raw/gtzan/genres/jazz/jazz.00003.wav` |
 
 听感对照建议：按上表顺序播放这几首，先让同学判断「像不像」，再揭晓模型的判断。
-波形/频谱对照见 `results/figures/error_cases.png`。
+波形/频谱对照见 `results/gtzan/figures/error_cases.png`。
 
 ## 4. 结论与解释
 
@@ -50,6 +50,6 @@
 
 ## 5. 产物
 
-- `results/error_analysis.csv`：逐模型混淆对计数
-- `results/error_analysis.json`：混淆对、置信度统计、典型样例
-- `results/figures/error_confusions.png`、`results/figures/error_cases.png`
+- `results/gtzan/error_analysis.csv`：逐模型混淆对计数
+- `results/gtzan/error_analysis.json`：混淆对、置信度统计、典型样例
+- `results/gtzan/figures/error_confusions.png`、`results/gtzan/figures/error_cases.png`

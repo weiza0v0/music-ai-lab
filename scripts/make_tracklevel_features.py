@@ -10,9 +10,9 @@ import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
-SRC = ROOT / "data/fma/processed/features.npz"
-SPLITS = ROOT / "data/splits_fma/splits_tracklevel.csv"
-OUT = ROOT / "data/fma/processed/features_tracklevel.npz"
+SRC = ROOT / "data/features/fma/features.npz"
+SPLITS = ROOT / "data/splits/fma/splits_tracklevel.csv"
+OUT = ROOT / "data/features/fma/features_tracklevel.npz"
 
 
 def main() -> None:

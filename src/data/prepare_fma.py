@@ -5,8 +5,8 @@ Steps:
 
 Reads fma_metadata.zip / fma_small.zip from data/fma/raw, extracts to data/fma/,
 builds a fixed track-level stratified 70/15/15 split (seed 42), and writes:
-  data/splits_fma/splits.csv
-  data/splits_fma/stats.json
+  data/splits/fma/splits.csv
+  data/splits/fma/stats.json
 """
 from __future__ import annotations
 
@@ -26,7 +26,7 @@ RAW = ROOT / "data/fma/raw"
 FMA = ROOT / "data/fma"
 META = FMA / "metadata"
 AUDIO = FMA / "fma_small"
-OUT = ROOT / "data/splits_fma"
+OUT = ROOT / "data/splits/fma"
 GENRES = ["Electronic", "Experimental", "Folk", "Hip-Hop", "Instrumental",
           "International", "Pop", "Rock"]
 

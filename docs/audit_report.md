@@ -76,5 +76,5 @@ MVP 之后新增了错误分析、鲁棒性、AST 迁移与时间轴四组实验
 
 **审计发现并已修复的不一致**：鲁棒性实验最初对 SVM 用概率 argmax，而训练/评估用
 `SVC.predict()`，导致 clean Macro-F1 差 0.0011。已统一为 `.predict()`（深度模型仍用
-softmax argmax）并重跑，新增 `results/robustness_flips.csv` 记录翻转数；文档与图表
+softmax argmax）并重跑，新增 `results/gtzan/robustness_flips.csv` 记录翻转数；文档与图表
 同步更新。

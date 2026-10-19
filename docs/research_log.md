@@ -98,7 +98,7 @@ python -m src.data.prepare_dataset --audit --split
 python scripts/extract_features.py --workers 8
 ```
 - 清洗后 985 首：train 689 / val 149 / test 147，10 类均有覆盖；
-  `data/splits/splits.csv` 与 `stats.json` 固化。
+  `data/splits/gtzan/splits.csv` 与 `stats.json` 固化。
 - 特征：209 维人工特征（MFCC/Δ、chroma、谱对比度、质心/带宽/rolloff、ZCR、RMS、tempo）
   + 64×216 Log-Mel；985 首耗时 49.5 秒。
 - 决策：两个表示一次算好、所有模型共用同一批 5 秒中心片段。
@@ -207,7 +207,7 @@ python -m src.train_cnn --model {cnn,crnn,transformer} --seeds 123 2024 --epochs
 ```
 python -m src.evaluate
 ```
-- 最终 15 行 `results/metrics.csv`（test，n=147）：
+- 最终 15 行 `results/gtzan/metrics.csv`（test，n=147）：
 
 | 模型 | Accuracy | Macro-F1 |
 |---|---|---|
@@ -251,7 +251,7 @@ python -m src.error_analysis
   per-class F1 最低 `rock` 0.429、最高 `classical` 0.933。
 - 置信度：Transformer 有 16/64 个错误样本置信度 ≥ 0.9；CNN 只有 3/37。
 - 典型翻车：`jazz.00003` 被 CNN 以 99.6% 判成 classical。
-- 产物：`results/error_analysis.csv/.json`、`error_confusions.png`、
+- 产物：`results/gtzan/error_analysis.csv/.json`、`error_confusions.png`、
   `error_cases.png`、`docs/error_analysis.md`。
 
 ## 2026-10-19 12:58
@@ -270,7 +270,7 @@ python -m src.robustness --workers 12
   - 除增益外，每个扰动下绝对准确率第一都是 SVM——深度模型赢在干净输入，
     传统模型赢在输入变脏时；
   - 3 s 片段最伤 CRNN（−53.1 pp）与 CNN（−34.0 pp）。
-- 产物：`results/robustness.csv`、`figures/robustness.png`、`docs/robustness.md`。
+- 产物：`results/gtzan/robustness.csv`、`figures/robustness.png`、`docs/robustness.md`。
 
 ## 2026-10-19 13:00
 
@@ -283,7 +283,7 @@ python -m src.timeline data/raw/gtzan/genres/rock/rock.00072.wav --model cnn
 - 扫描 147 首测试曲目：**88 首**至少出现一次窗口级判断变化；最不稳定的
   `rock.00072` 在 11 个窗口里改判 9 次（rock/disco/blues/country 交替）。
 - 修复了两个小问题：matplotlib 中文字体缺失、音频略长于 30 s 时的重复尾窗。
-- 产物：`src/timeline.py`、`results/timeline_scan.csv`、`figures/timeline_*.png`、
+- 产物：`src/timeline.py`、`results/gtzan/timeline_scan.csv`、`figures/timeline_*.png`、
   `docs/timeline.md`。
 
 ## 2026-10-19 13:10
@@ -302,7 +302,7 @@ python -m src.train_ast
   权重 346 MB。
 - 局限：16 kHz 与 GTZAN 22.05 kHz 存在域差异；5 秒补零到 10.24 秒；
   收益来自 AudioSet 预训练，不能归因于 Transformer 架构本身。
-- 产物：`src/train_ast.py`、`results/ast_metrics.json`、`results/ast_eval.json`、
+- 产物：`src/train_ast.py`、`results/gtzan/ast_metrics.json`、`results/gtzan/ast_eval.json`、
   `docs/ast.md`。
 
 ## 2026-10-19 13:35
@@ -311,7 +311,7 @@ python -m src.train_ast
 
 - 关机中断了 AST 的二次复跑与 `evaluate`，但 13:09 的首轮结果完整可用。
 - 新增 `scripts/integrate_ast.py`：把 AST 结果规范化为统一 eval schema 并写入
-  `results/metrics.csv`（16 行）。
+  `results/gtzan/metrics.csv`（16 行）。
 - 重跑 `python -m src.evaluate`：排行榜与混淆矩阵变为 6 个模型，
   AST 以 Macro-F1 0.814 居首。
 - 重新运行协议测试（4 passed）、Demo 冒烟与文档更新。
@@ -326,7 +326,7 @@ python -m src.train_ast
 - 修复：`src/robustness.py` 对 SVM/MLP 改用 `.predict()`，深度模型仍用 softmax argmax。
 - 重跑后 clean 行五个模型的 Accuracy 与 F1 均与 `metrics.csv` 完全一致；
   SVM 在扰动下的数值随之更新（如 noise_0db 0.2653 → 0.2993）。
-- 新增 `scripts/robustness_flips.py` 与 `results/robustness_flips.csv`，
+- 新增 `scripts/robustness_flips.py` 与 `results/gtzan/robustness_flips.csv`，
   重算预测翻转数（SVM clip_3s 46、noise_0db 98 等）。
 - 同步更新 `docs/robustness.md` 中所有受影响的表格与结论。
 
@@ -354,8 +354,8 @@ python -m src.train_ast
 **FMA 特征缓存**
 
 ```
-python scripts/extract_features.py --splits data/splits_fma/splits.csv \
-  --out data/fma/processed/features.npz --workers 12
+python scripts/extract_features.py --splits data/splits/fma/splits.csv \
+  --out data/features/fma/features.npz --workers 12
 ```
 - 7994 首 ×（209 维人工特征 + 64×216 Log-Mel），535 秒。
 - 另生成 `features_tracklevel.npz`（同一批特征、对照划分标签）用于泄漏实验。
@@ -369,7 +369,7 @@ bash scripts/run_fma.sh 42 123 2024
 ```
 - 5 个模型 × 3 seeds，训练/验证/测试 = 5596/1199/1199。
 - 环境：RTX 4060 8 GB；深度模型 AdamW、batch 32、30 epoch、按 val Macro-F1 早停。
-- 结果写入 `results_fma/`，随后做优化消融、泄漏对照与 AST 迁移。
+- 结果写入 `results/fma/`，随后做优化消融、泄漏对照与 AST 迁移。
 
 ## 2026-10-19 15:27
 
@@ -396,7 +396,7 @@ bash scripts/run_fma.sh 42 123 2024
 **启动 FMA 上的 AST 迁移与泄漏对照**
 
 - AST：16 kHz、中心 5 秒补零到 10.24 秒，冻结 86M 主干 + 线性头；
-  embedding 缓存 `data/fma/processed/ast_embeddings.npz`。
+  embedding 缓存 `data/features/fma/ast_embeddings.npz`。
 - 泄漏对照：同一批特征、仅把划分换成曲目级（81% 测试曲目与训练集共享艺术家），
   训练 CNN seed 42，用于量化泄漏带来的虚高。
 
@@ -418,7 +418,7 @@ bash scripts/run_fma.sh 42 123 2024
   （0.492）高 9.8 个百分点。
 - 成本：权重 345 MB、推理约 231 ms/片段；embedding 提取约 7 分钟（fp16）。
 - 期间修复：sklearn 1.9 移除 `multi_class`、断点复用特征/嵌入、HF 离线模式。
-- 产物：`docs/ast_fma.md`、`results_fma/ast_metrics.json`、`ast_eval.json`。
+- 产物：`docs/ast_fma.md`、`results/fma/ast_metrics.json`、`ast_eval.json`。
 
 ## 2026-10-19 17:30
 
@@ -439,3 +439,35 @@ bash scripts/run_fma.sh 42 123 2024
 - 改为「分发母线 + 汇流母线」：预处理后一条竖线分出三条支路；三个模型输出先并入
   右侧竖线，再用单箭头进入评估框；交点加实心圆点区分连接与交叉。
 - 删除悬浮的协议说明框，其内容并入图注，画面更紧凑。
+
+## 2026-10-19 19:05
+
+**仓库目录整理：结果与权重按实验合并**
+
+- 顶层原有 4 个 `results_*`、4 个 `checkpoints*`、2 个 `splits*`、1 个 `processed`，
+  同级散落在项目根；现合并为「一个顶层目录 + 每个实验一个同名子目录」。
+- 迁移映射（代码默认值、`scripts/*.sh`、测试、文档、报告同步更新）：
+
+  | 旧路径 | 新路径 |
+  |---|---|
+  | `results/` | `results/gtzan/` |
+  | `results_fma/` | `results/fma/` |
+  | `results_fma_leak/` | `results/fma_leak/` |
+  | `results_fma_ablation/` | `results/fma_ablation/` |
+  | `checkpoints/` | `checkpoints/gtzan/` |
+  | `checkpoints_fma/` | `checkpoints/fma/` |
+  | `checkpoints_fma_leak/` | `checkpoints/fma_leak/` |
+  | `data/processed/` | `data/features/gtzan/` |
+  | `data/fma/processed/` | `data/features/fma/` |
+  | `data/splits/` | `data/splits/gtzan/` |
+  | `data/splits_fma/` | `data/splits/fma/` |
+
+- 约定：`MUSIC_CKPT` 与 `MUSIC_RESULTS` 指向**同一个实验名**（gtzan / fma / …），
+  默认值为 GTZAN，因此不带环境变量跑 MVP 命令行为不变。
+- `.gitignore` 同步：`data/processed/` → `data/features/`，删除已失效的 `checkpoints_fma*/`。
+- 顺带修复报告附录的仓库树：原 `verbatim` 用 lmmono，缺 U+251C/U+2500 字形，
+  方框字符全部丢失（PDF 里树是断的）；现对该代码块单独 `\setmonofont{WenQuanYi Micro Hei Mono}`，
+  缺字告警 0 条。
+- 验证：`pytest -q tests` 4 passed；`gen_tables.py` 重算表格与数字**无差异**；
+  报告仍 24 页。移位后的根目录只剩 `configs/ data/ docs/ src/ scripts/ tests/ app/
+  checkpoints/ results/` 与 `README.md`、`requirements.txt`、`.gitignore`。

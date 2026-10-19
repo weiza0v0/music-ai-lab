@@ -4,9 +4,9 @@ from pathlib import Path
 import numpy as np, pandas as pd, torch
 from transformers import ASTModel, ASTFeatureExtractor
 
-ROOT=Path(__file__).resolve().parents[1]; RES=ROOT/"results_fma"
+ROOT=Path(__file__).resolve().parents[1]; RES=ROOT/"results/fma"
 MODEL_ID="MIT/ast-finetuned-audioset-10-10-0.4593"; SR=16000
-df=pd.read_csv(ROOT/"data/splits_fma/splits.csv"); te=df[df.split=="test"].head(20)
+df=pd.read_csv(ROOT/"data/splits/fma/splits.csv"); te=df[df.split=="test"].head(20)
 model=ASTModel.from_pretrained(MODEL_ID).eval().cuda().half()
 fe=ASTFeatureExtractor.from_pretrained(MODEL_ID)
 import librosa

@@ -15,9 +15,9 @@ ROOT = Path(__file__).resolve().parents[2]
 OUT = Path(__file__).resolve().parent
 TAB = OUT / "tables"
 TAB.mkdir(exist_ok=True)
-MVP = ROOT / "results"
-FMA = ROOT / "results_fma"
-ABL = ROOT / "results_fma_ablation"
+MVP = ROOT / "results" / "gtzan"
+FMA = ROOT / "results/fma"
+ABL = ROOT / "results/fma_ablation"
 
 ORDER = ["ast", "cnn", "crnn", "svm", "mlp", "transformer"]
 LABEL = {"ast": "AST（预训练）", "cnn": "CNN", "crnn": "CRNN", "svm": "SVM",
@@ -152,7 +152,7 @@ def per_class_table() -> str:
 
 
 def fma_split_table() -> str:
-    p = ROOT / "data/splits_fma/splits.csv"
+    p = ROOT / "data/splits/fma/splits.csv"
     if not p.exists():
         return "% splits missing\n"
     df = pd.read_csv(p)
@@ -172,8 +172,8 @@ def fma_split_table() -> str:
 
 
 def gtzan_table() -> str:
-    df = pd.read_csv(ROOT / "data/splits/splits.csv")
-    st = json.loads((ROOT / "data/splits/stats.json").read_text())
+    df = pd.read_csv(ROOT / "data/splits/gtzan/splits.csv")
+    st = json.loads((ROOT / "data/splits/gtzan/stats.json").read_text())
     lines = [r"\begin{table}[H]", r"\centering\small",
              r"\caption{GTZAN 清洗后的逐流派统计。}",
              r"\label{tab:gtzan-data}", r"\begin{tabular}{lccc}", r"\toprule",
@@ -211,7 +211,7 @@ def fma_perclass_table() -> str:
         return "% missing\n"
     classes = data["cnn"]["classes"] if "cnn" in data else data["ast"]["classes"]
     support = {}
-    sp = ROOT / "data/splits_fma/splits.csv"
+    sp = ROOT / "data/splits/fma/splits.csv"
     if sp.exists():
         sdf = pd.read_csv(sp)
         support = sdf[sdf.split == "test"]["genre"].value_counts().to_dict()
@@ -312,13 +312,13 @@ def main() -> None:
     (OUT / "numbers_fma.tex").write_text(fma_sentence)
 
     # data stats
-    stats = ROOT / "data/splits_fma/stats.json"
+    stats = ROOT / "data/splits/fma/stats.json"
     if stats.exists():
         s = json.loads(stats.read_text())
         n = s.get("n_decodable", 0)
         (OUT / "numbers_fma_n.tex").write_text(str(n))
-        if (ROOT / "data/splits_fma/splits.csv").exists():
-            d = pd.read_csv(ROOT / "data/splits_fma/splits.csv")
+        if (ROOT / "data/splits/fma/splits.csv").exists():
+            d = pd.read_csv(ROOT / "data/splits/fma/splits.csv")
             c = d.split.value_counts()
             (OUT / "numbers_fma_split.tex").write_text(
                 f"{c.get('train', 0)} / {c.get('val', 0)} / {c.get('test', 0)}")
@@ -373,7 +373,7 @@ def main() -> None:
     m.append(macro("MvpAstF", f"{ast.f1:.3f}" if ast is not None else "--"))
     if fma_exists:
         b = fma.sort_values("f1", ascending=False).iloc[0]
-        n_test = int(pd.read_csv(ROOT / "data/splits_fma/splits.csv").query("split == 'test'").shape[0])
+        n_test = int(pd.read_csv(ROOT / "data/splits/fma/splits.csv").query("split == 'test'").shape[0])
         m.append(macro("FmaBestModel", b.label))
         m.append(macro("FmaBestF", f"{b.f1:.3f}"))
         m.append(macro("FmaBestAcc", f"{b.acc:.3f}"))
@@ -381,7 +381,7 @@ def main() -> None:
         cnn_row = fma[fma.model == "cnn"]
         if len(cnn_row):
             m.append(macro("FmaCnnF", f"{cnn_row.iloc[0].f1:.3f}"))
-        leak_csv = ROOT / "results_fma_leak/metrics.csv"
+        leak_csv = ROOT / "results/fma_leak/metrics.csv"
         if leak_csv.exists():
             lk = pd.read_csv(leak_csv)
             lk = lk[(lk.model == "cnn") & (lk.split == "test")]

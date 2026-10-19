@@ -4,7 +4,7 @@
 2. Audit every track (decode, sample rate, duration, duplicate hashes).
 3. Build a fixed, stratified *track-level* 70/15/15 split (seed 42).
 
-The split is written to data/splits/splits.csv and is the single source of
+The split is written to data/splits/gtzan/splits.csv and is the single source of
 truth for every model, so no model can see a test track during training.
 """
 from __future__ import annotations
@@ -153,9 +153,9 @@ def main() -> None:
             "corrupt": "decode failures dropped",
         }
         kept = make_splits(kept, args.seed)
-        out = ROOT / "data" / "splits" / "splits.csv"
+        out = ROOT / "data" / "splits" / "gtzan" / "splits.csv"
         kept.to_csv(out, index=False)
-        (ROOT / "data" / "splits" / "stats.json").write_text(
+        (ROOT / "data" / "splits" / "gtzan" / "stats.json").write_text(
             json.dumps(stats, indent=2, ensure_ascii=False))
         print("[split]", kept.groupby(["split", "genre"]).size().unstack(fill_value=0))
         print(f"[split] kept {len(kept)} / {len(df)} tracks (dropped {len(df)-len(kept)}: "
