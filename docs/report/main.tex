@@ -14,6 +14,10 @@
 \usepackage{enumitem}
 \usepackage{array}
 \usepackage{float}
+\usepackage{tikz}
+\usepackage[ruled,vlined,linesnumbered]{algorithm2e}
+\SetAlgorithmName{算法}{算法}{算法列表}
+\usetikzlibrary{positioning,arrows.meta,calc}
 
 \setCJKmainfont{SimSun}
 \setCJKsansfont{WenQuanYi Micro Hei}
@@ -41,51 +45,99 @@
 \textbf{关键词：}音乐流派分类；GTZAN；FMA-small；卷积神经网络；CRNN；Transformer；迁移学习；可复现实验
 \end{abstract}
 
+\newpage
+\tableofcontents
+\newpage
+
 % ================= 1 引言 =================
 \section{引言}
 
-音乐流派（genre）是人类对音乐风格的一种高层概括，广泛用于推荐、检索与曲库管理。自动流派分类要求模型从波形中提取音色、节奏、和声与配器等线索，是连接信号处理与音乐理解的典型任务\cite{tzanetakis2002gtzan}。过去十余年，该任务的建模路线经历了从人工特征加浅层分类器，到端到端卷积网络\cite{choi2017crnn}，再到自注意力与大规模预训练模型\cite{gong2021ast}的演进。
+\subsection{研究背景}
 
-然而，文献中的数字往往不可直接比较：数据集不同、划分不同、片段长度不同、预处理不同，甚至测试集被反复用于调参。对于课程项目而言，更重要的不是刷新某个榜单，而是建立一套\emph{公平、可复现、可解释}的实验流程，并诚实地报告模型在分布外输入下的表现。
+音乐流派（genre）是人类对音乐风格的一种高层概括，广泛用于推荐、检索、曲库管理与版权结算。自动流派分类要求模型从波形中提取音色、节奏、和声与配器等线索，是连接信号处理与音乐理解的典型任务\cite{tzanetakis2002gtzan,casey2008content}。在流媒体平台上，每天有大量新曲目缺少人工标注，自动流派标签能显著降低冷启动成本；在音乐教育中，流派分类也可以作为理解音色与节奏的入口。
 
-本文的工作围绕三个问题展开：
+过去十余年，该任务的建模路线经历了三次明显的迁移：从人工特征加浅层分类器，到端到端卷积网络\cite{choi2017crnn,dieleman2014endtoend}，再到自注意力\cite{vaswani2017attention}与大规模预训练模型\cite{gong2021ast,kong2020panns}。每一次迁移都伴随新的问题：深度模型是否真的优于精心设计的人工特征？预训练带来的收益有多少来自数据、多少来自架构？在资源受限的课堂上，我们能否得到可信、可复现的结论？
+
+\subsection{问题与挑战}
+
+文献中的准确率数字往往不可直接比较，原因至少包括：
+\begin{enumerate}
+  \item \textbf{数据划分不一致}：同一数据集的不同版本、不同随机划分，甚至测试集被反复用于调参；
+  \item \textbf{片段与预处理不一致}：3 秒 / 5 秒 / 10 秒片段、采样率、归一化方式都会改变输入分布；
+  \item \textbf{标签本身模糊}：「Rock」与「Metal」、「Pop」与「Dance」的边界在人类标注者之间也不一致；
+  \item \textbf{数据泄漏隐蔽}：同一曲目的不同片段、同一艺术家的不同作品跨集合，都会让模型「记住来源」而不是学习风格；
+  \item \textbf{计算预算差异}：预训练模型的权重体积与推理延迟比自建模型高两到三个数量级。
+\end{enumerate}
+因此，一个负责任的基准必须同时报告\emph{协议、成本与失败模式}，而不只是一个准确率。
+
+\subsection{研究问题}
+
+本文围绕三个问题展开：
 \begin{enumerate}
   \item 在完全相同的协议下，不同代际的模型（传统 ML、CNN、CRNN、Transformer、预训练 AST）差距究竟有多大？
   \item 数据规模从千首级（GTZAN）扩大到万首级（FMA-small）时，结论是否稳定？
   \item 常见优化手段（SpecAugment、标签平滑、dropout）能带来多少真实收益，代价是什么？
 \end{enumerate}
 
+\subsection{主要贡献}
+
 本文的主要贡献如下：
 \begin{itemize}
-  \item 构建了一个端到端可复现的实验框架：按曲目划分、训练集拟合预处理、验证集选模、测试集单次评估，并用自动化测试与独立审计校验协议；
-  \item 在两个数据集上给出六类模型的统一基准，包含 3 个随机种子的均值与标准差，以及训练时间、推理延迟、参数量与模型体积；
-  \item 提供错误分析、七种扰动的鲁棒性评测与片段级时间轴分析，揭示「准确率」之外的模型行为；
-  \item 公开全部代码、配置、结果文件与可视化，报告中的每个数字都可追溯到 \texttt{results/} 下的原始文件。
+  \item \textbf{统一基准}：在同一套按曲目 / 按艺术家划分、同一批 5 秒中心片段、同一套预处理与评估协议下，比较六个代表性模型；
+  \item \textbf{泄漏诊断}：量化了 FMA-small 上「按曲目划分」带来的艺术家级泄漏，并用对照实验证明其会把 CNN 的 Macro-F1 虚高约 9.9 个百分点；
+  \item \textbf{优化消融}：系统尝试 SpecAugment、标签平滑与 dropout，报告了一个诚实的负结果——在 FMA 上最大提升仅 0.7 个百分点；
+  \item \textbf{行为分析}：给出错误分析、七种扰动的鲁棒性、片段级时间轴与置信度校准，说明准确率之外的模型差异；
+  \item \textbf{可复现交付}：公开代码、配置、结果文件与 LaTeX 报告，所有数字可由脚本重新生成，且经过独立只读审计。
 \end{itemize}
 
+\subsection{报告组织}
+
+第~\ref{sec:related} 节回顾相关工作；第~\ref{sec:data} 节介绍数据与协议；第~\ref{sec:method} 节描述模型与训练方法；第~\ref{sec:setup} 节给出实验设置与指标；第~\ref{sec:results} 节报告 GTZAN 与 FMA-small 的结果；第~\ref{sec:analysis} 节做错误、鲁棒性、时间轴与泄漏分析；第~\ref{sec:discussion} 节讨论局限与启示；第~\ref{sec:conclusion} 节总结。附录给出逐 seed 结果、完整超参与复现命令。
+
 % ================= 2 相关工作 =================
-\section{相关工作}
+\section{相关工作}\label{sec:related}
 
-\paragraph{传统方法与人工特征}
-早期工作多使用 MFCC、谱质心、过零率、节奏直方图等人工特征，再送入 SVM、随机森林或浅层网络\cite{tzanetakis2002gtzan}。这类方法计算便宜、可解释性强，在中小规模数据上仍是难以忽视的基线。
+\subsection{音乐信息检索与流派分类}
 
-\paragraph{端到端深度模型}
-Choi 等提出 CRNN，用卷积层提取局部时频模式、用循环层建模时间演化\cite{choi2017crnn}；随后大量工作将 CNN 用于 Log-Mel 频谱图，通过数据增强与更深的网络提升性能。Transformer\cite{vaswani2017attention} 的 self-attention 能建模长程依赖，Vision Transformer 的思路也被迁移到音频频谱。
+音乐信息检索（Music Information Retrieval, MIR）关注从音频、乐谱、歌词或元数据中提取结构化信息\cite{downie2003mir,casey2008content}。流派分类是其中最早被系统研究的任务之一：Tzanetakis 与 Cook 在 2002 年提出用谱特征、节奏特征与梅尔倒谱系数训练分类器，并发布了 GTZAN 数据集\cite{tzanetakis2002gtzan}。此后二十年，该任务逐渐成为检验新表示与新架构的标准试验台。
 
-\paragraph{预训练与迁移学习}
-AudioSet\cite{gemmeke2017audioset} 提供了大规模弱标注音频，AST\cite{gong2021ast} 将频谱切成 patch 后用 Transformer 预训练，在多项音频分类任务上取得领先。冻结主干、只训练分类头是小数据场景的常用策略，但其收益同时来自预训练数据与架构，二者需要分开讨论。
+\subsection{人工特征与浅层模型}
 
-\paragraph{数据集与可复现性}
-GTZAN\cite{tzanetakis2002gtzan} 是最常用的基准，但 Sturm 指出其存在重复音频、标签错误与失真等问题，容易高估模型能力\cite{sturm2013gtzan}。FMA\cite{defferrard2017fma} 提供了规模更大、授权更清晰的替代数据。本文在两个数据集上分别报告结果，并对 GTZAN 做去重与损坏文件剔除。
+传统方法通常把音频切帧，逐帧计算 MFCC、谱质心、谱带宽、rolloff、过零率、chroma 与节奏直方图，再在时间维做统计池化，最后送入 SVM、随机森林或 k 近邻\cite{tzanetakis2002gtzan,bogdanov2013essentia}。这类方法有两个优点：一是计算便宜，二是特征具有明确的声学含义。其局限在于统计池化会丢失时间结构，且特征设计依赖领域知识。
+
+\subsection{端到端深度模型}
+
+随着数据规模与算力增长，端到端学习逐渐取代人工特征。Dieleman 与 Schrauwen 直接把波形送入 CNN\cite{dieleman2014endtoend}；Choi 等提出 CRNN，用卷积层提取局部时频模式、用循环层建模时间演化\cite{choi2017crnn}；Humphrey 等系统比较了特征学习与手工特征\cite{humphrey2013feature}。在音频事件识别领域，Hershey 等比较了多种 CNN 架构\cite{hershey2017cnn}，PANNs 则用大规模预训练提升通用性\cite{kong2020panns}。
+
+\subsection{Transformer 与预训练}
+
+Transformer 的自注意力机制\cite{vaswani2017attention}能建模长程依赖，Vision Transformer 把图像切 patch 后直接用 Transformer 编码。AST 把这一思路迁移到音频：将 Log-Mel 频谱切成 $16\times16$ 的 patch，在 AudioSet\cite{gemmeke2017audioset}上预训练，再迁移到下游分类任务\cite{gong2021ast}。在小数据场景，冻结主干、只训练线性分类头是常见策略，但其收益同时来自预训练数据与架构，两者需要分开讨论。
+
+\subsection{数据集与评测偏差}
+
+GTZAN\cite{tzanetakis2002gtzan} 是最常用的基准，但 Sturm 指出其存在重复音频、标签错误、失真与艺术家泄漏等问题，容易高估模型能力\cite{sturm2013gtzan}。FMA\cite{defferrard2017fma} 提供了规模更大、授权更清晰的替代数据；MSD\cite{bertin2011msd} 则侧重百万级曲目与元数据。本文选择 GTZAN 作为快速验证集、FMA-small 作为主实验集，并对两者都做泄漏检查。
+
+\subsection{鲁棒性与可复现性}
+
+真实部署中的音频会经历音量变化、噪声、压缩与片段截断。已有工作表明，音频分类模型对这些扰动并不稳健，且不同特征表示（绝对 dB 与归一化 dB）的敏感性差异很大。本文用七种扰动系统评测五个模型，并把可复现性作为一等公民：固定种子、确定性 kernel、自动化协议测试与独立审计。
 
 % ================= 3 数据与协议 =================
-\section{数据与实验协议}
+% ================= 3 数据与协议 =================
+\section{数据与实验协议}\label{sec:data}
 
 \subsection{GTZAN（MVP 数据集）}
-GTZAN 包含 10 个流派各 100 首、每首约 30 秒、22\,050\,Hz 单声道音频。审计发现 1 首无法解码（\texttt{jazz.00054}），28 首与其他曲目 MD5 完全相同。我们剔除损坏文件，并对重复组只保留第一首，最终得到 \textbf{985 首}。按曲目分层划分 70/15/15（689/149/147），随机种子 42。
+GTZAN 包含 10 个流派各 100 首、每首约 30 秒、22\,050\,Hz 单声道音频。审计发现 1 首无法解码（\texttt{jazz.00054}），28 首与其他曲目 MD5 完全相同。我们剔除损坏文件，并对重复组只保留第一首，最终得到 \textbf{985 首}。按曲目分层划分 70/15/15（689/149/147），随机种子 42。逐流派统计见表~\ref{tab:gtzan-data}。
+
+\input{tables/gtzan_data.tex}
+
+GTZAN 的优点是规模小、类别均衡、加载快；缺点是标签噪声与重复音频，且缺少可靠的艺术家元数据（原始文件仅以文件名区分曲目）。因此它适合做快速迭代与教学演示，不适合作为唯一证据。
 
 \subsection{FMA-small（主实验数据集）}
-FMA-small 包含 8\,000 首、8 个均衡流派的 30 秒片段，原始采样率 44.1\,kHz。初步按曲目分层 70/15/15 划分后，我们做了艺术家级泄漏检查，发现测试集中 \FmaTrackLeak{} / \FmaTrackLeakN{} 首（\FmaTrackLeakPct\%）与训练集共享艺术家——同一乐队的作品在音色、录音与编曲上高度相似，这会让模型「认出乐队」而不是「听懂流派」。因此主实验改用\textbf{按艺术家分离}的划分（每位艺术家整体进入且仅进入一个集合，测试集与训练集的艺术家重叠为 0），并按流派保持大致比例（由于艺术家作品数不均，逐类比例并不完全相等，见附录表~\ref{tab:data}）。曲目级划分保留为泄漏对照实验。数据审计还发现 6 首损坏音频（与官方 SHA1 清单一致，属上游数据问题）与 4 首中心 5 秒数字静音的曲目；前者剔除，后者保留并在附录中说明。
+FMA-small 包含 8\,000 首、8 个均衡流派的 30 秒片段，原始采样率 44.1\,kHz。初步按曲目分层 70/15/15 划分后，我们做了艺术家级泄漏检查，发现测试集中 \FmaTrackLeak{} / \FmaTrackLeakN{} 首（\FmaTrackLeakPct\%）与训练集共享艺术家——同一乐队的作品在音色、录音与编曲上高度相似，这会让模型「认出乐队」而不是「听懂流派」。因此主实验改用\textbf{按艺术家分离}的划分（每位艺术家整体进入且仅进入一个集合，测试集与训练集的艺术家重叠为 0），并按流派保持大致比例（由于艺术家作品数不均，逐类比例并不完全相等，见附录表~\ref{tab:data}）。曲目级划分保留为泄漏对照实验。数据审计还发现 6 首损坏音频（与官方 SHA1 清单一致，属上游数据问题）与 4 首中心 5 秒数字静音的曲目；前者剔除，后者保留并在附录中说明。艺术家分离划分的逐流派数量见表~\ref{tab:fmasplit}。
+
+\input{tables/fma_split.tex}
+
+需要强调，艺术家分离划分不是「免费」的：由于部分艺术家拥有大量作品（最多的一个艺术家有 208 首），划分后逐流派的验证/测试比例并不完全相等（例如 Folk 的验证集 249 首、Instrumental 的验证集 82 首）。这会轻微影响早停与阈值选择，但测试集仍有 126--191 首/类，宏平均指标对类别比例不敏感。
 
 \subsection{统一预处理}
 所有模型使用\textbf{每首曲目中心 5 秒}片段，重采样到 22\,050\,Hz 单声道。传统模型输入 209 维人工特征，深度模型输入 $64\times216$ 的 Log-Mel 频谱：
@@ -95,14 +147,98 @@ FMA-small 包含 8\,000 首、8 个均衡流派的 30 秒片段，原始采样�
 \end{equation}
 其中 $H_m$ 为 64 个 Mel 滤波器，$|X(f,t)|^2$ 为短时傅里叶功率谱（$n_{\text{fft}}=1024$，hop$=512$）。以片段最大值为参考的归一化使表示对整体增益不敏感，这一点在鲁棒性实验中会再次出现。
 
-209 维人工特征包括：40 维 MFCC 及其一阶差分的均值/标准差、12 维 chroma、7 维谱对比度、谱质心/带宽/rolloff、过零率、RMS 与 tempo。
+209 维人工特征的组成见表~\ref{tab:features}。所有统计量在时间维做均值与标准差池化；标准化器只在训练集拟合。
+
+\begin{table}[H]
+\centering\small
+\caption{209 维人工特征的组成。}
+\label{tab:features}
+\begin{tabular}{llc}
+\toprule
+特征组 & 说明 & 维度\\
+\midrule
+MFCC（40） & 均值 + 标准差 & 80\\
+$\Delta$MFCC（40） & 一阶差分的均值 + 标准差 & 80\\
+Chroma（12） & 音高类能量均值 + 标准差 & 24\\
+谱对比度（7） & 均值 + 标准差 & 14\\
+谱形状（3） & 质心、带宽、rolloff 的均值 + 标准差 & 6\\
+过零率 & 均值 + 标准差 & 2\\
+RMS 能量 & 均值 + 标准差 & 2\\
+Tempo & 估计值（归一化） & 1\\
+\midrule
+合计 & & 209\\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\linewidth]{pipeline.png}
-  \caption{统一的实验流程：同一份按曲目划分的数据，分别进入人工特征、Log-Mel 与 AST 三条支路，最终在同一测试集上评估。}
+  \resizebox{\linewidth}{!}{%
+  \begin{tikzpicture}[font=\small, >=Stealth,
+      box/.style={draw=black!55, rounded corners=2pt, align=center,
+                  inner sep=4pt, minimum height=12mm},
+      feat/.style={box, fill=blue!7},
+      model/.style={box, fill=orange!9},
+      data/.style={box, fill=gray!10},
+      eval/.style={box, fill=green!8, minimum height=34mm}]
+    \node[data]  (data) at (0,0)     {GTZAN 985 首\\FMA-small 7,994 首};
+    \node[box]   (prep) at (3.1,0)   {中心 5 秒片段\\22,050 Hz 单声道};
+
+    \node[feat]  (fhand) at (6.5,2.3) {209 维人工特征\\（MFCC / 谱 / 节奏）};
+    \node[feat]  (fmel)  at (6.5,0)   {64\,$\times$\,216 Log-Mel\\（增益归一化）};
+    \node[feat]  (fast)  at (6.5,-2.3){16 kHz 补零 10.24 s\\AST 频谱};
+
+    \node[model] (mhand) at (10.0,2.3) {SVM / MLP};
+    \node[model] (mdeep) at (10.0,0)   {CNN / CRNN /\\轻量 Transformer};
+    \node[model] (mast)  at (10.0,-2.3){冻结 AST\\+ 线性分类头};
+
+    \node[eval]  (eval)  at (13.6,0)  {统一评估协议\\[2pt]
+                                      按曲目 / 艺术家划分\\[2pt]
+                                      验证集选型\\[2pt]
+                                      测试集单次评估\\[2pt]
+                                      Acc / Macro-F1 / 成本};
+
+    \draw[->] (data) -- (prep);
+    \draw[->] (prep.east) -- ++(0.45,0) |- (fhand.west);
+    \draw[->] (prep.east) -- (fmel.west);
+    \draw[->] (prep.east) -- ++(0.45,0) |- (fast.west);
+
+    \draw[->] (fhand) -- (mhand);
+    \draw[->] (fmel)  -- (mdeep);
+    \draw[->] (fast)  -- (mast);
+
+    \draw[->] (mhand.east) -- ++(0.4,0) |- (eval.west);
+    \draw[->] (mdeep.east) -- (eval.west);
+    \draw[->] (mast.east)  -- ++(0.4,0) |- (eval.west);
+
+    \node[draw=black!35, dashed, rounded corners=2pt, fill=gray!5,
+          align=center, inner sep=4pt, minimum width=10.5cm]
+         at (6.4,-3.9) {同一划分、同一批 5 秒中心片段；所有预处理只在训练集上拟合};
+  \end{tikzpicture}}
+  \caption{统一的实验流程：同一份按曲目（FMA 按艺术家）划分的数据，分别进入人工特征、
+  Log-Mel 与 AST 三条支路，最终在同一测试集上按统一协议评估。}
   \label{fig:pipeline}
 \end{figure}
+
+\subsection{划分协议与泄漏诊断}\label{sec:leakage}
+
+FMA-small 的元数据包含艺术家字段。我们先用常规的按曲目分层划分，然后检查测试集与训练集的艺术家重叠：\FmaTrackLeak{} / \FmaTrackLeakN{} 首（\FmaTrackLeakPct\%）测试曲目与训练集共享至少一位艺术家。同一乐队的作品在音色、录音设备与编曲习惯上高度相似，这会为模型提供一条「认乐队」而非「听懂流派」的捷径。
+
+因此主实验采用按艺术家分离的划分：每位艺术家整体进入且仅进入一个集合。表~\ref{tab:leak} 对比两种划分。可以看到，曲目级划分把 CNN 的 Macro-F1 从 0.470 抬到 0.568（+9.9 个百分点），而输入特征、模型与训练超参完全相同——这正是数据泄漏的典型表现。
+
+\begin{table}[H]
+\centering\small
+\caption{曲目级划分与艺术家分离划分的对比（FMA-small，CNN seed 42）。}
+\label{tab:leak}
+\begin{tabular}{lccccc}
+\toprule
+划分方式 & train / val / test & 测试-训练共享艺术家 & Acc & Macro-F1 & 结论\\
+\midrule
+按曲目 & 5,595 / 1,200 / 1,199 & 971（81.0\%） & 0.566 & 0.568 & 高估\\
+按艺术家 & 5,596 / 1,199 / 1,199 & 0（0.0\%） & 0.480 & 0.470 & 主表采用\\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsection{防泄漏与可复现约束}
 \begin{itemize}
@@ -115,13 +251,15 @@ FMA-small 包含 8\,000 首、8 个均衡流派的 30 秒片段，原始采样�
 \end{itemize}
 
 % ================= 4 方法 =================
-\section{方法}
+\section{方法}\label{sec:method}
 
 \subsection{传统基线：SVM 与 MLP}
 SVM 使用 RBF 核（$C=10$，$\gamma=$scale），MLP 为两层全连接（256-128，ReLU，Adam，early stopping）。二者共享同一份 209 维特征，标准化器仅在训练集拟合。
 
 \subsection{CNN}
-输入 $1\times64\times216$ 的 Log-Mel。网络由 4 个卷积块组成，每块含两个 $3\times3$ 卷积、BatchNorm、ReLU 与 $2\times2$ 最大池化，通道数依次为 32/64/128/128；随后自适应平均池化到 $2\times4$，dropout 后接线性分类头，参数量约 59 万。
+输入 $1\times64\times216$ 的 Log-Mel。网络由 4 个卷积块组成，每块含两个 $3\times3$ 卷积、BatchNorm、ReLU 与 $2\times2$ 最大池化，通道数依次为 32/64/128/128；随后自适应平均池化到 $2\times4$，dropout 后接线性分类头，参数量约 59 万。三个自建深度模型的层结构与参数量见表~\ref{tab:arch}。
+
+\input{tables/arch.tex}
 
 \subsection{CRNN}
 CNN 前端（3 个卷积块，池化 $(2,2)/(2,2)/(2,1)$）将频率维压缩后，按时间维展开为序列，送入双向 GRU（隐藏维 96），对时间维取平均后分类。参数量约 42 万。
@@ -141,19 +279,123 @@ CNN 前端（3 个卷积块，池化 $(2,2)/(2,2)/(2,1)$）将频率维压缩后
 所有消融只使用验证集选型，测试集不参与任何决策。
 
 % ================= 5 实验设置 =================
-\section{实验设置}
+\subsection{训练算法}
 
-\paragraph{环境}
-WSL2 Ubuntu 22.04，Python 3.12，PyTorch 2.12.1+cu130，NVIDIA RTX 4060 Laptop（8\,GB），16 核 CPU，7.8\,GB 内存。
+所有深度模型共享同一套训练流程（算法~\ref{alg:train}）：AdamW 优化、余弦退火、按验证集 Macro-F1 早停、保存最佳权重、测试集只在训练结束后评估一次。该流程被封装在 \texttt{src/train\_cnn.py} 中，模型之间的差异仅在网络结构与输入表示。
 
-\paragraph{评估指标}
-Accuracy、Macro-F1、逐类 F1、混淆矩阵；训练时间、单片段推理延迟、可训练参数量、模型文件大小。分类指标在测试集（GTZAN 147 首、FMA-small 约 1\,200 首）上计算，重复实验报告均值与标准差。
+\begin{algorithm}[H]
+\caption{统一训练与评估流程}\label{alg:train}
+\KwIn{训练/验证/测试划分 $D_{tr},D_{va},D_{te}$；模型 $f_\theta$；最大轮数 $E$；耐心 $p$}
+\KwOut{最佳权重 $\theta^\star$；测试指标}
+在 $D_{tr}$ 上拟合标准化器 / 归一化统计量\;
+\For{$e=1$ \KwTo $E$}{
+  打乱 $D_{tr}$，按 batch 采样\;
+  可选：对 Log-Mel 施加 SpecAugment\;
+  前向计算、交叉熵（可选标签平滑）、反向传播、AdamW 更新\;
+  在 $D_{va}$ 上计算 Macro-F1 $F_e$\;
+  \eIf{$F_e > F_{\text{best}}$}{
+    $\theta^\star \leftarrow \theta$；$F_{\text{best}} \leftarrow F_e$；耐心计数清零\;
+  }{
+    耐心计数加 1\;
+  }
+  \If{耐心计数 $\ge p$}{break\;}
+}
+加载 $\theta^\star$，在 $D_{te}$ 上评估一次并冻结结果\;
+\end{algorithm}
 
-\paragraph{基线设置}
-SVM/MLP 在 GTZAN 与 FMA-small 上各训练 3 个种子（SVM 的硬预测与种子无关，仅概率校准变化）；深度模型 3 个种子；AST 为单种子迁移组。
+\subsection{优化策略}
 
-% ================= 6 结果 =================
-\section{结果}
+针对小数据过拟合，我们尝试两类正则化并在验证集上做消融：
+\begin{itemize}
+  \item \textbf{SpecAugment}\cite{park2019specaugment}：对归一化后的频谱随机遮挡 2 个频带（宽度 $\le 8$）与 2 个时间段（宽度 $\le 16$），遮挡值置为 0（训练集均值）；
+  \item \textbf{标签平滑}\cite{szegedy2016labelsmoothing}：把独热目标改为
+  \begin{equation}
+    q_k=(1-\epsilon)\,y_k+\frac{\epsilon}{K},
+  \end{equation}
+  其中 $K$ 为类别数，$\epsilon=0.05$；同时把 dropout 从 0.3 提高到 0.4。
+\end{itemize}
+所有消融只使用验证集选型，测试集不参与任何决策；结果见第~\ref{sec:results} 节。
+
+\subsection{复杂度与实现细节}
+
+表~\ref{tab:arch} 给出了各模型的参数量：CNN 约 59 万、CRNN 约 42 万、Transformer 约 30 万，而预训练 AST 主干有 8,619 万参数。参数量并不直接决定推理成本：在 RTX 4060 上，CNN/CRNN 的单片段延迟约 0.7--0.8\,ms，轻量 Transformer 约 0.26\,ms，而 AST 为 231\,ms（含 16\,kHz 重采样与频谱特征化），相差约三个数量级。
+
+实现上，所有音频特征与 Log-Mel 在每个数据集上只计算一次并缓存为 \texttt{.npz}，训练时直接读取，避免重复解码 MP3；DataLoader 使用 \texttt{num\_workers=0} 并配合页锁定内存，保证可复现优先于吞吐；深度模型开启 cuDNN 确定性（见第~\ref{sec:setup} 节）。在 8\,GB 显存下，batch size 32 足以训练全部自建模型，峰值显存远低于上限。
+
+\section{实验设置}\label{sec:setup}
+
+\subsection{软硬件环境}
+
+实验在 WSL2 Ubuntu 22.04 上完成，具体版本见表~\ref{tab:env}。GPU 为笔记本级 RTX 4060（8\,GB），显存足以容纳全部自建模型与 AST 的批量推理。
+
+\begin{table}[H]
+\centering\small
+\caption{实验环境。}
+\label{tab:env}
+\begin{tabular}{ll}
+\toprule
+项目 & 版本 / 配置\\
+\midrule
+操作系统 & Ubuntu 22.04（WSL2，内核 6.18）\\
+Python & 3.12.13\\
+PyTorch & 2.12.1+cu130\\
+CUDA / 驱动 & CUDA 13.0 / NVIDIA 595.79\\
+GPU & RTX 4060 Laptop，8\,GB，算力 (8,9)\\
+CPU / 内存 & 16 逻辑核 / 7.8\,GB\\
+音频栈 & librosa 1.0.0、soundfile 0.14.0\\
+其他 & scikit-learn 1.9.0、transformers 5.16.1、Streamlit 1.66.0\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{评估指标}
+
+对测试集 $D_{te}=\{(x_i,y_i)\}_{i=1}^{N}$，模型预测 $\hat y_i$。Accuracy 与 Macro-F1 定义为
+\begin{align}
+  \mathrm{Acc} &= \frac{1}{N}\sum_{i=1}^{N}\mathbb{1}[\hat y_i=y_i],\\
+  \mathrm{Macro\text{-}F1} &= \frac{1}{K}\sum_{k=1}^{K}
+  \frac{2P_kR_k}{P_k+R_k},
+\end{align}
+其中 $P_k,R_k$ 分别是第 $k$ 类的精确率与召回率。Macro-F1 对每个类别等权，能暴露「只擅长少数流派」的问题；逐类 F1 与混淆矩阵用于错误分析。除分类指标外，我们记录训练时间、单片段推理延迟（batch 1，中位数）、参数量与模型文件大小。
+
+\subsection{重复实验与统计}
+
+深度模型使用 3 个随机种子（42/123/2024）重复训练，报告均值与标准差；SVM 的硬预测与种子无关，因此三个种子的指标相同（种子只影响 Platt 概率校准）。AST 为单种子迁移实验。对于 $n=147$（GTZAN）与 $n=1{,}199$（FMA-small）的测试集，比例指标在 $p=0.5$ 附近的 95\% 置信半径约为 $\pm 7.2$ 与 $\pm 2.8$ 个百分点；因此 1--2 个百分点的差异不应被过度解读。
+
+\subsection{实验矩阵}
+
+表~\ref{tab:matrix} 汇总了全部正式实验。所有实验共享同一份数据划分与特征缓存；模型选择只看验证集，测试集在权重冻结后评估一次。
+
+\begin{table}[H]
+\centering\small
+\caption{正式实验矩阵。}
+\label{tab:matrix}
+\begin{tabular}{llccc}
+\toprule
+数据集 & 模型 & 种子数 & epoch & batch\\
+\midrule
+GTZAN & SVM / MLP & 3 & -- & 64\\
+GTZAN & CNN / CRNN / Transformer & 3 & 30 & 32\\
+GTZAN & AST（冻结主干 + 线性头） & 1 & -- & 16\\
+FMA-small & SVM / MLP & 3 & -- & 64\\
+FMA-small & CNN / CRNN / Transformer & 3 & 30 & 32\\
+FMA-small & AST（冻结主干 + 线性头） & 1 & -- & 64\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{可复现性措施}
+
+\begin{itemize}
+  \item 所有随机源（划分、初始化、打乱、噪声）显式定种；深度模型开启
+  \texttt{cudnn.deterministic=True}、\texttt{benchmark=False} 与
+  \texttt{use\_deterministic\_algorithms(True)}；
+  \item 划分文件、特征缓存与评测脚本全部落盘；同种子重跑可得到逐字节相同的权重；
+  \item \texttt{pytest} 覆盖四条协议不变量：划分不重叠、特征对齐、标准化器只看训练集、checkpoint 可推理；
+  \item 独立校验员对结果文件与预测逐条复算，未发现数据泄漏或伪造。
+\end{itemize}
+
+\section{结果}\label{sec:results}
 
 \subsection{GTZAN：最小可行 MVP}
 表~\ref{tab:gtzan} 与图~\ref{fig:gtzan-board} 给出六个模型在 GTZAN 测试集上的结果。从头训练的 CNN 取得最高的 Macro-F1（0.753），但只比 SVM 高约 4.7 个百分点，训练时间却是 SVM 的约 250 倍。轻量 Transformer 在 985 首数据上明显过拟合，三个种子的 Macro-F1 仅 0.541。冻结 AST 主干后，Macro-F1 达到 0.814，比 CNN 高 6.0 个百分点，说明预训练表示在中小规模数据上收益显著；代价是 346\,MB 权重与约 204\,ms/片段的推理延迟。
@@ -174,6 +416,19 @@ SVM/MLP 在 GTZAN 与 FMA-small 上各训练 3 个种子（SVM 的硬预测与�
   \label{fig:gtzan-cm}
 \end{figure}
 
+\input{tables/mvp_perseed.tex}
+
+从逐 seed 结果可以看到两点：其一，CNN 的三个种子非常稳定（Macro-F1 0.749--0.760，标准差 0.006），说明在小数据上它已经接近自身的容量上限；其二，MLP 与轻量 Transformer 的种子间波动明显更大（MLP 0.574--0.683），这与随机初始化在欠拟合/过拟合边界上的敏感性一致。SVM 的三行完全相同，因为其硬预测与种子无关。
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\linewidth]{curves_gtzan.png}
+  \caption{GTZAN 上三个深度模型的训练/验证损失与验证 Macro-F1（seed 42）。}
+  \label{fig:curves-gtzan}
+\end{figure}
+
+训练曲线进一步说明了模型差异：CNN 的验证损失在 20 轮后趋于平稳，CRNN 出现明显振荡，Transformer 的训练损失迅速降到接近 0 而验证损失抬头——这是典型的小样本过拟合。
+
 \subsection{FMA-small：主实验}
 表~\ref{tab:fma} 给出 FMA-small 主实验的结果。与 GTZAN 相比，数据规模扩大约 8 倍，测试集约 \FmaTestN{} 首，指标的标准误更小。最佳模型为 \FmaBestModel{}，测试 Macro-F1 为 \FmaBestF{}（Accuracy \FmaBestAcc{}）。\input{numbers_fma}
 
@@ -188,6 +443,29 @@ SVM/MLP 在 GTZAN 与 FMA-small 上各训练 3 个种子（SVM 的硬预测与�
   \label{fig:fma-board}
 \end{figure}
 
+\input{tables/fma_perseed.tex}
+
+\input{tables/fma_perclass.tex}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.98\linewidth]{confusion_fma.png}
+  \caption{FMA-small 测试集混淆矩阵（seed 42，按行归一化），六个模型对比。}
+  \label{fig:fma-cm}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\linewidth]{curves_fma.png}
+  \caption{FMA-small 上 CNN / CRNN / Transformer 的训练曲线（seed 42）。}
+  \label{fig:curves-fma}
+\end{figure}
+
+逐类结果揭示了 FMA 的难点：CNN 在 Pop（F1 0.239）与 Instrumental（0.258）上最差，
+在 Hip-Hop（0.674）与 Rock（0.617）上最好；AST 把 Pop 提升到 0.430、Instrumental 提升到
+0.366，但依然远低于其余类别。这说明「Pop」「Instrumental」这类宽标签本身覆盖了多种风格，
+单一片段、单一标签的监督信号不足以区分。
+
 为量化「按曲目划分」的泄漏影响，我们用同一批特征、仅把划分换成曲目级（测试集与训练集共享艺术家的比例为 81.0\%），重新训练 CNN。曲目级划分下 CNN 的测试 Macro-F1 为 \LeakCnnF{}（Acc \LeakCnnAcc{}），相比艺术家分离划分的 \FmaCnnF{} 变化 \LeakDelta{} 个百分点。这一差异说明：\textbf{在 FMA 这类元数据完整的语料上，不按艺术家划分会系统性地高估模型能力}；因此本文主表全部采用艺术家分离结果。
 
 \subsection{优化消融}
@@ -195,8 +473,33 @@ SVM/MLP 在 GTZAN 与 FMA-small 上各训练 3 个种子（SVM 的硬预测与�
 
 \input{tables/ablation.tex}
 
+\subsection{计算成本与部署取舍}
+
+表~\ref{tab:cost} 汇总了部署相关的指标。自建模型的权重大小在 1--2.4\,MB、单片段延迟低于
+1\,ms，适合浏览器端或嵌入式部署；AST 的权重为 345\,MB、延迟约 231\,ms，更适合离线批量标注。
+需要指出，AST 的 4.6\,s「训练时间」只是线性头，8,000 首的 embedding 提取约需 7 分钟（12 进程
+特征化 + fp16 GPU 前向），这部分成本在迁移学习中不可忽略。
+
+\begin{table}[H]
+\centering\small
+\caption{部署相关指标对比（GTZAN / FMA 两套权重结构相同）。}
+\label{tab:cost}
+\begin{tabular}{lcccc}
+\toprule
+模型 & 参数量 & 大小 (MB) & 推理 (ms/片段) & 训练成本\\
+\midrule
+MLP & 87,946 & 1.07 & 0.02 & 0.6\,s\\
+SVM & 140,657 & 1.23 & 0.07 & 0.2\,s\\
+Transformer & 302,474 & 1.22 & 0.26 & 15\,s\\
+CRNN & 418,986 & 1.69 & 0.76 & 55\,s\\
+CNN & 592,554 & 2.39 & 0.76 & 57\,s\\
+AST（冻结） & 86,194,954 & 346.45 & 204--231 & 23\,s + 提取\\
+\bottomrule
+\end{tabular}
+\end{table}
+
 % ================= 7 分析 =================
-\section{分析与讨论}
+\section{分析与讨论}\label{sec:analysis}
 
 \subsection{错误分析}
 在 GTZAN 上，CNN 最常见的混淆对是 \texttt{reggae}$\rightarrow$\texttt{pop}、\texttt{blues}$\rightarrow$\texttt{reggae} 与 \texttt{hiphop}$\rightarrow$\texttt{pop}；\texttt{rock} 的逐类 F1 最低（0.429），\texttt{classical} 最高（0.933）。置信度并不等于正确率：Transformer 的 64 个错误中有 16 个置信度超过 0.9，而 CNN 只有 3/37。在 FMA 主实验上，CNN 的错误更分散（Pop$\rightarrow$Folk 52 首、Instrumental$\rightarrow$Folk 45 首、Pop$\rightarrow$Rock 33 首），CRNN 的高置信错误为 90/610，远高于 CNN 的 23/630。这说明模型在标签边界模糊的样本上会「自信地犯错」，现场演示时比单纯报准确率更有说服力。
@@ -241,6 +544,43 @@ AST 在两个数据集上都是最强的单模型，但其优势来自 AudioSet 
 \subsection{为什么从头训练的 Transformer 会输}
 轻量 Transformer 在 GTZAN 上只有 0.541 的 Macro-F1，且训练损失迅速降到接近 0、验证损失抬头——这是典型的小样本过拟合。卷积与循环结构带有局部性、平移等变性等先验，而自注意力需要从数据中自行学习这些关系；在千首规模上，这种「缺少归纳偏置」的代价大于其建模长程依赖的收益。值得注意的是，同为 Transformer 架构的 AST 在预训练后反而最强，说明问题不在架构本身，而在\textbf{训练数据与正则化}。主实验中的 SpecAugment / 标签平滑消融正是对这一判断的直接检验。
 
+\subsection{数据规模与任务难度}
+
+表~\ref{tab:difficulty} 对比两个数据集。FMA-small 的训练集是 GTZAN 的 8.1 倍，但 CNN 的绝对
+Macro-F1 反而低 21 个百分点。原因不在数据量，而在任务本身：FMA 的 8 个类别覆盖更宽（例如
+Experimental 与 International），同一类别内部的声学差异更大；同时艺术家分离划分消除了
+GTZAN 中不存在的「认乐队」捷径。这一对比提醒我们：\textbf{跨数据集的准确率不可直接比较}，
+数据规模也不是性能的唯一决定因素。
+
+\begin{table}[H]
+\centering\small
+\caption{两个数据集的规模、难度与最佳结果对比。}
+\label{tab:difficulty}
+\begin{tabular}{lccccc}
+\toprule
+数据集 & 类别数 & 训练 / 测试 & CNN Macro-F1 & 最佳模型 & 最佳 Macro-F1\\
+\midrule
+GTZAN & 10 & 689 / 147 & 0.753 & AST & 0.814\\
+FMA-small & 8 & 5,596 / 1,199 & 0.470 & AST & 0.590\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{鲁棒性的进一步解读}
+
+表~\ref{tab:robust} 的完整结果可以按「表示」而非「模型」来读：
+\begin{itemize}
+  \item 深度模型的输入是片段内最大值归一的 Log-Mel，因此对纯增益严格不变；传统模型的
+  MFCC 是绝对 dB，还包含 RMS，增益变化会直接移动特征分布，掉 0.7--3.4 个百分点。
+  \item 噪声抬高了频谱的动态范围地板。以 \texttt{blues.00008} 为例，干净片段的 Log-Mel
+  最小值是 $-80$\,dB，10\,dB SNR 时变为 $-46.3$\,dB；在 \texttt{ref=max} 归一化后，
+  安静帧整体上移几十 dB，相当于强烈的分布外输入。这解释了为什么连「几乎听不见」的
+  30\,dB 噪声也能让 CNN 大幅掉点。
+  \item 片段长度同时改变上下文与时间尺度：3\,s 片段被线性拉伸到 216 帧（1.66 倍），
+  10\,s 被压缩到 216 帧（2 倍）。CRNN 的 GRU 对时间尺度最敏感，3\,s 时 Macro-F1 只剩
+  0.169；而 SVM/MLP 的统计量在更长窗口上反而更稳（10\,s 提升约 5 个百分点）。
+\end{itemize}
+
 \subsection{对课程项目的启示}
 \begin{enumerate}
   \item \textbf{协议比模型数量更重要}：同一划分、同一批片段、训练集拟合预处理，才能让「谁更强」这句话有意义；
@@ -249,20 +589,89 @@ AST 在两个数据集上都是最强的单模型，但其优势来自 AudioSet 
   \item \textbf{可视化与失败案例比单一准确率更有解释力}：混淆矩阵、置信度、时间轴让观众直观看到模型「什么时候会翻车」。
 \end{enumerate}
 
-\subsection{局限与威胁}
-\begin{itemize}
-  \item GTZAN 的标签噪声与重复曲目会影响绝对数值；FMA-small 已采用艺术家分离划分，但艺术家划分导致逐流派比例不完全均衡；曲目级对照实验用于量化泄漏影响。
-  \item 所有实验只使用中心 5 秒片段，未利用整首 30 秒；更长上下文可能改变排序。
-  \item 鲁棒性只覆盖测试集与有限的扰动类型，未包含变速、混响、压缩失真等现场常见变换。
-  \item 单机单卡、单次评估，绝对指标的置信区间约为 $\pm$3--7 个百分点（取决于测试集大小）。
-\end{itemize}
+\section{讨论与局限}\label{sec:discussion}
 
-% ================= 8 结论 =================
-\section{结论与展望}
+\subsection{主要发现}
 
-本文在同一协议下系统比较了从 SVM 到预训练 AST 的六类音乐流派分类模型，并在 GTZAN 与 FMA-small 上验证了结论的稳定性。核心发现是：预训练表示带来最大的单点收益；深度模型在干净输入上领先，但在噪声与短片段下并不比传统方法稳健；小数据上的轻量 Transformer 容易过拟合，需要强正则化。未来工作包括：利用整首音频与更长上下文、引入噪声/变速增强、尝试知识蒸馏与多模态（歌词、元数据）融合，以及把片段级时间轴扩展为可交互的现场演示。
+\begin{enumerate}
+  \item \textbf{预训练是单点收益最大的因素}。冻结 AST 主干 + 线性头在两个数据集上都取得最佳
+  Macro-F1（GTZAN 0.814、FMA 0.590），分别比最好的自建模型高 6.1 与 9.8 个百分点。但这份收益
+  属于「预训练数据 + 架构」的组合，不能简单归因于 Transformer 本身——从头训练的轻量
+  Transformer 反而最弱。
+  \item \textbf{深度模型不是免费的午餐}。在 GTZAN 上，CNN 比 SVM 高约 4.7 个百分点，
+  训练成本却高约 250 倍；在 FMA 上，CNN 甚至落后于 CRNN。数据规模、标签质量与正则化共同决定
+  排序，架构只是其中一环。
+  \item \textbf{数据泄漏能把结论整个翻转}。同一批特征、同一模型，仅把划分从艺术家分离换成
+  按曲目，CNN 的 Macro-F1 就从 0.470 变成 0.568。泄漏不是「多几个点」的小问题，而是会让
+  模型选择与论文结论失效。
+  \item \textbf{干净输入上的冠军在扰动下可能垫底}。CNN 在 GTZAN 上排名第一，但在 0\,dB 噪声
+  下是五个模型中最差的（0.122）；除增益外，每个扰动条件的绝对第一都是 SVM。
+\end{enumerate}
 
-% ================= 参考 =================
+\subsection{威胁与局限}
+
+\paragraph{构念效度}
+流派标签是人为构造的，同一首歌可能同时属于多个流派；模型学到的是「数据集标注者的偏好」，
+而不是音乐的本质。GTZAN 的标签噪声、FMA 的宽类别都放大了这一问题。
+
+\paragraph{内部效度}
+尽管我们固定了划分、种子与预处理，GPU 的非确定性仍可能带来 1--2 个百分点的波动（例如
+\texttt{adaptive\_avg\_pool2d\_backward\_cuda} 无确定性实现）。因此我们只对大于 3 个百分点的
+差异做解释；1--2 个百分点的差异视为噪声。
+
+\paragraph{外部效度}
+两个数据集都以西方流行音乐为主，未覆盖中文流行、民族音乐、古典乐以外的非西方传统音乐；
+片段统一取中心 5 秒，未利用整首 30 秒的结构信息；扰动实验只覆盖增益、噪声、片段长度，
+未覆盖变速、混响、压缩失真与现场录音。
+
+\paragraph{统计效度}
+GTZAN 测试集仅 147 首，比例指标的 95\% 置信半径约 $\pm 7$ 个百分点；FMA 为 1,199 首，
+约 $\pm 2.8$ 个百分点。3 个种子只能给出粗略的方差估计，报告中的标准差应理解为
+「同一协议下的运行波动」，而不是总体置信区间。
+
+\paragraph{实现层面}
+AST 的 16\,kHz 与 FMA 原始 44.1/48\,kHz 存在域差异，5 秒补零到 10.24 秒意味着一半输入是静音；
+受算力限制，AST 只做线性探针、未微调，其结果代表「冻结表征的线性可分性」而非 AST 的上限。
+
+\subsection{伦理与数据授权}
+
+GTZAN 与 FMA 的音频版权归各权利人所有，本文只使用其进行研究与课程演示，不再分发音频；
+仓库不包含原始音频与模型权重，只提交划分清单、代码与结果。模型可能强化「流派」这一西方
+音乐产业分类体系，在跨文化应用中需要重新审视标签体系与标注者构成。
+
+\subsection{可复现性总结}
+
+全部实验由命令行脚本驱动，随机源显式定种；划分、特征、预测与图表均可从仓库重新生成。
+自动化测试覆盖四条协议不变量；独立校验员对结果文件逐条复算，未发现泄漏或伪造。唯一
+不完全可复现的是 GPU 非确定性带来的细微数值差异，已在第~\ref{sec:setup} 节说明。
+
+\section{结论与展望}\label{sec:conclusion}
+
+本文在一个统一、可复现的协议下，系统比较了从 SVM 到预训练 AST 的六类音乐流派分类模型，
+并在 GTZAN（985 首）与 FMA-small（7,994 首）上验证结论的稳定性。我们的核心发现可以概括为
+四点：预训练表示带来最大的单点收益；深度模型在干净输入上领先，但在噪声与短片段下并不比
+传统方法稳健；小数据上的轻量 Transformer 容易过拟合；数据划分中的艺术家泄漏足以让结论
+虚高近 10 个百分点。
+
+作为课程项目，本文的另一个目标是把「做研究」的流程完整走一遍：先审计环境与数据，再固定
+协议、做消融、分析失败案例，最后把结果写成可追溯的报告并开源。我们刻意保留了几个负结果
+（优化消融无效、Transformer 失利、噪声下全面崩塌），因为诚实报告失败模式比堆叠准确率更有
+教学价值。
+
+未来工作可以从四个方向展开：
+\begin{enumerate}
+  \item \textbf{更长的上下文}：当前只使用中心 5 秒片段，未来可利用整首 30 秒或滑动窗口聚合，
+  并系统研究片段长度与性能的关系；
+  \item \textbf{更强的鲁棒性训练}：在训练中加入噪声、增益、变速与混响增强，或采用固定 dB
+  参考、每帧 CMVN 等对增益/噪声更稳健的归一化；
+  \item \textbf{知识蒸馏与轻量化}：把 AST 的表征蒸馏到 CNN/CRNN，在保留大部分收益的同时
+  把推理成本降回毫秒级；
+  \item \textbf{跨文化与多模态}：引入非西方音乐、歌词与元数据，重新审视「流派」标签体系，
+  并扩展到乐器识别、情绪识别等相关任务。
+\end{enumerate}
+
+
+% ================= 参考文献 =================
 \begin{thebibliography}{99}\small
 \bibitem{tzanetakis2002gtzan} G. Tzanetakis and P. Cook. Musical genre classification of audio signals. \emph{IEEE Transactions on Speech and Audio Processing}, 10(5):293--302, 2002.
 \bibitem{sturm2013gtzan} B. L. Sturm. The GTZAN dataset: Its contents, its faults, their effects on evaluation, and its future use. \emph{arXiv:1306.1461}, 2013.
@@ -276,10 +685,20 @@ AST 在两个数据集上都是最强的单模型，但其优势来自 AudioSet 
 \bibitem{pedregosa2011sklearn} F. Pedregosa et al. Scikit-learn: Machine learning in Python. \emph{JMLR}, 12:2825--2830, 2011.
 \bibitem{loshchilov2019adamw} I. Loshchilov and F. Hutter. Decoupled weight decay regularization. In \emph{ICLR}, 2019.
 \bibitem{szegedy2016labelsmoothing} C. Szegedy et al. Rethinking the inception architecture for computer vision. In \emph{CVPR}, 2016.
+\bibitem{casey2008content} M. A. Casey et al. Content-based music information retrieval: Current directions and future challenges. \emph{Proceedings of the IEEE}, 96(4):668--696, 2008.
+\bibitem{dieleman2014endtoend} S. Dieleman and B. Schrauwen. End-to-end learning for music audio. In \emph{ICASSP}, 2014.
+\bibitem{kong2020panns} Q. Kong et al. PANNs: Large-scale pretrained audio neural networks for audio pattern recognition. \emph{IEEE/ACM TASLP}, 28:2880--2894, 2020.
+\bibitem{downie2003mir} J. S. Downie. Music information retrieval. \emph{Annual Review of Information Science and Technology}, 37:295--340, 2003.
+\bibitem{bogdanov2013essentia} D. Bogdanov et al. Essentia: An audio analysis library for music information retrieval. In \emph{ISMIR}, 2013.
+\bibitem{bertin2011msd} T. Bertin-Mahieux et al. The Million Song Dataset. In \emph{ISMIR}, 2011.
+\bibitem{humphrey2013feature} E. J. Humphrey, J. P. Bello, and Y. LeCun. Feature learning and deep architectures: New directions for music informatics. \emph{Journal of Intelligent Information Systems}, 41:461--481, 2013.
+\bibitem{hershey2017cnn} S. Hershey et al. CNN architectures for large-scale audio classification. In \emph{ICASSP}, 2017.
 \end{thebibliography}
 
 \appendix
-\section{附录：数据统计与复现命令}
+\section{附录：数据、超参与复现细节}\label{sec:appendix}
+
+\subsection{数据集统计}
 
 \begin{table}[H]
 \centering\small
@@ -295,12 +714,69 @@ FMA-small & \input{numbers_fma_n} & 8 & \input{numbers_fma_split}\\
 \end{tabular}
 \end{table}
 
-\input{tables/fma_split.tex}
+GTZAN 原始 1,000 首，剔除 1 首损坏（\texttt{jazz.00054}）与 14 首重复副本后为 985 首；
+FMA-small 原始 8,000 首，剔除 6 首损坏后为 7,994 首。FMA 的采样率为 44.1\,kHz（7,569 首）、
+48\,kHz（411 首）与 22.05\,kHz（14 首）混合，统一重采样到 22.05\,kHz；GTZAN 全部为 22.05\,kHz。
 
-\paragraph{复现命令}
+\subsection{完整超参数}
+
+\begin{table}[H]
+\centering\small
+\caption{模型与训练超参数（两套数据集的差异仅在类别数）。}
+\label{tab:hyper}
+\begin{tabular}{l p{9.5cm}}
+\toprule
+模型 & 超参数\\
+\midrule
+SVM & RBF 核，$C=10$，$\gamma=$scale，probability=True（Platt 校准）\\
+MLP & 隐藏层 256--128，ReLU，$\alpha=10^{-4}$，batch 64，lr $10^{-3}$，max\_iter 300，
+early stopping（15\% 内部验证，patience 20）\\
+CNN & 4 个卷积块（32/64/128/128），每块 2 层 $3\times3$ 卷积 + BN + ReLU + $2\times2$ 池化；
+AdaptiveAvgPool(2,4)，dropout 0.3，FC(1024,10)\\
+CRNN & 3 个卷积块（32/64/128），池化 $(2,2)/(2,2)/(2,1)$；BiGRU(96)；时间平均 + FC(192,10)\\
+Transformer & $d=128$，4 头，2 层 Pre-LN，FFN 256，dropout 0.1，可学习位置编码\\
+共同训练设置 & AdamW，lr $10^{-3}$，weight decay $10^{-4}$，余弦退火，batch 32，
+最多 30 epoch，按 val Macro-F1 早停（patience 8）\\
+AST & 冻结主干，StandardScaler + LogisticRegression，$C\in\{0.001,\dots,10\}$ 由 val 选择，
+16\,kHz、中心 5 秒、补零 10.24 秒\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{鲁棒性完整变化表}
+
+\input{tables/robust_delta.tex}
+
+\subsection{AST 的 C 网格}
+
+\input{tables/ast_grid.tex}
+
+\subsection{仓库结构与复现命令}
+
+\begin{verbatim}
+MUSIC_AI/
+├── configs/            dataset.yaml, baseline.yaml, experiments.yaml
+├── data/               raw/, processed/, splits/, fma/, splits_fma/
+├── src/
+│   ├── data/           prepare_dataset.py, prepare_fma.py, audio_features.py
+│   ├── models/         cnn.py (GenreCNN / CRNN / SmallTransformer)
+│   ├── train_classical.py, train_cnn.py, train_ast.py
+│   ├── evaluate.py, predict.py, error_analysis.py, robustness.py, timeline.py
+│   └── metrics.py
+├── scripts/            extract_features.py, run_fma.sh, fma_ablation.sh,
+│                       ast_fma_fast.py, robustness_flips.py, …
+├── app/demo.py         Streamlit 演示
+├── tests/test_protocol.py
+├── results/             GTZAN 结果与图
+├── results_fma/         FMA 主实验结果与图
+├── results_fma_leak/    泄漏对照
+├── docs/                MD 文档 + report/（LaTeX 源与 PDF）
+└── README.md
+\end{verbatim}
+
 \begin{verbatim}
 PY=/home/weizai0v0/.apps/anaconda3/envs/DataAnalysis/bin/python
-# MVP (GTZAN)
+# GTZAN MVP
 $PY -m src.data.prepare_dataset --download --extract --audit --split
 $PY scripts/extract_features.py --workers 8
 $PY -m src.train_classical --models svm mlp --seeds 42 123 2024
@@ -308,29 +784,37 @@ $PY -m src.train_cnn --model cnn --seeds 42 123 2024 --epochs 30
 $PY -m src.train_cnn --model crnn --seeds 42 123 2024 --epochs 30
 $PY -m src.train_cnn --model transformer --seeds 42 123 2024 --epochs 30
 $PY -m src.evaluate
-# Main experiment (FMA-small)
+# FMA-small 主实验
 bash scripts/run_fma.sh 42 123 2024
-# AST
-$PY -m src.train_ast
-# Tests
+$PY scripts/ast_fma_fast.py --reuse-feats --half
+# 泄漏对照
+MUSIC_FEATURES=data/fma/processed/features_tracklevel.npz \
+  MUSIC_RESULTS=results_fma_leak MUSIC_CKPT=checkpoints_fma_leak \
+  $PY -m src.train_cnn --model cnn --seeds 42 --epochs 30
+# 报告
+cd docs/report && bash build.sh
+# 测试
 $PY -m pytest -q tests
 \end{verbatim}
 
-\paragraph{超参摘要}
+\subsection{结果文件说明}
+
 \begin{table}[H]
 \centering\small
-\caption{模型与训练超参数。}
-\label{tab:hyper}
-\begin{tabular}{lcccc}
+\caption{主要结果文件。}
+\label{tab:files}
+\begin{tabular}{l p{9.5cm}}
 \toprule
-模型 & 优化器 & 学习率 & batch & 参数量\\
+文件 & 内容\\
 \midrule
-SVM & -- & -- & -- & 140,657\\
-MLP & Adam (sklearn) & $10^{-3}$ & 64 & 87,946\\
-CNN & AdamW & $10^{-3}$ & 32 & 592,554\\
-CRNN & AdamW & $10^{-3}$ & 32 & 418,986\\
-Transformer & AdamW & $10^{-3}$ & 32 & 302,474\\
-AST+线性头 & LBFGS/LogReg & -- & -- & 86,194,954\\
+\texttt{results/metrics.csv} & GTZAN 逐 seed 指标（16 行，含 AST）\\
+\texttt{results/\_eval.json} & 混淆矩阵、逐类 F1、训练曲线\\
+\texttt{results/predictions/*.csv} & 逐样本预测与 10 类概率\\
+\texttt{results/robustness.csv} & 5 模型 × 7 扰动的 35 行结果\\
+\texttt{results\_fma/metrics.csv} & FMA 逐 seed 指标（16 行，含 AST）\\
+\texttt{results\_fma/ast\_metrics.json} & AST 迁移结果与成本\\
+\texttt{results\_fma\_leak/metrics.csv} & 曲目级划分的泄漏对照\\
+\texttt{docs/audit\_report.md} & 独立只读审计报告\\
 \bottomrule
 \end{tabular}
 \end{table}

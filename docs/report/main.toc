@@ -1,0 +1,67 @@
+\contentsline {section}{\numberline {1}引言}{4}{section.1}%
+\contentsline {subsection}{\numberline {1.1}研究背景}{4}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}问题与挑战}{4}{subsection.1.2}%
+\contentsline {subsection}{\numberline {1.3}研究问题}{4}{subsection.1.3}%
+\contentsline {subsection}{\numberline {1.4}主要贡献}{4}{subsection.1.4}%
+\contentsline {subsection}{\numberline {1.5}报告组织}{4}{subsection.1.5}%
+\contentsline {section}{\numberline {2}相关工作}{5}{section.2}%
+\contentsline {subsection}{\numberline {2.1}音乐信息检索与流派分类}{5}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}人工特征与浅层模型}{5}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}端到端深度模型}{5}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}Transformer 与预训练}{5}{subsection.2.4}%
+\contentsline {subsection}{\numberline {2.5}数据集与评测偏差}{5}{subsection.2.5}%
+\contentsline {subsection}{\numberline {2.6}鲁棒性与可复现性}{5}{subsection.2.6}%
+\contentsline {section}{\numberline {3}数据与实验协议}{5}{section.3}%
+\contentsline {subsection}{\numberline {3.1}GTZAN（MVP 数据集）}{5}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}FMA-small（主实验数据集）}{6}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}统一预处理}{7}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}划分协议与泄漏诊断}{7}{subsection.3.4}%
+\contentsline {subsection}{\numberline {3.5}防泄漏与可复现约束}{8}{subsection.3.5}%
+\contentsline {section}{\numberline {4}方法}{8}{section.4}%
+\contentsline {subsection}{\numberline {4.1}传统基线：SVM 与 MLP}{8}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}CNN}{8}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}CRNN}{8}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}轻量 Transformer}{8}{subsection.4.4}%
+\contentsline {subsection}{\numberline {4.5}AST 迁移学习}{9}{subsection.4.5}%
+\contentsline {subsection}{\numberline {4.6}训练细节与优化}{9}{subsection.4.6}%
+\contentsline {subsection}{\numberline {4.7}训练算法}{9}{subsection.4.7}%
+\contentsline {subsection}{\numberline {4.8}优化策略}{9}{subsection.4.8}%
+\contentsline {subsection}{\numberline {4.9}复杂度与实现细节}{10}{subsection.4.9}%
+\contentsline {section}{\numberline {5}实验设置}{10}{section.5}%
+\contentsline {subsection}{\numberline {5.1}软硬件环境}{10}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}评估指标}{10}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}重复实验与统计}{10}{subsection.5.3}%
+\contentsline {subsection}{\numberline {5.4}实验矩阵}{11}{subsection.5.4}%
+\contentsline {subsection}{\numberline {5.5}可复现性措施}{11}{subsection.5.5}%
+\contentsline {section}{\numberline {6}结果}{11}{section.6}%
+\contentsline {subsection}{\numberline {6.1}GTZAN：最小可行 MVP}{11}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}FMA-small：主实验}{13}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}优化消融}{15}{subsection.6.3}%
+\contentsline {subsection}{\numberline {6.4}计算成本与部署取舍}{16}{subsection.6.4}%
+\contentsline {section}{\numberline {7}分析与讨论}{16}{section.7}%
+\contentsline {subsection}{\numberline {7.1}错误分析}{16}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}鲁棒性}{17}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}片段级分析}{18}{subsection.7.3}%
+\contentsline {subsection}{\numberline {7.4}预训练的收益与代价}{18}{subsection.7.4}%
+\contentsline {subsection}{\numberline {7.5}为什么从头训练的 Transformer 会输}{18}{subsection.7.5}%
+\contentsline {subsection}{\numberline {7.6}数据规模与任务难度}{19}{subsection.7.6}%
+\contentsline {subsection}{\numberline {7.7}鲁棒性的进一步解读}{19}{subsection.7.7}%
+\contentsline {subsection}{\numberline {7.8}对课程项目的启示}{19}{subsection.7.8}%
+\contentsline {section}{\numberline {8}讨论与局限}{19}{section.8}%
+\contentsline {subsection}{\numberline {8.1}主要发现}{19}{subsection.8.1}%
+\contentsline {subsection}{\numberline {8.2}威胁与局限}{20}{subsection.8.2}%
+\contentsline {paragraph}{构念效度}{20}{paragraph*.29}%
+\contentsline {paragraph}{内部效度}{20}{paragraph*.30}%
+\contentsline {paragraph}{外部效度}{20}{paragraph*.31}%
+\contentsline {paragraph}{统计效度}{20}{paragraph*.32}%
+\contentsline {paragraph}{实现层面}{20}{paragraph*.33}%
+\contentsline {subsection}{\numberline {8.3}伦理与数据授权}{20}{subsection.8.3}%
+\contentsline {subsection}{\numberline {8.4}可复现性总结}{20}{subsection.8.4}%
+\contentsline {section}{\numberline {9}结论与展望}{20}{section.9}%
+\contentsline {section}{\numberline {A}附录：数据、超参与复现细节}{22}{appendix.A}%
+\contentsline {subsection}{\numberline {A.1}数据集统计}{22}{subsection.A.1}%
+\contentsline {subsection}{\numberline {A.2}完整超参数}{22}{subsection.A.2}%
+\contentsline {subsection}{\numberline {A.3}鲁棒性完整变化表}{22}{subsection.A.3}%
+\contentsline {subsection}{\numberline {A.4}AST 的 C 网格}{23}{subsection.A.4}%
+\contentsline {subsection}{\numberline {A.5}仓库结构与复现命令}{23}{subsection.A.5}%
+\contentsline {subsection}{\numberline {A.6}结果文件说明}{24}{subsection.A.6}%

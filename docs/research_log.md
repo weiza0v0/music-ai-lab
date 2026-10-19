@@ -419,3 +419,14 @@ bash scripts/run_fma.sh 42 123 2024
 - 成本：权重 345 MB、推理约 231 ms/片段；embedding 提取约 7 分钟（fp16）。
 - 期间修复：sklearn 1.9 移除 `multi_class`、断点复用特征/嵌入、HF 离线模式。
 - 产物：`docs/ast_fma.md`、`results_fma/ast_metrics.json`、`ast_eval.json`。
+
+## 2026-10-19 17:30
+
+**技术报告扩写与流程图修复**
+
+- 报告从 11 页扩写到 24 页：新增目录、研究背景/挑战/贡献、相关工作 6 小节、
+  数据统计与泄漏表、209 维特征表、模型结构表、训练算法伪代码、环境/指标/统计/实验矩阵、
+  逐 seed 与逐类结果、混淆矩阵 2×3 布局、训练曲线、部署成本表、讨论与局限、附录。
+- 原 matplotlib 流程图文字过小、箭头遮挡，改为 **TikZ 矢量图**（节点对齐、箭头清晰）。
+- 混淆矩阵由 6 联横排改为 2×3，标签可读性明显改善。
+- PDF：`docs/Music_AI_Lab_Technical_Report.pdf`（24 页）。

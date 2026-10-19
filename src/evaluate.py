@@ -114,9 +114,11 @@ def confusion_panel() -> None:
     if not rows:
         return
     n = len(rows)
-    fig, axes = plt.subplots(1, n, figsize=(4.1 * n, 4.2), squeeze=False)
+    ncols = 3 if n > 4 else n
+    nrows = (n + ncols - 1) // ncols
+    fig, axes = plt.subplots(nrows, ncols, figsize=(4.1 * ncols, 4.2 * nrows), squeeze=False)
     classes = rows[0][1]["classes"]
-    for ax, (model, d) in zip(axes[0], rows):
+    for ax, (model, d) in zip(axes.ravel(), rows):
         cm = np.array(d["test"]["confusion_matrix"], dtype=float)
         cmn = cm / cm.sum(axis=1, keepdims=True)
         im = ax.imshow(cmn, cmap="Oranges", vmin=0, vmax=1)
@@ -128,7 +130,9 @@ def confusion_panel() -> None:
                 if cmn[i, j] > 0.5:
                     ax.text(j, i, f"{cmn[i,j]:.1f}", ha="center", va="center",
                             fontsize=6, color="white" if cmn[i, j] > 0.75 else "black")
-    fig.colorbar(im, ax=axes[0].tolist(), fraction=0.015, pad=0.01, label="row-normalised")
+    for ax in axes.ravel()[n:]:
+        ax.axis("off")
+    fig.colorbar(im, ax=axes.ravel().tolist(), fraction=0.015, pad=0.01, label="row-normalised")
     fig.savefig(FIG / "confusion_matrices.png", bbox_inches="tight")
     plt.close(fig)
 

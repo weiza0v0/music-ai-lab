@@ -368,7 +368,7 @@ $PY -m streamlit run app/demo.py
 
 - 数据卡：`docs/fma_data.md`
 - 主实验日志：`docs/experiment_log.md`「主实验（FMA-small）」
-- 技术报告（LaTeX 源码 + PDF）：`docs/report/main.tex`、`docs/Music_AI_Lab_Technical_Report.pdf`
+- 技术报告（LaTeX 源码 + 24 页 PDF）：`docs/report/main.tex`、`docs/Music_AI_Lab_Technical_Report.pdf`
 
 单文件推理：
 

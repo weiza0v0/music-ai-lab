@@ -171,6 +171,123 @@ def fma_split_table() -> str:
     return "\n".join(lines)
 
 
+def gtzan_table() -> str:
+    df = pd.read_csv(ROOT / "data/splits/splits.csv")
+    st = json.loads((ROOT / "data/splits/stats.json").read_text())
+    lines = [r"\begin{table}[H]", r"\centering\small",
+             r"\caption{GTZAN 清洗后的逐流派统计。}",
+             r"\label{tab:gtzan-data}", r"\begin{tabular}{lccc}", r"\toprule",
+             r"流派 & 曲目数 & 平均时长 (s) & 采样率\\", r"\midrule"]
+    for g, sub in df.groupby("genre"):
+        lines.append(f"{g} & {len(sub)} & {sub['duration'].mean():.2f} & 22,050\\\\")
+    lines.append(f"合计 & {len(df)} & {df['duration'].mean():.2f} & --\\\\")
+    lines += [r"\bottomrule", r"\end{tabular}", r"\end{table}", ""]
+    return "\n".join(lines)
+
+
+def perseed_table(csv_path: Path, caption: str, label: str) -> str:
+    if not csv_path.exists():
+        return "% missing\n"
+    df = pd.read_csv(csv_path)
+    df = df[df.split == "test"].copy()
+    lines = [r"\begin{table}[H]", r"\centering\scriptsize",
+             f"\\caption{{{caption}}}", f"\\label{{{label}}}",
+             r"\begin{tabular}{llcccc}", r"\toprule",
+             r"模型 & seed & Acc & Macro-F1 & 训练(s) & 推理(ms)\\", r"\midrule"]
+    for _, r in df.sort_values(["model", "seed"]).iterrows():
+        lines.append(f"{r['model']} & {int(r['seed'])} & {r['accuracy']:.4f} & "
+                     f"{r['macro_f1']:.4f} & {r['train_time_s']:.1f} & "
+                     f"{r['infer_ms_per_clip']:.2f}\\\\")
+    lines += [r"\bottomrule", r"\end{tabular}", r"\end{table}", ""]
+    return "\n".join(lines)
+
+
+def fma_perclass_table() -> str:
+    files = {"cnn": FMA / "cnn_seed42_eval.json",
+             "crnn": FMA / "crnn_seed42_eval.json",
+             "ast": FMA / "ast_seed42_eval.json"}
+    data = {k: json.loads(v.read_text()) for k, v in files.items() if v.exists()}
+    if not data:
+        return "% missing\n"
+    classes = data["cnn"]["classes"] if "cnn" in data else data["ast"]["classes"]
+    support = {}
+    sp = ROOT / "data/splits_fma/splits.csv"
+    if sp.exists():
+        sdf = pd.read_csv(sp)
+        support = sdf[sdf.split == "test"]["genre"].value_counts().to_dict()
+    lines = [r"\begin{table}[H]", r"\centering\small",
+             r"\caption{FMA-small 逐类 F1（seed 42）与测试样本数。}",
+             r"\label{tab:fma-perclass}", r"\begin{tabular}{lcccc}", r"\toprule",
+             r"流派 & CNN & CRNN & AST & 测试样本\\", r"\midrule"]
+    for c in sorted(classes):
+        vals = []
+        for m in ["cnn", "crnn", "ast"]:
+            d = data.get(m)
+            vals.append(f"{d['test']['per_class_f1'][c]:.3f}" if d else "--")
+        lines.append(f"{c} & " + " & ".join(vals) + f" & {support.get(c, '--')}\\\\")
+    lines += [r"\bottomrule", r"\end{tabular}", r"\end{table}", ""]
+    return "\n".join(lines)
+
+
+def arch_table() -> str:
+    return r"""\begin{table}[H]
+\centering\small
+\caption{自建模型的层结构与参数量（GTZAN 10 类；括号内为 FMA 8 类的差异）。}
+\label{tab:arch}
+\begin{tabular}{llc}
+\toprule
+模型 & 关键层（输入 $\rightarrow$ 输出） & 参数量\\
+\midrule
+CNN & Conv3$\times$3(32)$\times$2 $\rightarrow$ Pool & \multirow{3}{*}{592,554}\\
+    & Conv3$\times$3(64)$\times$2 $\rightarrow$ Pool & \\
+    & Conv3$\times$3(128)$\times$2 $\rightarrow$ Pool$\times$2 & \\
+    & AdaptiveAvgPool(2,4) $\rightarrow$ FC(1024,10) & \\
+\midrule
+CRNN & Conv(32/64/128) $\rightarrow$ BiGRU(96) & \multirow{2}{*}{418,986}\\
+     & 时间平均 $\rightarrow$ FC(192,10) & \\
+\midrule
+Transformer & Linear(64,128)+Pos $\rightarrow$ 2$\times$Pre-LN Encoder & \multirow{2}{*}{302,474}\\
+            & 时间平均 $\rightarrow$ FC(128,10) & \\
+\bottomrule
+\end{tabular}
+\end{table}
+"""
+
+
+def robustness_delta_table() -> str:
+    p = MVP / "robustness.csv"
+    if not p.exists():
+        return "% missing\n"
+    df = pd.read_csv(p)
+    piv = df.pivot(index="model", columns="condition", values="delta_acc") * 100
+    conds = ["clip_3s", "clip_10s", "gain_0.5", "gain_1.5", "noise_10db", "noise_0db"]
+    lines = [r"\begin{table}[H]", r"\centering\small",
+             r"\caption{相对 clean 的准确率变化（百分点，GTZAN seed 42）。}",
+             r"\label{tab:robust-delta}", r"\begin{tabular}{lcccccc}", r"\toprule",
+             r"模型 & 3s & 10s & 0.5$\times$ & 1.5$\times$ & 10dB & 0dB\\", r"\midrule"]
+    for m in ["svm", "mlp", "cnn", "crnn", "transformer"]:
+        vals = " & ".join(f"{piv.loc[m, c]:+.1f}" for c in conds)
+        lines.append(f"{LABEL[m]} & {vals}\\\\")
+    lines += [r"\bottomrule", r"\end{tabular}", r"\end{table}", ""]
+    return "\n".join(lines)
+
+
+def ast_grid_table() -> str:
+    p = FMA / "ast_eval.json"
+    if not p.exists():
+        return "% missing\n"
+    d = json.loads(p.read_text())
+    grid = d.get("head", {}).get("grid", [])
+    lines = [r"\begin{table}[H]", r"\centering\small",
+             r"\caption{AST 线性头的验证集 C 网格（FMA-small）。}",
+             r"\label{tab:ast-grid}", r"\begin{tabular}{cc}", r"\toprule",
+             r"$C$ & val Macro-F1\\", r"\midrule"]
+    for g in grid:
+        lines.append(f"{g['C']} & {g['val_macro_f1']:.4f}\\\\")
+    lines += [r"\bottomrule", r"\end{tabular}", r"\end{table}", ""]
+    return "\n".join(lines)
+
+
 def main() -> None:
     mvp = agg(MVP / "metrics.csv")
     (TAB / "mvp.tex").write_text(
@@ -215,6 +332,23 @@ def main() -> None:
     (TAB / "robustness.tex").write_text(robustness_table())
     (TAB / "perclass.tex").write_text(per_class_table())
     (TAB / "fma_split.tex").write_text(fma_split_table())
+    (TAB / "gtzan_data.tex").write_text(gtzan_table())
+    (TAB / "mvp_perseed.tex").write_text(
+        perseed_table(MVP / "metrics.csv", "GTZAN 逐 seed 结果。", "tab:mvp-perseed"))
+    (TAB / "fma_perseed.tex").write_text(
+        perseed_table(FMA / "metrics.csv", "FMA-small 逐 seed 结果（AST 为单 seed）。",
+                      "tab:fma-perseed"))
+    (TAB / "fma_perclass.tex").write_text(fma_perclass_table())
+    (TAB / "arch.tex").write_text(arch_table())
+    (TAB / "robust_delta.tex").write_text(robustness_delta_table())
+    (TAB / "ast_grid.tex").write_text(ast_grid_table())
+    import shutil
+    for src, dst in [(FMA / "figures/confusion_matrices.png", OUT / "figures/confusion_fma.png"),
+                     (FMA / "figures/training_curves.png", OUT / "figures/curves_fma.png"),
+                     (MVP / "figures/training_curves.png", OUT / "figures/curves_gtzan.png")]:
+        if src.exists():
+            (OUT / "figures").mkdir(exist_ok=True)
+            shutil.copyfile(src, dst)
 
     # abstract sentence
     def pick(df, m):

@@ -1,0 +1,16 @@
+\begin{table}[H]
+\centering\small
+\caption{相对 clean 的准确率变化（百分点，GTZAN seed 42）。}
+\label{tab:robust-delta}
+\begin{tabular}{lcccccc}
+\toprule
+模型 & 3s & 10s & 0.5$\times$ & 1.5$\times$ & 10dB & 0dB\\
+\midrule
+SVM & -12.9 & +4.1 & -0.7 & -3.4 & -37.4 & -40.8\\
+MLP & -10.9 & +6.1 & -2.7 & -0.7 & -36.7 & -42.2\\
+CNN & -34.0 & -21.1 & +0.0 & +0.0 & -53.7 & -62.6\\
+CRNN & -53.1 & -21.8 & +0.0 & +0.0 & -49.0 & -57.8\\
+Transformer & -3.4 & +3.4 & +0.0 & +0.0 & -33.3 & -41.5\\
+\bottomrule
+\end{tabular}
+\end{table}

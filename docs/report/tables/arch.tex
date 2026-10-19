@@ -1,0 +1,21 @@
+\begin{table}[H]
+\centering\small
+\caption{自建模型的层结构与参数量（GTZAN 10 类；括号内为 FMA 8 类的差异）。}
+\label{tab:arch}
+\begin{tabular}{llc}
+\toprule
+模型 & 关键层（输入 $\rightarrow$ 输出） & 参数量\\
+\midrule
+CNN & Conv3$\times$3(32)$\times$2 $\rightarrow$ Pool & \multirow{3}{*}{592,554}\\
+    & Conv3$\times$3(64)$\times$2 $\rightarrow$ Pool & \\
+    & Conv3$\times$3(128)$\times$2 $\rightarrow$ Pool$\times$2 & \\
+    & AdaptiveAvgPool(2,4) $\rightarrow$ FC(1024,10) & \\
+\midrule
+CRNN & Conv(32/64/128) $\rightarrow$ BiGRU(96) & \multirow{2}{*}{418,986}\\
+     & 时间平均 $\rightarrow$ FC(192,10) & \\
+\midrule
+Transformer & Linear(64,128)+Pos $\rightarrow$ 2$\times$Pre-LN Encoder & \multirow{2}{*}{302,474}\\
+            & 时间平均 $\rightarrow$ FC(128,10) & \\
+\bottomrule
+\end{tabular}
+\end{table}
