@@ -561,3 +561,24 @@ bash scripts/run_fma.sh 42 123 2024
 - README 增加 6.6 节（二期结果）与 7.7 进度表；`docs/experiment_log.md` 增加二期小节。
 - 如实保留的负结果：LSTM 在回灌条件下不如 Bigram；LoRA loss 未收敛（7.63 vs 均匀 7.62）；
   续写受 3 秒长度限制。
+
+## 2026-10-19 23:50
+
+**二期复核：全量校验 + 文档收尾（未改动任何实验结果）**
+
+- 动机：上一会话在收尾汇报时上下文溢出中断，虽已推送并投递 PDF，但从未发出最终
+  完成报告，因此本次对全部产物做一次"冷眼"复核。
+- 校验结果：`git status` 干净、本地 `main` 与 `origin/main` 同为 `c3c0291`；
+  技术报告 `pdfinfo` 确认 **30 页**、`main.log` 编译错误数为 0。
+- 排查 `pytest` 报错：`test_every_checkpoint_predicts_real_audio` 抛
+  `cannot cache function '__o_fold': no locator available`。根因不是代码缺陷——
+  numba 0.66 的 `CACHE_DIR` 为空，`UserWideCacheLocator` 需写 `~/.cache/numba`，
+  而 DSH `workspace-write` 沙箱拒绝该写入（`PermissionError [Errno 13]`），
+  `from_function()` 只吞 `OSError` 便返回 `None`，于是所有 locator 失败。
+  在无沙箱条件下重跑即 **4 passed**，故 README「pytest 4 项全过」属实。
+- 回填 `docs/phase0_audit_phase2.md` §6 的 MusicGen 占位：加载 17.2 s（LoRA 5.8 s）、
+  峰值显存 1,356–1,431 MB（LoRA 训练 1,295 MB）、3 s 生成 3.0–4.2 s、前缀续写接口可用；
+  4 s 生成因位置索引越界未实测，如实标注。
+- 清理：删除已被 TikZ 取代的 `figures/pipeline.png`、审阅用 `figures/tikz_preview.png`
+  及其生成脚本 `make_pipeline.py`（三者在仓库内均无引用）。
+- 产物：无新增实验结果；仅文档与死资源变动。

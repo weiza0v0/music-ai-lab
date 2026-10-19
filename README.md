@@ -598,6 +598,11 @@ $PY -m streamlit run app/demo.py
 
 > 二期依赖注意：下载 Hugging Face 权重前需 `export NO_PROXY=localhost,127.0.0.1`，
 > 否则 `no_proxy` 里的 `[::1]` 会让 `httpx` 抛 `Invalid port`。
+>
+> 若在写权限受限的沙箱/容器里跑，`librosa` 会因 numba 无法建缓存而报
+> `cannot cache function '__o_fold': no locator available`。这是 numba 要写
+> `~/.cache/numba` 被拒所致，不是代码问题；`export NUMBA_CACHE_DIR=<可写目录>`
+> 即可（例如 `NUMBA_CACHE_DIR=/tmp/numba_cache`），正常桌面环境下无需处理。
 
 一键脚本：`bash scripts/run_all.sh`（可用 `PYTHON=...` 覆盖解释器）。
 
@@ -747,7 +752,9 @@ Failed to initialize NVML: GPU access blocked by the operating system
   片段长度扫描。
 - **二期**：Token 预测 horizon 只有 1 秒；生成评估以客观距离 + 少量试听为主，
   没有规模化主观评分；LoRA 的训练步数与数据量受 8 GB 显存与时间预算限制。
-- **AST / PPT / 彩排**：未开始。
+- **PPT / 彩排**：未开始（按安排暂缓，命令行与报告已可复现全部结果）。
+- **运行环境**：`librosa` 首次导入 `notation` 时 numba 需建缓存；在无写权限的沙箱里
+  需显式 `export NUMBA_CACHE_DIR=<可写目录>`，否则报 `no locator available`。
 
 ---
 
