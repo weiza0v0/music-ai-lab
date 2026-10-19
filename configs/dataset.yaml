@@ -1,0 +1,23 @@
+# Dataset protocol — shared by every model in the MVP
+dataset: gtzan
+source_url: https://huggingface.co/datasets/marsyas/gtzan/resolve/main/data/genres.tar.gz
+raw_dir: data/raw/gtzan
+archive: data/raw/genres.tar.gz
+
+audio:
+  sample_rate: 22050      # GTZAN native rate
+  clip_seconds: 5         # one clip per track for the MVP
+  channels: 1
+
+split:
+  seed: 42
+  train: 0.70
+  val: 0.15
+  test: 0.15
+  strategy: stratified_by_genre_track_level
+
+features:
+  n_mfcc: 40
+  n_mels: 64
+  n_fft: 1024
+  hop_length: 512

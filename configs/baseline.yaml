@@ -1,0 +1,27 @@
+# Baseline hyper-parameters — fixed before training, identical data protocol.
+svm:
+  kernel: rbf
+  C: 10.0
+  gamma: scale
+  probability: true
+
+mlp:
+  hidden_layer_sizes: [256, 128]
+  alpha: 1.0e-4
+  batch_size: 64
+  learning_rate_init: 1.0e-3
+  max_iter: 300
+  early_stopping: true
+  n_iter_no_change: 20
+  validation_fraction: 0.15
+
+cnn:
+  width: 32
+  dropout: 0.3
+  batch_size: 32
+  lr: 1.0e-3
+  weight_decay: 1.0e-4
+  epochs: 30
+  patience: 8
+
+seeds: [42, 123, 2024]

@@ -1,0 +1,16 @@
+model,seed,split,n_samples,accuracy,macro_f1,train_time_s,infer_ms_per_clip,n_params,model_size_mb,notes
+cnn,42,test,147,0.7483,0.7493,57.63,0.769,592554,2.392,best_ep=23;best_val_f1=0.7276;cuda
+cnn,123,test,147,0.7551,0.7496,57.4,0.759,592554,2.392,best_ep=30;best_val_f1=0.7582;cuda
+cnn,2024,test,147,0.7619,0.7602,57.55,0.763,592554,2.392,best_ep=27;best_val_f1=0.7513;cuda
+crnn,42,test,147,0.7415,0.7411,56.32,0.763,418986,1.694,best_ep=30;best_val_f1=0.7798;cuda
+crnn,123,test,147,0.6871,0.6842,55.84,0.767,418986,1.694,best_ep=24;best_val_f1=0.7942;cuda
+crnn,2024,test,147,0.7483,0.745,55.89,0.743,418986,1.694,best_ep=25;best_val_f1=0.7835;cuda
+mlp,42,test,147,0.6395,0.6331,0.59,0.006,87946,1.07,val_acc=0.6510;val_f1=0.6503
+mlp,123,test,147,0.6803,0.6825,0.41,0.006,87946,1.07,val_acc=0.6443;val_f1=0.6449
+mlp,2024,test,147,0.5782,0.5735,0.91,0.041,87946,1.07,val_acc=0.6510;val_f1=0.6455
+svm,42,test,147,0.7075,0.6987,0.22,0.071,140657,1.234,val_acc=0.7450;val_f1=0.7475
+svm,123,test,147,0.7075,0.6987,0.25,0.07,140657,1.234,val_acc=0.7450;val_f1=0.7475
+svm,2024,test,147,0.7075,0.6987,0.23,0.072,140657,1.234,val_acc=0.7450;val_f1=0.7475
+transformer,42,test,147,0.5646,0.5566,16.65,0.266,302474,1.221,best_ep=14;best_val_f1=0.6334;cuda
+transformer,123,test,147,0.551,0.547,17.06,0.256,302474,1.221,best_ep=15;best_val_f1=0.6779;cuda
+transformer,2024,test,147,0.517,0.5208,11.13,0.254,302474,1.221,best_ep=7;best_val_f1=0.6492;cuda

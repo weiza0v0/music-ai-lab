@@ -1,0 +1,401 @@
+{
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 1.9613,
+      "val_loss": 2.7408,
+      "val_acc": 0.1611,
+      "val_macro_f1": 0.075,
+      "epoch_time_s": 2.42
+    },
+    {
+      "epoch": 2,
+      "train_loss": 1.5507,
+      "val_loss": 1.4785,
+      "val_acc": 0.4832,
+      "val_macro_f1": 0.4628,
+      "epoch_time_s": 1.9
+    },
+    {
+      "epoch": 3,
+      "train_loss": 1.4033,
+      "val_loss": 2.0739,
+      "val_acc": 0.349,
+      "val_macro_f1": 0.2595,
+      "epoch_time_s": 1.9
+    },
+    {
+      "epoch": 4,
+      "train_loss": 1.2843,
+      "val_loss": 1.2522,
+      "val_acc": 0.5638,
+      "val_macro_f1": 0.5561,
+      "epoch_time_s": 1.9
+    },
+    {
+      "epoch": 5,
+      "train_loss": 1.1425,
+      "val_loss": 1.3345,
+      "val_acc": 0.5168,
+      "val_macro_f1": 0.5321,
+      "epoch_time_s": 1.9
+    },
+    {
+      "epoch": 6,
+      "train_loss": 1.1642,
+      "val_loss": 1.7872,
+      "val_acc": 0.4295,
+      "val_macro_f1": 0.3848,
+      "epoch_time_s": 1.9
+    },
+    {
+      "epoch": 7,
+      "train_loss": 1.0285,
+      "val_loss": 2.4537,
+      "val_acc": 0.3154,
+      "val_macro_f1": 0.2741,
+      "epoch_time_s": 1.9
+    },
+    {
+      "epoch": 8,
+      "train_loss": 0.9164,
+      "val_loss": 1.2659,
+      "val_acc": 0.557,
+      "val_macro_f1": 0.551,
+      "epoch_time_s": 1.9
+    },
+    {
+      "epoch": 9,
+      "train_loss": 0.883,
+      "val_loss": 1.7297,
+      "val_acc": 0.4631,
+      "val_macro_f1": 0.4302,
+      "epoch_time_s": 1.9
+    },
+    {
+      "epoch": 10,
+      "train_loss": 0.8065,
+      "val_loss": 1.5143,
+      "val_acc": 0.5369,
+      "val_macro_f1": 0.5086,
+      "epoch_time_s": 1.9
+    },
+    {
+      "epoch": 11,
+      "train_loss": 0.6922,
+      "val_loss": 1.1549,
+      "val_acc": 0.5973,
+      "val_macro_f1": 0.5901,
+      "epoch_time_s": 1.9
+    },
+    {
+      "epoch": 12,
+      "train_loss": 0.6108,
+      "val_loss": 1.2418,
+      "val_acc": 0.6376,
+      "val_macro_f1": 0.6174,
+      "epoch_time_s": 1.9
+    },
+    {
+      "epoch": 13,
+      "train_loss": 0.5771,
+      "val_loss": 1.4814,
+      "val_acc": 0.5906,
+      "val_macro_f1": 0.6001,
+      "epoch_time_s": 1.9
+    },
+    {
+      "epoch": 14,
+      "train_loss": 0.4775,
+      "val_loss": 1.1076,
+      "val_acc": 0.6577,
+      "val_macro_f1": 0.6627,
+      "epoch_time_s": 1.9
+    },
+    {
+      "epoch": 15,
+      "train_loss": 0.4883,
+      "val_loss": 1.6244,
+      "val_acc": 0.557,
+      "val_macro_f1": 0.5099,
+      "epoch_time_s": 1.9
+    },
+    {
+      "epoch": 16,
+      "train_loss": 0.4316,
+      "val_loss": 1.2701,
+      "val_acc": 0.6242,
+      "val_macro_f1": 0.6205,
+      "epoch_time_s": 1.91
+    },
+    {
+      "epoch": 17,
+      "train_loss": 0.3731,
+      "val_loss": 0.9833,
+      "val_acc": 0.7114,
+      "val_macro_f1": 0.709,
+      "epoch_time_s": 1.9
+    },
+    {
+      "epoch": 18,
+      "train_loss": 0.2761,
+      "val_loss": 1.1035,
+      "val_acc": 0.6443,
+      "val_macro_f1": 0.66,
+      "epoch_time_s": 1.9
+    },
+    {
+      "epoch": 19,
+      "train_loss": 0.2266,
+      "val_loss": 1.2996,
+      "val_acc": 0.651,
+      "val_macro_f1": 0.65,
+      "epoch_time_s": 1.91
+    },
+    {
+      "epoch": 20,
+      "train_loss": 0.223,
+      "val_loss": 1.0813,
+      "val_acc": 0.698,
+      "val_macro_f1": 0.6972,
+      "epoch_time_s": 1.91
+    },
+    {
+      "epoch": 21,
+      "train_loss": 0.1775,
+      "val_loss": 0.9699,
+      "val_acc": 0.7181,
+      "val_macro_f1": 0.7143,
+      "epoch_time_s": 1.9
+    },
+    {
+      "epoch": 22,
+      "train_loss": 0.1484,
+      "val_loss": 1.0869,
+      "val_acc": 0.6846,
+      "val_macro_f1": 0.6857,
+      "epoch_time_s": 1.91
+    },
+    {
+      "epoch": 23,
+      "train_loss": 0.1346,
+      "val_loss": 0.9325,
+      "val_acc": 0.7248,
+      "val_macro_f1": 0.7276,
+      "epoch_time_s": 1.9
+    },
+    {
+      "epoch": 24,
+      "train_loss": 0.1107,
+      "val_loss": 0.9442,
+      "val_acc": 0.7181,
+      "val_macro_f1": 0.7222,
+      "epoch_time_s": 1.9
+    },
+    {
+      "epoch": 25,
+      "train_loss": 0.099,
+      "val_loss": 0.9581,
+      "val_acc": 0.7114,
+      "val_macro_f1": 0.713,
+      "epoch_time_s": 1.9
+    },
+    {
+      "epoch": 26,
+      "train_loss": 0.0915,
+      "val_loss": 0.933,
+      "val_acc": 0.7114,
+      "val_macro_f1": 0.7141,
+      "epoch_time_s": 1.91
+    },
+    {
+      "epoch": 27,
+      "train_loss": 0.0954,
+      "val_loss": 0.9675,
+      "val_acc": 0.7114,
+      "val_macro_f1": 0.718,
+      "epoch_time_s": 1.91
+    },
+    {
+      "epoch": 28,
+      "train_loss": 0.0749,
+      "val_loss": 0.9631,
+      "val_acc": 0.7047,
+      "val_macro_f1": 0.7092,
+      "epoch_time_s": 1.91
+    },
+    {
+      "epoch": 29,
+      "train_loss": 0.0795,
+      "val_loss": 0.955,
+      "val_acc": 0.7114,
+      "val_macro_f1": 0.7147,
+      "epoch_time_s": 1.9
+    },
+    {
+      "epoch": 30,
+      "train_loss": 0.078,
+      "val_loss": 0.9589,
+      "val_acc": 0.7114,
+      "val_macro_f1": 0.716,
+      "epoch_time_s": 1.9
+    }
+  ],
+  "val": {
+    "acc": 0.7248322147651006,
+    "macro_f1": 0.7275820416142997,
+    "loss": 0.9325090646743774
+  },
+  "best_epoch": 23,
+  "test": {
+    "accuracy": 0.7482993197278912,
+    "macro_f1": 0.7492528294224624,
+    "confusion_matrix": [
+      [
+        12,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        1
+      ],
+      [
+        0,
+        14,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      [
+        2,
+        0,
+        11,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2
+      ],
+      [
+        0,
+        0,
+        0,
+        13,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        10,
+        0,
+        1,
+        2,
+        1,
+        0
+      ],
+      [
+        0,
+        1,
+        0,
+        0,
+        0,
+        12,
+        0,
+        1,
+        1,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        12,
+        0,
+        0,
+        1
+      ],
+      [
+        0,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        10,
+        0,
+        1
+      ],
+      [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        3,
+        10,
+        1
+      ],
+      [
+        2,
+        0,
+        1,
+        2,
+        2,
+        0,
+        0,
+        1,
+        1,
+        6
+      ]
+    ],
+    "per_class_f1": {
+      "blues": 0.7741935483870968,
+      "classical": 0.9333333333333333,
+      "country": 0.7586206896551724,
+      "disco": 0.8387096774193549,
+      "hiphop": 0.6896551724137931,
+      "jazz": 0.8888888888888888,
+      "metal": 0.8888888888888888,
+      "pop": 0.625,
+      "reggae": 0.6666666666666666,
+      "rock": 0.42857142857142855
+    }
+  },
+  "test_report": "              precision    recall  f1-score   support\n\n       blues      0.750     0.800     0.774        15\n   classical      0.933     0.933     0.933        15\n     country      0.786     0.733     0.759        15\n       disco      0.812     0.867     0.839        15\n      hiphop      0.667     0.714     0.690        14\n        jazz      1.000     0.800     0.889        15\n       metal      0.923     0.857     0.889        14\n         pop      0.556     0.714     0.625        14\n      reggae      0.667     0.667     0.667        15\n        rock      0.462     0.400     0.429        15\n\n    accuracy                          0.748       147\n   macro avg      0.756     0.749     0.749       147\nweighted avg      0.756     0.748     0.750       147\n",
+  "classes": [
+    "blues",
+    "classical",
+    "country",
+    "disco",
+    "hiphop",
+    "jazz",
+    "metal",
+    "pop",
+    "reggae",
+    "rock"
+  ]
+}

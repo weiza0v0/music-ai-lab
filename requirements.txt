@@ -1,0 +1,15 @@
+# 复用已有的 CUDA conda 环境 DataAnalysis（Python 3.12.13）
+# torch 需要从 PyTorch CUDA 索引安装：
+#   pip install torch==2.12.1 --index-url https://download.pytorch.org/whl/cu130
+torch==2.12.1
+numpy==2.4.6
+pandas==3.0.3
+scikit-learn==1.9.0
+scipy==1.18.0
+librosa==1.0.0
+soundfile==0.14.0
+matplotlib==3.11.0
+streamlit==1.66.0
+PyYAML==6.0.3
+tqdm==4.68.3
+pytest==9.1.1

@@ -1,0 +1,8 @@
+.venv/
+__pycache__/
+*.pyc
+data/raw/
+data/processed/
+checkpoints/
+*.log
+.pytest_cache/

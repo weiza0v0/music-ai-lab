@@ -1,0 +1,102 @@
+{
+  "dataset": "GTZAN",
+  "n_tracks": 1000,
+  "genres": [
+    "blues",
+    "classical",
+    "country",
+    "disco",
+    "hiphop",
+    "jazz",
+    "metal",
+    "pop",
+    "reggae",
+    "rock"
+  ],
+  "per_genre": {
+    "blues": 100,
+    "classical": 100,
+    "country": 100,
+    "disco": 100,
+    "hiphop": 100,
+    "jazz": 100,
+    "metal": 100,
+    "pop": 100,
+    "reggae": 100,
+    "rock": 100
+  },
+  "sample_rates": {
+    "22050.0": 999,
+    "nan": 1
+  },
+  "channels": {
+    "1.0": 999,
+    "nan": 1
+  },
+  "duration_seconds": {
+    "min": 29.932,
+    "max": 30.649,
+    "mean": 30.0238068068068
+  },
+  "decode_failures": [
+    {
+      "track_id": "jazz.00054",
+      "path": "data/raw/gtzan/genres/jazz/jazz.00054.wav"
+    }
+  ],
+  "duplicate_tracks": [
+    "disco.00098",
+    "disco.00099",
+    "hiphop.00039",
+    "hiphop.00045",
+    "hiphop.00076",
+    "hiphop.00078",
+    "metal.00034",
+    "metal.00040",
+    "metal.00041",
+    "metal.00042",
+    "metal.00043",
+    "metal.00044",
+    "metal.00045",
+    "metal.00058",
+    "metal.00061",
+    "metal.00062",
+    "metal.00063",
+    "metal.00064",
+    "metal.00065",
+    "metal.00066",
+    "metal.00094",
+    "pop.00054",
+    "pop.00060",
+    "pop.00067",
+    "pop.00071",
+    "reggae.00081",
+    "reggae.00082",
+    "rock.00016"
+  ],
+  "kept_tracks": 985,
+  "excluded_tracks": [
+    "disco.00099",
+    "hiphop.00045",
+    "hiphop.00078",
+    "jazz.00054",
+    "metal.00061",
+    "metal.00062",
+    "metal.00063",
+    "metal.00064",
+    "metal.00065",
+    "metal.00066",
+    "metal.00094",
+    "pop.00060",
+    "pop.00071",
+    "reggae.00082",
+    "rock.00016"
+  ],
+  "split_protocol": {
+    "seed": 42,
+    "ratio": "70/15/15",
+    "level": "track",
+    "dedup": "md5 exact duplicates dropped (first kept)",
+    "corrupt": "decode failures dropped"
+  }
+}

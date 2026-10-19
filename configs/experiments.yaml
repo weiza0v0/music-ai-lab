@@ -1,0 +1,12 @@
+# Full experiment matrix (MVP ran only seed 42).
+data: configs/dataset.yaml
+
+runs:
+  - {model: svm,         seeds: [42, 123, 2024], epochs: null}
+  - {model: mlp,         seeds: [42, 123, 2024], epochs: null}
+  - {model: cnn,         seeds: [42, 123, 2024], epochs: 30}
+  - {model: crnn,        seeds: [42, 123, 2024], epochs: 30}
+  - {model: transformer, seeds: [42, 123, 2024], epochs: 30}
+
+device: auto            # cuda if available
+amp: false              # 8 GB 卡上规模很小，暂不需要混合精度
