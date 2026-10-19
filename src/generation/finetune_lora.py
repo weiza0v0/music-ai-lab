@@ -33,6 +33,11 @@ GENRE_TEXT = {
     "Hip-Hop": "hip hop music with drums and bass", "Jazz": "jazz music with saxophone and swing",
     "Pop": "pop music with catchy melody", "Reggae": "reggae music with offbeat rhythm",
     "Rock": "rock music with electric guitar and drums", "Metal": "heavy metal music with distorted guitar",
+    # FMA-small 的另外三个流派：早期版本缺这三条，会被降级成泛化的 "music"，
+    # 等于把条件信息丢掉。
+    "Experimental": "experimental music with abstract electronic textures",
+    "Instrumental": "instrumental music without vocals",
+    "International": "international world music with traditional instruments",
 }
 
 
@@ -100,6 +105,12 @@ def main() -> None:
     ap.add_argument("--total-frames", type=int, default=300)
     ap.add_argument("--max-minutes", type=float, default=45.0)
     ap.add_argument("--out", default="musicgen-small-lora")
+    ap.add_argument("--batch-size", type=int, default=2,
+                    help="每次前向的窗口数；旧版写死 2，8 GB 卡只用了 16%% 显存")
+    ap.add_argument("--mask-prefix", action="store_true",
+                    help="只对后 --total-frames - --prefix-frames 帧算 loss")
+    ap.add_argument("--result-name", default="finetune.json",
+                    help="结果文件名，便于把修正版与旧的负结果并存")
     args = ap.parse_args()
 
     from transformers import AutoProcessor, MusicgenForConditionalGeneration
@@ -130,31 +141,49 @@ def main() -> None:
         model.decoder.gradient_checkpointing_enable()
     opt = torch.optim.AdamW(trainable, lr=args.lr, weight_decay=0.0)
 
-    text_cache: dict[str, torch.Tensor] = {}
+    # 一次性编码全部流派的文本条件，再按索引取用。
+    # 旧实现按 genres[0] 做缓存键：只要首个流派相同就命中，返回的是上一批的整块
+    # 张量，导致同批里其余样本的文本条件被错配——静默错误，必须按流派拆开。
+    genre_all = sorted(GENRE_TEXT)
+    genre_idx = {g: i for i, g in enumerate(genre_all)}
+    fallback_row = len(genre_all)
+    with torch.no_grad():
+        tin = processor(text=[GENRE_TEXT[g] for g in genre_all] + ["music"],
+                        padding=True, return_tensors="pt").to(device)
+        h_all = model.get_encoder()(**tin).last_hidden_state
+        enc_all = model.enc_to_dec_proj(h_all) if hasattr(model, "enc_to_dec_proj") else h_all
 
-    def encoder_states(genres: list[str]):
-        key = genres[0]
-        if key not in text_cache:
-            inp = processor(text=genres, padding=True, return_tensors="pt").to(device)
-            h = model.get_encoder()(**inp).last_hidden_state
-            proj = model.enc_to_dec_proj(h) if hasattr(model, "enc_to_dec_proj") else h
-            text_cache[key] = proj
-        return text_cache[key]
+    def encoder_states(names: list[str]):
+        return enc_all[[genre_idx.get(n, fallback_row) for n in names]]
 
     rng = np.random.default_rng(0)
     hist, step, t_start = [], 0, time.time()
     vocab = model.config.decoder.vocab_size
+    K = model.config.decoder.num_codebooks
+    bs = args.batch_size
+    order = rng.permutation(len(tr))
+    ptr = 0
     try:
         while step < args.steps:
             if (time.time() - t_start) / 60 > args.max_minutes:
                 print("[lora] time budget reached, stopping early")
                 break
-            idx = rng.integers(0, len(tr), size=2)
-            batch = torch.from_numpy(tr[idx][:, :, :args.total_frames]).to(device)
-            enc = encoder_states([GENRE_TEXT.get(str(data["genre"][i]), "music") for i in idx])
-            # standard causal LM objective over the whole window: masking the prefix
-            # with -100 breaks MusicGen's own delay-pattern shift and yields NaN.
-            out = model.decoder(input_ids=batch, encoder_hidden_states=enc, labels=batch.clone())
+            if ptr + bs > len(order):
+                order = rng.permutation(len(tr))
+                ptr = 0
+            idx = order[ptr:ptr + bs]
+            ptr += bs
+            batch = torch.from_numpy(tr[idx][:, :, :args.total_frames]).to(device)  # (B, K, T)
+            enc = encoder_states([str(data["genre"][i]) for i in idx])
+            # MusicgenForCausalLM 要求 input_ids 是 (B*K, T) 的扁平序列，
+            # labels 是 (B, T, K)。旧实现把 (B, K, T) 直接同时当 input_ids 和
+            # labels，库内部会按 labels.shape[1]==K 去截取，loss 只在最后 K 帧上
+            # 对错位目标计算，实测 loss 11.08（高于均匀分布 7.62），等于没在学。
+            flat = batch.reshape(-1, batch.shape[-1]).contiguous()
+            labels = batch.transpose(1, 2).contiguous()          # (B, T, K)
+            if args.mask_prefix:
+                labels[:, :args.prefix_frames, :] = -100
+            out = model.decoder(input_ids=flat, encoder_hidden_states=enc, labels=labels)
             loss = out.loss
             if not torch.isfinite(loss):
                 opt.zero_grad(set_to_none=True)
@@ -196,11 +225,12 @@ def main() -> None:
     processor.save_pretrained(out_dir)
     meta = {"base_model": args.model, "rank": args.rank, "alpha": args.alpha,
             "steps": step, "lr": args.lr, "merged": n_merged,
+            "batch_size": args.batch_size, "mask_prefix": bool(args.mask_prefix),
             "train_windows": int(len(tr)), "val_windows": int(len(va)),
             "total_frames": args.total_frames, "prefix_frames": args.prefix_frames,
             "train_minutes": round((time.time() - t_start) / 60, 1),
             "peak_mem_mb": round(torch.cuda.max_memory_allocated() / 1e6, 1)}
-    (RES / "finetune.json").write_text(json.dumps({"meta": meta, "history": hist}, indent=2))
+    (RES / args.result_name).write_text(json.dumps({"meta": meta, "history": hist}, indent=2))
     print("[lora] saved", out_dir, meta)
 
 
