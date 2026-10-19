@@ -1,0 +1,73 @@
+{
+  "model": "transformer",
+  "seed": 42,
+  "sample_rate": 32000,
+  "target_seconds": 1.0,
+  "items": [
+    {
+      "track_id": "001482",
+      "genre": "Electronic",
+      "offset": 2.0,
+      "logmel_rmse": 14.239059448242188,
+      "pred_wav": "audio/001482_Electronic_pred.wav",
+      "true_wav": "audio/001482_Electronic_true.wav"
+    },
+    {
+      "track_id": "000995",
+      "genre": "Experimental",
+      "offset": 2.0,
+      "logmel_rmse": 10.575395584106445,
+      "pred_wav": "audio/000995_Experimental_pred.wav",
+      "true_wav": "audio/000995_Experimental_true.wav"
+    },
+    {
+      "track_id": "000814",
+      "genre": "Folk",
+      "offset": 2.0,
+      "logmel_rmse": 11.725923538208008,
+      "pred_wav": "audio/000814_Folk_pred.wav",
+      "true_wav": "audio/000814_Folk_true.wav"
+    },
+    {
+      "track_id": "007481",
+      "genre": "Hip-Hop",
+      "offset": 2.0,
+      "logmel_rmse": 29.038707733154297,
+      "pred_wav": "audio/007481_Hip-Hop_pred.wav",
+      "true_wav": "audio/007481_Hip-Hop_true.wav"
+    },
+    {
+      "track_id": "014568",
+      "genre": "Instrumental",
+      "offset": 2.0,
+      "logmel_rmse": 11.771635055541992,
+      "pred_wav": "audio/014568_Instrumental_pred.wav",
+      "true_wav": "audio/014568_Instrumental_true.wav"
+    },
+    {
+      "track_id": "000704",
+      "genre": "International",
+      "offset": 2.0,
+      "logmel_rmse": 16.84405517578125,
+      "pred_wav": "audio/000704_International_pred.wav",
+      "true_wav": "audio/000704_International_true.wav"
+    },
+    {
+      "track_id": "000010",
+      "genre": "Pop",
+      "offset": 2.0,
+      "logmel_rmse": 14.673666954040527,
+      "pred_wav": "audio/000010_Pop_pred.wav",
+      "true_wav": "audio/000010_Pop_true.wav"
+    },
+    {
+      "track_id": "000182",
+      "genre": "Rock",
+      "offset": 2.0,
+      "logmel_rmse": 12.480088233947754,
+      "pred_wav": "audio/000182_Rock_pred.wav",
+      "true_wav": "audio/000182_Rock_true.wav"
+    }
+  ],
+  "note": "prediction is the next 1 s predicted autoregressively from the 5 s prefix; single-codebook models are not decodable and are excluded here"
+}

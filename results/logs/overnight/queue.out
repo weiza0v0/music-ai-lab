@@ -1,0 +1,38 @@
+[10-20 00:44:30] 跳过 lora_v2（等待期间已产出 results/generation/finetune_v2.json）
+[10-20 00:44:30] 开始 eval_v2
+[10-20 00:45:31] 完成 eval_v2（1 分钟）
+[10-20 00:45:31] 开始 token_long
+[10-20 03:54:42] 完成 token_long（189 分钟）
+[10-20 03:54:42] 开始 gtzan_long_cnn
+[10-20 03:59:33] 完成 gtzan_long_cnn（4 分钟）
+[10-20 03:59:33] 开始 gtzan_long_crnn
+[10-20 04:04:38] 完成 gtzan_long_crnn（5 分钟）
+[10-20 04:04:38] 开始 gtzan_long_transformer
+[10-20 04:05:32] 完成 gtzan_long_transformer（0 分钟）
+[10-20 04:05:32] 跳过 gtzan_long_eval（已存在 results/gtzan_long/metrics.csv）
+[10-20 04:05:32] 开始 fma_long_cnn
+[10-20 04:26:29] 完成 fma_long_cnn（20 分钟）
+[10-20 04:26:29] 开始 fma_long_crnn
+[10-20 04:50:01] 完成 fma_long_crnn（23 分钟）
+[10-20 04:50:02] 开始 fma_long_transformer
+[10-20 04:55:21] 完成 fma_long_transformer（5 分钟）
+[10-20 04:55:21] 跳过 fma_long_eval（已存在 results/fma_long/metrics.csv）
+[10-20 04:55:21] 开始 lora_r16
+[10-20 06:04:33] 完成 lora_r16（69 分钟）
+[10-20 06:04:33] 开始 lora_full
+[10-20 06:46:08] 完成 lora_full（41 分钟）
+[10-20 06:46:08] ======== 队列结束 ========
+lora_v2                 SKIP  results/generation/finetune_v2.json
+eval_v2                 OK    1min
+token_long              OK    189min
+gtzan_long_cnn          OK    4min
+gtzan_long_crnn         OK    5min
+gtzan_long_transformer  OK    0min
+gtzan_long_eval         SKIP  results/gtzan_long/metrics.csv
+fma_long_cnn            OK    20min
+fma_long_crnn           OK    23min
+fma_long_transformer    OK    5min
+fma_long_eval           SKIP  results/fma_long/metrics.csv
+lora_r16                OK    69min
+lora_full               OK    41min
+[10-20 06:46:08] 汇总已写入 results/logs/overnight/summary.md

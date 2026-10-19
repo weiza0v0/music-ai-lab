@@ -1,0 +1,10 @@
+model,seed,split,n_samples,accuracy,macro_f1,train_time_s,infer_ms_per_clip,n_params,model_size_mb,notes
+cnn,42,test,147,0.7551,0.7504,91.28,0.785,592554,2.392,best_ep=36;best_val_f1=0.7600;cuda
+cnn,123,test,147,0.7551,0.7501,98.37,0.767,592554,2.392,best_ep=40;best_val_f1=0.7714;cuda
+cnn,2024,test,147,0.7823,0.7812,94.62,0.767,592554,2.392,best_ep=38;best_val_f1=0.7691;cuda
+crnn,42,test,147,0.7279,0.7285,109.92,0.754,418986,1.694,best_ep=56;best_val_f1=0.8078;cuda
+crnn,123,test,147,0.7415,0.7373,95.61,0.759,418986,1.694,best_ep=40;best_val_f1=0.8156;cuda
+crnn,2024,test,147,0.7415,0.7453,93.71,0.747,418986,1.694,best_ep=39;best_val_f1=0.7802;cuda
+transformer,42,test,147,0.5714,0.5653,19.24,0.259,302474,1.221,best_ep=13;best_val_f1=0.6225;cuda
+transformer,123,test,147,0.5374,0.5223,15.8,0.263,302474,1.221,best_ep=10;best_val_f1=0.6256;cuda
+transformer,2024,test,147,0.517,0.5168,14.35,0.259,302474,1.221,best_ep=7;best_val_f1=0.6313;cuda

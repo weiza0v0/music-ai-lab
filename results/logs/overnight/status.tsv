@@ -1,0 +1,13 @@
+lora_v2	SKIP	results/generation/finetune_v2.json
+eval_v2	OK	1min
+token_long	OK	189min
+gtzan_long_cnn	OK	4min
+gtzan_long_crnn	OK	5min
+gtzan_long_transformer	OK	0min
+gtzan_long_eval	SKIP	results/gtzan_long/metrics.csv
+fma_long_cnn	OK	20min
+fma_long_crnn	OK	23min
+fma_long_transformer	OK	5min
+fma_long_eval	SKIP	results/fma_long/metrics.csv
+lora_r16	OK	69min
+lora_full	OK	41min

@@ -37,43 +37,47 @@
 \contentsline {subsection}{\numberline {6.1}GTZAN：最小可行 MVP}{11}{subsection.6.1}%
 \contentsline {subsection}{\numberline {6.2}FMA-small：主实验}{13}{subsection.6.2}%
 \contentsline {subsection}{\numberline {6.3}优化消融}{15}{subsection.6.3}%
-\contentsline {subsection}{\numberline {6.4}计算成本与部署取舍}{16}{subsection.6.4}%
-\contentsline {section}{\numberline {7}分析与讨论}{16}{section.7}%
-\contentsline {subsection}{\numberline {7.1}错误分析}{16}{subsection.7.1}%
+\contentsline {subsection}{\numberline {6.4}训练预算消融}{16}{subsection.6.4}%
+\contentsline {subsection}{\numberline {6.5}计算成本与部署取舍}{16}{subsection.6.5}%
+\contentsline {section}{\numberline {7}分析与讨论}{17}{section.7}%
+\contentsline {subsection}{\numberline {7.1}错误分析}{17}{subsection.7.1}%
 \contentsline {subsection}{\numberline {7.2}鲁棒性}{17}{subsection.7.2}%
 \contentsline {subsection}{\numberline {7.3}片段级分析}{18}{subsection.7.3}%
-\contentsline {subsection}{\numberline {7.4}预训练的收益与代价}{18}{subsection.7.4}%
-\contentsline {subsection}{\numberline {7.5}为什么从头训练的 Transformer 会输}{18}{subsection.7.5}%
+\contentsline {subsection}{\numberline {7.4}预训练的收益与代价}{19}{subsection.7.4}%
+\contentsline {subsection}{\numberline {7.5}为什么从头训练的 Transformer 会输}{19}{subsection.7.5}%
 \contentsline {subsection}{\numberline {7.6}数据规模与任务难度}{19}{subsection.7.6}%
 \contentsline {subsection}{\numberline {7.7}鲁棒性的进一步解读}{19}{subsection.7.7}%
 \contentsline {subsection}{\numberline {7.8}对课程项目的启示}{19}{subsection.7.8}%
-\contentsline {section}{\numberline {8}二期：离散 Token 预测与音乐生成}{19}{section.8}%
-\contentsline {subsection}{\numberline {8.1}任务定义与动机}{19}{subsection.8.1}%
+\contentsline {section}{\numberline {8}二期：离散 Token 预测与音乐生成}{20}{section.8}%
+\contentsline {subsection}{\numberline {8.1}任务定义与动机}{20}{subsection.8.1}%
 \contentsline {subsection}{\numberline {8.2}离散音频 Token：EnCodec 32 kHz}{20}{subsection.8.2}%
 \contentsline {subsection}{\numberline {8.3}数据窗口与泄漏控制}{20}{subsection.8.3}%
-\contentsline {subsection}{\numberline {8.4}预测模型}{20}{subsection.8.4}%
+\contentsline {subsection}{\numberline {8.4}预测模型}{21}{subsection.8.4}%
 \contentsline {subsection}{\numberline {8.5}训练与评价口径}{21}{subsection.8.5}%
 \contentsline {subsection}{\numberline {8.6}Token 预测结果}{21}{subsection.8.6}%
+\contentsline {paragraph}{仍未训够（如实记录）}{23}{paragraph*.36}%
 \contentsline {subsection}{\numberline {8.7}把 Token 解码回音频}{23}{subsection.8.7}%
 \contentsline {subsection}{\numberline {8.8}MusicGen-small 的前缀续写}{24}{subsection.8.8}%
-\contentsline {paragraph}{长度限制（如实记录）}{24}{paragraph*.38}%
+\contentsline {paragraph}{长度限制（如实记录）}{24}{paragraph*.40}%
 \contentsline {subsection}{\numberline {8.9}参数高效适配：LoRA}{24}{subsection.8.9}%
-\contentsline {subsection}{\numberline {8.10}小结与局限}{24}{subsection.8.10}%
+\contentsline {paragraph}{一次被修正的负结果}{24}{paragraph*.41}%
+\contentsline {paragraph}{消融：更低的目标值不等于更好的音频}{25}{paragraph*.42}%
+\contentsline {subsection}{\numberline {8.10}小结与局限}{25}{subsection.8.10}%
 \contentsline {section}{\numberline {9}讨论与局限}{25}{section.9}%
 \contentsline {subsection}{\numberline {9.1}主要发现}{25}{subsection.9.1}%
 \contentsline {subsection}{\numberline {9.2}威胁与局限}{25}{subsection.9.2}%
-\contentsline {paragraph}{构念效度}{25}{paragraph*.39}%
-\contentsline {paragraph}{内部效度}{25}{paragraph*.40}%
-\contentsline {paragraph}{外部效度}{25}{paragraph*.41}%
-\contentsline {paragraph}{统计效度}{25}{paragraph*.42}%
-\contentsline {paragraph}{实现层面}{25}{paragraph*.43}%
-\contentsline {subsection}{\numberline {9.3}伦理与数据授权}{25}{subsection.9.3}%
-\contentsline {subsection}{\numberline {9.4}可复现性总结}{25}{subsection.9.4}%
+\contentsline {paragraph}{构念效度}{25}{paragraph*.43}%
+\contentsline {paragraph}{内部效度}{26}{paragraph*.44}%
+\contentsline {paragraph}{外部效度}{26}{paragraph*.45}%
+\contentsline {paragraph}{统计效度}{26}{paragraph*.46}%
+\contentsline {paragraph}{实现层面}{26}{paragraph*.47}%
+\contentsline {subsection}{\numberline {9.3}伦理与数据授权}{26}{subsection.9.3}%
+\contentsline {subsection}{\numberline {9.4}可复现性总结}{26}{subsection.9.4}%
 \contentsline {section}{\numberline {10}结论与展望}{26}{section.10}%
-\contentsline {section}{\numberline {A}附录：数据、超参与复现细节}{27}{appendix.A}%
-\contentsline {subsection}{\numberline {A.1}数据集统计}{27}{subsection.A.1}%
-\contentsline {subsection}{\numberline {A.2}完整超参数}{27}{subsection.A.2}%
+\contentsline {section}{\numberline {A}附录：数据、超参与复现细节}{28}{appendix.A}%
+\contentsline {subsection}{\numberline {A.1}数据集统计}{28}{subsection.A.1}%
+\contentsline {subsection}{\numberline {A.2}完整超参数}{28}{subsection.A.2}%
 \contentsline {subsection}{\numberline {A.3}鲁棒性完整变化表}{28}{subsection.A.3}%
-\contentsline {subsection}{\numberline {A.4}AST 的 C 网格}{28}{subsection.A.4}%
-\contentsline {subsection}{\numberline {A.5}仓库结构与复现命令}{28}{subsection.A.5}%
+\contentsline {subsection}{\numberline {A.4}AST 的 C 网格}{29}{subsection.A.4}%
+\contentsline {subsection}{\numberline {A.5}仓库结构与复现命令}{29}{subsection.A.5}%
 \contentsline {subsection}{\numberline {A.6}结果文件说明}{30}{subsection.A.6}%

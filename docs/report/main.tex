@@ -40,7 +40,9 @@
 \begin{abstract}
 \noindent
 音乐流派分类是音乐信息检索的经典任务，也是检验不同建模范式的天然试验台。本文在\emph{同一套数据划分、同一批音频片段与同一套评估协议}下，系统比较了六类模型：基于人工特征的 SVM 与 MLP、端到端 CNN、CNN+BiGRU（CRNN）、轻量 Transformer，以及冻结 AudioSet 预训练主干的 Audio Spectrogram Transformer（AST）。实验覆盖两个数据集：清洗后的 GTZAN（985 首、10 流派，作为最小可行 MVP）与 FMA-small 主实验（8\,000 首、8 流派）。所有深度模型使用 3 个随机种子重复训练，测试集只在模型冻结后评估一次，并启用了 cuDNN 确定性以保证可复现。\input{numbers_abstract}
-本文进一步给出错误分析、七种扰动下的鲁棒性实验、片段级时间轴分析，以及面向 CNN/CRNN/Transformer 的 SpecAugment 与标签平滑优化消融。结果显示：预训练表示带来最大的单点收益，但在噪声与短片段下所有模型的可靠性都显著下降；深度模型赢在干净输入，传统模型在输入变脏时反而更稳。代码、权重生成脚本与全部结果文件均已开源。
+本文进一步给出错误分析、七种扰动下的鲁棒性实验、片段级时间轴分析，以及面向 CNN/CRNN/Transformer 的 SpecAugment 与标签平滑优化消融。结果显示：预训练表示带来最大的单点收益，但在噪声与短片段下所有模型的可靠性都显著下降；深度模型赢在干净输入，传统模型在输入变脏时反而更稳。
+在此基础上，本文还把任务从判别式分类推进到\textbf{离散 Token 层面的预测与生成}：用 EnCodec 把音频量化成 50\,Hz、4 码本的 Token 序列，比较 LSTM 与小 Transformer 对下 1 秒 Token 的预测能力，并评估 MusicGen-small 的前缀续写与 LoRA 适配。该部分记录了一次\textbf{被修正的负结果}：初版 LoRA 适配因标签维度错误而完全无效（目标值停在均匀分布之上），修正后音频距离从 19.23 降到 17.91，且 8 首中 7 首改善——说明"训不动"未必是容量或数据不足，也可能只是目标对齐写错了。
+代码、权重生成脚本与全部结果文件均已开源。
 \vspace{0.3em}\\
 \textbf{关键词：}音乐流派分类；GTZAN；FMA-small；卷积神经网络；CRNN；Transformer；迁移学习；可复现实验
 \end{abstract}
@@ -492,6 +494,24 @@ FMA-small & AST（冻结主干 + 线性头） & 1 & -- & 64\\
 表~\ref{tab:ablation} 比较了基线、SpecAugment、SpecAugment+标签平滑三种配置（seed 42，20 epoch，仅验证集，测试集不参与选型）。\input{numbers_ablation} 这一负结果本身有信息量：FMA 上的主要瓶颈不是「模型记住训练集」，而是\textbf{流派标签边界模糊与音乐多样性}——正则化能让训练/验证损失更接近，却无法凭空提供可区分的声学线索。
 
 \input{tables/ablation.tex}
+
+\subsection{训练预算消融}\label{sec:budget}
+
+上文的全部结果都建立在固定预算上（30 轮、早停 patience 8）。事后复核发现，
+部分模型的最优轮次正好落在这个上限上（GTZAN 的 CNN seed 123 与 CRNN seed 42、
+FMA 的 CRNN seed 42 均为第 30 轮），因此有必要检验「继续训练是否还会更好」。
+我们把两个数据集的三个深度模型统一加长到 60 轮、patience 12，其余协议完全不变，
+结果见表~\ref{tab:budget}。\BudgetSentence
+
+\input{tables/budget.tex}
+
+这个结果有两个含义。其一，\textbf{主实验的训练预算基本是充分的}：
+FMA 上三个模型要么持平要么略微下降，说明早停并没有系统性地截断仍在改善的模型，
+原结果不需要因为「没训够」而打折扣。其二，\textbf{小数据集上的方差不容忽视}：
+GTZAN 测试集只有 147 首，CNN 的 $+0.75$ 与 CRNN 的 $+1.36$ 个百分点在单一种子下
+很难与随机波动区分；而轻量 Transformer 加长后反而更差，与它在 GTZAN 上早已
+明显过拟合（最优轮次在第 7--13 轮就出现）的判断一致。
+我们因此\textbf{不把表~\ref{tab:budget} 的小幅提升替换进主表}，而是作为稳健性检查保留。
 
 \subsection{计算成本与部署取舍}
 

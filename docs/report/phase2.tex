@@ -136,21 +136,31 @@ Transformer & 4 个 Embedding 求和 $+$ 位置编码 $+$ 4 层因果注意力($
 
 \begin{enumerate}
   \item \textbf{学习信号真实存在，但绝对水平很低。}随机猜的 Top-1 是 $1/2048=0.049\%$；
-        Transformer 的 free-running Top-1 为 \TokTransformerFree{}，约为随机的 40 倍，
-        比最好的统计基线 Bigram（\TokBigramFree{}）高 0.24 个百分点（相对提升约 14\%）；
+        Transformer 的 free-running Top-1 为 \TokTransformerFree{}，约为随机的 45 倍，
+        比最好的统计基线 Bigram（\TokBigramFree{}）高 0.48 个百分点（相对提升约 28\%）；
         NLL 从均匀分布的值 $\ln 2048 = 7.62$ 降到 \TokTransformerNll{}。
-  \item \textbf{误差累积是主要损失来源。}Transformer 的 teacher-forced Top-1 为
-        \TokTfTeacher{}，free-running 掉到 \TokTransformerFree{}；LSTM 也从
-        \TokLstmFree{} 的教师强制口径下降。一旦让模型吃自己的预测，错误逐步放大——
-        这正是自回归模型在长 horizon 上的典型退化。
-  \item \textbf{LSTM 没有赢过 n-gram。}LSTM 的 free-running Top-1（\TokLstmFree{}）甚至
-        略低于 Bigram（\TokBigramFree{}）。原因不是"没训练好"（其 NLL 明显低于 Bigram），
-        而是循环状态在自回归回灌下更不稳定；小 Transformer 的因果注意力在本任务上更有效。
-  \item \textbf{第一码本靠"重复"就够，增益来自残差码本。}Persistence 在码本 0 上能拿到
-        2.43\%，与 Transformer 的 2.31\% 相当；但四码本平均时 Persistence 只有
-        \TokPersistenceFree{}。这说明码本 0 高度局部平滑（音乐瞬时音色变化慢），
-        神经模型的收益主要来自后三个残差码本。
+  \item \textbf{误差累积是主要损失来源，且两种结构各有短板。}Transformer 的
+        teacher-forced Top-1 为 \TokTfTeacher{}，free-running 掉到 \TokTransformerFree{}，
+        相对损失约 35\%；LSTM 从 2.78\% 掉到 \TokLstmFree{}，相对损失约 25\%。
+        也就是说小 Transformer 的天花板更高，但一旦吃自己的预测退化得更厉害；
+        循环结构在回灌下反而更稳。两者都没有解决长 horizon 上的错误放大。
+  \item \textbf{两个神经模型都赢过了 n-gram。}LSTM 的 free-running Top-1（\TokLstmFree{}）
+        比 Bigram（\TokBigramFree{}）高 0.37 个百分点，Transformer 高 0.48 个百分点。
+        这一点在早期实验里并不成立：当时训练在 12 轮就被早停，LSTM 的 free-running
+        反而略低于 Bigram。加长到 45 轮后结论翻转，说明那是一个\textbf{欠训练}造成的
+        假负结果，而不是循环结构本身的缺陷。
+  \item \textbf{神经模型在四个码本上都超过了"重复"基线。}Persistence 在码本 0 上能拿到
+        2.43\%，但 Transformer 的码本 0 Top-1 已达 2.82\%，四码本平均也从
+        Persistence 的 \TokPersistenceFree{} 提升到 \TokTransformerFree{}。
+        码本 0 本身确实高度局部平滑（音乐瞬时音色变化慢），所以它是"最容易的码本"，
+        但残差码本带来的收益同样真实。
 \end{enumerate}
+
+\paragraph{仍未训够（如实记录）}
+加长到 45 轮后，两个模型的最优轮次仍在 41--45 之间（LSTM 为 45/45/42，
+Transformer 为 45/41/42），即\textbf{仍然贴着轮数上限}，验证 NLL 也还在缓慢下降。
+因此上表数字是"在原预算基础上加长三倍"后的结果，并非收敛值；真实上限应更高。
+受单次夜间窗口限制，本轮没有继续加长，这一点作为限制记录。
 
 \subsection{把 Token 解码回音频}\label{sec:p2decode}
 
@@ -212,10 +222,37 @@ Transformer & 4 个 Embedding 求和 $+$ 位置编码 $+$ 4 层因果注意力($
 
 \FinetuneSentence
 
-需要如实报告的负结果：300 步训练中 loss 只从 10.4 降到 7.6（均匀分布为 $\ln 2048=7.62$），
-说明"解码器直连 + 自有 Token 缓存"这条路径上，目标对齐还没有调到能让预训练权重
-真正迁移的程度。因此本文只把 LoRA 结果作为"参数高效适配在 8\,GB 上可行"的工程验证，
-不宣称它带来了生成质量提升；对应的生成对照仍完整报告，以免用"跑通推理"冒充"完成微调"。
+\paragraph{一次被修正的负结果}
+第一轮适配只更新 144 个投影层、训练 300 步，目标值从 8.81 到 7.81，
+\textbf{仍停在均匀分布 $\ln 2048=7.62$ 之上}，生成的音频也不比原始模型好。
+当时把它记成"跑通但无增益"的负结果。事后排查发现根因是一个\textbf{标签维度错误}，
+而不是容量或步数不足：\texttt{MusicgenForCausalLM} 要求
+\texttt{input\_ids} 为 $(B{\cdot}K, T)$ 的扁平序列、\texttt{labels} 为 $(B, T, K)$，
+而初版把原始张量 $(B, K, T)$ 同时当成两者传入。库内部据 \texttt{labels.shape[1]}
+截取 logits，于是 loss 只在末尾 $K$ 帧上与错位目标计算。
+
+用未训练的原始模型直接对照两种布局可以确认这一点：错误布局的目标值为 11.08，
+正确布局为 5.46（均匀分布 7.62）。也就是说错误布局下"预测得比乱猜还差"，
+梯度方向本身无意义，训多少步都不会收敛——这解释了初版为何稳定停在 7.6 附近。
+
+修正维度、把 batch 从 2 提到 16（原设置只用掉 8\,GB 显存的 16\%）、
+步数提到 1200 并只对续写帧计 loss 后，目标值降到 5.98，显著低于均匀分布；
+音频侧的 Log-Mel RMSE 从原始模型的 19.23 降到 17.91（$-1.32$），
+8 首中 7 首变好。为避免"被单首拉低均值"的假增益，我们去掉改善最大的那一首后
+重新平均，仍有 $-0.99$ 的提升——作为对照，未修正版本的 $-0.80$ 在同样处理后
+只剩 $-0.16$，属于噪声。两者的差别正是"整体变好"与"一首变好"的差别。
+
+\paragraph{消融：更低的目标值不等于更好的音频}
+表~\ref{tab:generation} 同时给出两个消融配置。把 rank 提到 16 后，训练目标值进一步
+降到 5.68（低于 $r{=}8$ 的 5.98），但音频 RMSE 反而回升到 18.59，去掉最好一首后
+只剩 $-0.22$。这提示在 8\,k 首、$2\times10^4$ 训练窗口的规模上，
+更高的适配容量主要是在拟合训练片段的细节，而不是学到可迁移的续写规律；
+\textbf{Token 级目标值与音频级距离并不单调相关}，二者必须分开报告。
+另一个消融（不掩前缀、对整窗计 loss）得到 17.64，与掩前缀版本相差 0.27，
+在 8 个样本上不构成显著差别，故本文不宣称掩码策略本身带来收益。
+
+因此本文的结论限定为：\textbf{在修正目标对齐后，LoRA 适配能稳定改善客观音频距离，
+且增益不依赖单一样本}；rank 与掩码策略在当前数据规模上不是有效旋钮。
 
 \subsection{小结与局限}\label{sec:p2limit}
 
@@ -227,9 +264,10 @@ Transformer & 4 个 Embedding 求和 $+$ 位置编码 $+$ 4 层因果注意力($
         的误差累积是主要瓶颈；
   \item 把 Token 解码回音频后，音色与包络"像"，但细节与真实未来不同——Top-1 与
         "好听"必须分开报告；
-  \item 预训练生成模型的前缀续写在 8\,GB 卡上可以跑通并量化成本；轻量适配的
-        可行性与收益受显存限制，必须如实记录成功或失败，而不是把"跑通推理"
-        写成"完成微调"。
+  \item 预训练生成模型的前缀续写在 8\,GB 卡上可以跑通并量化成本；轻量适配
+        \textbf{在修正目标对齐后确有收益}（音频距离 $19.23\to17.91$，8 首中 7 首变好），
+        但这类"低目标值是否等于好音频"必须逐样本核对，否则容易把单首的优势
+        当成整体增益。
 \end{enumerate}
 
 仍需承认的局限：预测 horizon 只有 1 秒；生成评估以客观距离与少量试听为主，

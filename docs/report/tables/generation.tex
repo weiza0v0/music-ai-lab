@@ -1,13 +1,16 @@
 \begin{table}[H]
 \centering\small
-\caption{MusicGen-small 前缀续写（同一批测试前缀，5 s 前缀 → 3 s 续写；采样 $T=1$、top-$k=250$、无 CFG）。}
+\caption{MusicGen-small 前缀续写（同一批测试前缀，5 s 前缀 $\to$ 3 s 续写；采样 $T=1$、top-$k=250$、无 CFG；每行为 8 首测试曲的均值）。}
 \label{tab:generation}
-\begin{tabular}{lcccc}
+\begin{tabular}{lccccr}
 \toprule
-模型 & 生成耗时(s) & 峰值显存(MB) & 输出时长(s) & Log-Mel RMSE\\
+模型 & 生成耗时(s) & 峰值显存(MB) & 输出时长(s) & Log-Mel RMSE & 相对原始\\
 \midrule
-MusicGen-small（原始） & 3.7 & 1393 & 3.0 & 19.23\\
-MusicGen-small + LoRA & 4.9 & 1393 & 3.0 & 18.43\\
+MusicGen-small（原始） & 3.7 & 1393 & 3.0 & 19.23 & —\\
+\quad + LoRA（旧，标签维度错误） & 4.9 & 1393 & 3.0 & 18.43 & $-0.80$\\
+\quad + LoRA $r{=}8$（修正，掩前缀） & 4.4 & 1396 & 3.0 & 17.91 & $-1.32$\\
+\quad + LoRA $r{=}8$（修正，全窗口） & 3.1 & 1396 & 3.0 & 17.64 & $-1.59$\\
+\quad + LoRA $r{=}16$（修正，掩前缀） & 3.1 & 1396 & 3.0 & 18.59 & $-0.64$\\
 \bottomrule
 \end{tabular}
 \end{table}

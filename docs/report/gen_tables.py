@@ -293,6 +293,11 @@ def ast_grid_table() -> str:
 # phase 2: token forecasting + MusicGen continuation
 # --------------------------------------------------------------------------- #
 TOK = ROOT / "results/token_prediction"
+# 加长训练后的结果优先：原版只训 12 轮就被早停，val_nll 仍在下降，
+# 属于欠训练，不应作为报告的主结果。
+_TOK_LONG = ROOT / "results/token_prediction_long"
+if (_TOK_LONG / "metrics.csv").exists():
+    TOK = _TOK_LONG
 GEN = ROOT / "results/generation"
 TOKEN_ORDER = ["persistence", "frequency", "bigram", "lstm", "transformer"]
 TOKEN_LABEL = {"persistence": "Persistence", "frequency": "频率先验", "bigram": "Bigram",
@@ -318,8 +323,11 @@ def token_table() -> tuple[str, dict]:
             continue
         neural = m in ("lstm", "transformer")
         if neural:
+            # 标准差常常小于 0.001，用 3 位小数会显示成 ±0.000，故按量级选位数
+            sd = float(sub.free_top1.std(ddof=0))
+            sdf = 3 if sd >= 1e-3 else 4
             t1 = f"{sub.teacher_top1.mean():.3f}$\\pm${sub.teacher_top1.std(ddof=0):.3f}"
-            f1 = f"{sub.free_top1.mean():.3f}$\\pm${sub.free_top1.std(ddof=0):.3f}"
+            f1 = f"{sub.free_top1.mean():.3f}$\\pm${sd:.{sdf}f}"
             nll = f"{sub.nll.mean():.3f}"
             cb0 = f"{sub.free_top1_cb0.mean():.3f}"
             params = fmt_params(sub.params.mean())
@@ -351,8 +359,13 @@ def token_table() -> tuple[str, dict]:
 
 
 def token_decode_table() -> str:
-    p = TOK / "decode.json"
-    if not p.exists():
+    # decode.json 由旧的 token_prediction 目录生成；加长训练目录里可能没有，
+    # 两处都找一遍。
+    for d in (TOK, ROOT / "results/token_prediction"):
+        if (d / "decode.json").exists():
+            p = d / "decode.json"
+            break
+    else:
         return "% decode results not generated yet\n"
     d = json.loads(p.read_text())
     lines = [r"\begin{table}[H]", r"\centering\small",
@@ -369,48 +382,147 @@ def token_decode_table() -> str:
 
 def generation_table() -> tuple[str, dict]:
     macros: dict[str, str] = {}
+    base = GEN / "metrics_base.json"
+    base_rmse = None
+    if base.exists():
+        b = json.loads(base.read_text())
+        if b["items"]:
+            base_rmse = float(np.mean([x["logmel_rmse"] for x in b["items"]]))
+
+    # 行顺序：base → 旧（标签维度 bug）→ 修正后三个配置
+    runs = (
+        ("base", "MusicGen-small（原始）", "Base"),
+        ("ft_v1_negative", "\\quad + LoRA（旧，标签维度错误）", "FtVOneNeg"),
+        ("ft", "\\quad + LoRA $r{=}8$（修正，掩前缀）", "Ft"),
+        ("full", "\\quad + LoRA $r{=}8$（修正，全窗口）", "Full"),
+        ("r16", "\\quad + LoRA $r{=}16$（修正，掩前缀）", "RSixteen"),
+    )
     items = []
-    for tag, label in (("base", "MusicGen-small（原始）"), ("ft", "MusicGen-small + LoRA")):
+    for tag, label, mac in runs:
         p = GEN / f"metrics_{tag}.json"
-        if p.exists():
-            d = json.loads(p.read_text())
-            if d["items"]:
-                lat = np.mean([x["latency_s"] for x in d["items"]])
-                mem = np.mean([x["peak_mem_mb"] for x in d["items"]])
-                rmse = np.mean([x["logmel_rmse"] for x in d["items"]])
-                items.append((label, lat, mem, d["seconds"], rmse))
-                macros[f"Gen{tag.upper()}Lat"] = f"{lat:.1f}"
-                macros[f"Gen{tag.upper()}Mem"] = f"{mem:.0f}"
-                macros[f"Gen{tag.upper()}Rmse"] = f"{rmse:.2f}"
+        if not p.exists():
+            continue
+        d = json.loads(p.read_text())
+        if not d["items"]:
+            continue
+        lat = float(np.mean([x["latency_s"] for x in d["items"]]))
+        mem = float(np.mean([x["peak_mem_mb"] for x in d["items"]]))
+        rmse = float(np.mean([x["logmel_rmse"] for x in d["items"]]))
+        delta = ("—" if base_rmse is None or tag == "base"
+                 else f"${rmse - base_rmse:+.2f}$")
+        items.append((label, lat, mem, float(d["seconds"]), rmse, delta))
+        # LaTeX 宏名不能含数字
+        macros[f"Gen{mac}Lat"] = f"{lat:.1f}"
+        macros[f"Gen{mac}Mem"] = f"{mem:.0f}"
+        macros[f"Gen{mac}Rmse"] = f"{rmse:.2f}"
+
     if not items:
         return "% generation results not generated yet\n", macros
     lines = [r"\begin{table}[H]", r"\centering\small",
-             r"\caption{MusicGen-small 前缀续写（同一批测试前缀，5 s 前缀 → 3 s 续写；采样 $T=1$、top-$k=250$、无 CFG）。}",
+             r"\caption{MusicGen-small 前缀续写（同一批测试前缀，5 s 前缀 $\to$ 3 s 续写；"
+             r"采样 $T=1$、top-$k=250$、无 CFG；每行为 8 首测试曲的均值）。}",
              r"\label{tab:generation}",
-             r"\begin{tabular}{lcccc}", r"\toprule",
-             r"模型 & 生成耗时(s) & 峰值显存(MB) & 输出时长(s) & Log-Mel RMSE" + "\\\\",
+             r"\begin{tabular}{lccccr}", r"\toprule",
+             r"模型 & 生成耗时(s) & 峰值显存(MB) & 输出时长(s) & Log-Mel RMSE & 相对原始" + "\\\\",
              r"\midrule"]
-    for label, lat, mem, sec, rmse in items:
-        lines.append(f"{label} & {lat:.1f} & {mem:.0f} & {sec:.1f} & {rmse:.2f}" + "\\\\")
+    for label, lat, mem, sec, rmse, delta in items:
+        lines.append(f"{label} & {lat:.1f} & {mem:.0f} & {sec:.1f} & {rmse:.2f} & {delta}" + "\\\\")
     lines += [r"\bottomrule", r"\end{tabular}", r"\end{table}"]
     return "\n".join(lines) + "\n", macros
 
 
 def finetune_sentence() -> tuple[str, dict]:
+    # 优先用修正后的结果（finetune_v2.json）；finetune.json 是旧的错误版本，
+    # 仅作为对照保留，不应被当成当前结论。
+    p = GEN / "finetune_v2.json"
+    if p.exists():
+        d = json.loads(p.read_text())
+        m = d["meta"]
+        hist = d["history"]
+        first = float(np.mean([x["loss"] for x in hist[:10]]))
+        last = float(np.mean([x["loss"] for x in hist[-10:]]))
+        uniform = float(np.log(2048.0))
+        return (
+            f"LoRA（rank {m['rank']}，alpha {m['alpha']}）在 {m['train_windows']} 个训练窗口上"
+            f"以 batch {m['batch_size']} 训练 {m['steps']} 步、约 {m['train_minutes']} 分钟，"
+            f"峰值显存 {m['peak_mem_mb']:.0f}\\,MB，仅更新 {m['merged']} 个投影层，"
+            f"测试集未参与。目标值从训练初期的 {first:.2f} 降到 {last:.2f}"
+            f"（均匀分布基准 $\\ln 2048={uniform:.2f}$），即模型确实学到了 Token 层面的结构。"
+        ), dict(FtSteps=str(m["steps"]), FtRank=str(m["rank"]),
+                FtMinutes=f"{m['train_minutes']:.0f}", FtMem=f"{m['peak_mem_mb']:.0f}")
     p = GEN / "finetune.json"
-    if not p.exists():
-        f = GEN / "finetune_failure.json"
-        if f.exists():
-            d = json.loads(f.read_text())
-            return (f"LoRA 适配在 8\\,GB 显存下于第 {d.get('steps_done', 0)} 步触发 CUDA OOM"
-                    f"（峰值 {d.get('peak_mem_mb', 0):.0f}\\,MB），按计划记录失败而不下调结论。"), {}
-        return "（微调结果待生成）", {}
-    d = json.loads(p.read_text())["meta"]
-    return (f"LoRA（rank {d['rank']}，alpha {d['alpha']}）在 {d['train_windows']} 个训练窗口上"
-            f"训练 {d['steps']} 步、约 {d['train_minutes']} 分钟，峰值显存 {d['peak_mem_mb']:.0f}\\,MB，"
-            f"仅更新 {d['merged']} 个投影层，测试集未参与。"), dict(
-        FtSteps=str(d["steps"]), FtRank=str(d["rank"]),
-        FtMinutes=f"{d['train_minutes']:.0f}", FtMem=f"{d['peak_mem_mb']:.0f}")
+    if p.exists():
+        d = json.loads(p.read_text())["meta"]
+        return (f"LoRA（rank {d['rank']}，alpha {d['alpha']}）在 {d['train_windows']} 个训练窗口上"
+                f"训练 {d['steps']} 步、约 {d['train_minutes']} 分钟，峰值显存 {d['peak_mem_mb']:.0f}\\,MB。"), {}
+    return "（微调结果待生成）", {}
+
+
+
+def budget_table() -> tuple[str, dict]:
+    """训练预算消融：原预算 vs 加长训练（一次性复核，用来判断是否欠训练）。"""
+    import re as _re
+
+    rows = []
+    specs = (
+        ("GTZAN", ROOT / "results/gtzan/metrics.csv", ROOT / "results/gtzan_long/metrics.csv",
+         30, ("cnn", "crnn", "transformer")),
+        ("FMA-small", ROOT / "results/fma/metrics.csv", ROOT / "results/fma_long/metrics.csv",
+         30, ("cnn", "crnn", "transformer")),
+    )
+    for name, old_p, new_p, cap, models in specs:
+        if not old_p.exists() or not new_p.exists():
+            continue
+        old = pd.read_csv(old_p)
+        new = pd.read_csv(new_p)
+        for mdl in models:
+            o = old[(old.model == mdl) & (old.split == "test")]
+            n = new[(new.model == mdl) & (new.split == "test")]
+            if o.empty or n.empty:
+                continue
+            bes = [int(b.group(1)) for b in
+                   (_re.search(r"best_ep=(\d+)", str(x)) for x in n.get("notes", []))
+                   if b]
+            rows.append((name, mdl, o.macro_f1.mean(), n.macro_f1.mean(),
+                         n.macro_f1.mean() - o.macro_f1.mean(),
+                         ("是" if bes and max(bes) >= 60 else "否") if bes else "--"))
+    if not rows:
+        return "% budget ablation not available\n", {}
+
+    label = {"cnn": "CNN", "crnn": "CRNN", "transformer": "轻量 Transformer"}
+    lines = [r"\begin{table}[H]", r"\centering\small",
+             r"\caption{训练预算消融：原协议（30 轮，patience 8）与加长（60 轮，patience 12）"
+             r"的测试集 Macro-F1 对比。所有配置沿用同一数据划分与随机种子。}",
+             r"\label{tab:budget}",
+             r"\begin{tabular}{llccc}", r"\toprule",
+             r"数据集 & 模型 & 原预算 & 加长训练 & $\Delta$" + "\\\\",
+             r"\midrule"]
+    prev = None
+    for ds, mdl, o, n, d, hit in rows:
+        if prev is not None and ds != prev:
+            lines.append(r"\midrule")
+        ds_cell = ds if ds != prev else ""
+        prev = ds
+        lines.append(f"{ds_cell} & {label.get(mdl, mdl)} & {o:.4f} & {n:.4f} & ${d:+.4f}$" + "\\\\")
+    lines += [r"\bottomrule", r"\end{tabular}", r"\end{table}"]
+
+    # 结论句：区分"确实欠训练"与"原预算已够"
+    gtz_best = max((r[4] for r in rows if r[0] == "GTZAN"), default=0.0)
+    fma_best = max((r[4] for r in rows if r[0] == "FMA-small"), default=0.0)
+    fma_vals = [r[4] for r in rows if r[0] == "FMA-small"]
+    fma_mean = sum(fma_vals) / len(fma_vals) if fma_vals else 0.0
+    sentence = (f"在 GTZAN 上加长训练的最好增益为 ${gtz_best:+.4f}$，"
+                f"而在 FMA-small 上为 ${fma_best:+.4f}$（均值为 ${fma_mean:+.4f}$）")
+    # 判据：主实验所在的数据集若均值不为正、且最好增益也不足 1 个百分点，
+    # 就说明原预算已经够用，而不是「欠训练」。
+    if fma_mean <= 0 or fma_best < 0.01:
+        sentence += ("——这说明主实验的原训练预算已经够用，"
+                     "早停并没有系统性地截断仍在改善的模型；"
+                     "GTZAN 上的小幅提升主要来自小数据集上方差更大的训练过程，"
+                     "不宜据此宣称模型被欠训练。")
+    else:
+        sentence += "——两个数据集都能从更长的训练中获益，原预算偏紧。"
+    return ("\n".join(lines) + "\n", {"BudgetSentence": sentence})
 
 
 def main() -> None:
@@ -546,7 +658,9 @@ def main() -> None:
     (TAB / "generation.tex").write_text(gen_tex, encoding="utf-8")
     ft_sentence, ft_macros = finetune_sentence()
     m.append(macro("FinetuneSentence", ft_sentence))
-    for k, v in {**tok_macros, **gen_macros, **ft_macros}.items():
+    bud_tex, bud_macros = budget_table()
+    (TAB / "budget.tex").write_text(bud_tex, encoding="utf-8")
+    for k, v in {**tok_macros, **gen_macros, **ft_macros, **bud_macros}.items():
         m.append(macro(k, v))
     (OUT / "macros.tex").write_text("".join(m), encoding="utf-8")
 

@@ -343,17 +343,26 @@ artist-disjoint 划分，因此没有跨集合泄漏。
 | Persistence（重复末帧） | 1.62% | 1.62% | 2.43% | -- | -- |
 | 频率先验 | 1.16% | 1.16% | 0.89% | -- | -- |
 | Bigram（$p(t\mid t-1)$） | 1.71% | 1.71% | 2.41% | -- | -- |
-| LSTM（2 层, 256） | 2.05% ± 0.02 | 1.61% ± 0.03 | 1.63% | 6.821 | 260 s |
-| Transformer（4 层, d=192） | 2.43% ± 0.01 | 1.94% ± 0.01 | 2.28% | 6.725 | 677 s |
+| LSTM（2 层, 256） | 2.78% | 2.08% ± 0.02 | 2.55% | 6.559 | 992 s |
+| Transformer（4 层, d=192） | 3.36% | 2.19% ± 0.02 | 2.82% | 6.522 | 2,513 s |
+
+> 训练轮数说明：上表为加长到 45 轮后的结果（`results/token_prediction_long/`）。
+> 最初的 15 轮预算配合 patience 3 在第 12 轮就早停了，而验证 NLL 当时仍在下降，
+> 属于**欠训练**；12 轮版本的 LSTM free-running 只有 1.61%，反而低于 Bigram。
 
 关键观察：
 
 - **信号真实但幅度有限**：随机猜的 Top-1 是 0.049%，Transformer 的 free-running
-  Top-1 约为随机的 40 倍，NLL 比均匀分布（ln 2048 = 7.62）低约 0.9 nat。
-- **误差累积是主要损失**：teacher-forced 与 free-running 之间差 0.5 个百分点左右，
-  一旦让模型吃自己的预测，准确率就掉一截。
-- **LSTM 没有赢过 n-gram**：LSTM 的 free-running Top-1 与 Bigram 持平甚至略低，
-  说明"有记忆"不等于"有结构"；小 Transformer 的因果注意力更适合这个任务。
+  Top-1 约为随机的 45 倍，NLL 比均匀分布（ln 2048 = 7.62）低约 1.1 nat。
+- **误差累积是主要损失**：teacher-forced 与 free-running 之间差 0.7–1.2 个百分点，
+  一旦让模型吃自己的预测，准确率就掉一截。Transformer 掉得更狠（相对 35%），
+  LSTM 相对更稳（25%）。
+- **两个神经模型都赢过 n-gram**：LSTM 的 free-running Top-1 比 Bigram 高 0.37 个
+  百分点，Transformer 高 0.48 个百分点。早期"LSTM 不如 n-gram"的结论是欠训练造成的
+  假负结果，加长训练后已翻转。
+- **码本 0 也已被超过**：Persistence 在码本 0 上能拿 2.43%，Transformer 已达 2.82%。
+- **仍未训够**：45 轮下两个模型的最优轮次仍在 41–45，贴着上限，真实上限应更高；
+  受单次夜间窗口限制本轮未继续加长，作为限制记录。
 - **单码本不可解码**：本实验预测全部 4 个码本，因此可以把 Token 交回 EnCodec 解码成
   1 秒音频；只预测码本 0 的简化版本无法单独解码，这一点在报告里作为限制写明。
 
@@ -368,15 +377,32 @@ artist-disjoint 划分，因此没有跨集合泄漏。
 | 模型 | 生成耗时（3 s 音频） | 峰值显存 | Log-Mel RMSE vs 真实后半段 |
 |---|---|---|---|
 | MusicGen-small（原始） | 3.7 s | 1393 MB | 19.23 |
-| MusicGen-small + LoRA | 4.9 s | 1393 MB | 18.43 |
+| + LoRA（旧，标签维度错误） | 4.9 s | 1393 MB | 18.43（假增益） |
+| + LoRA r=8（修正，掩前缀） | 4.4 s | 1396 MB | **17.91** |
+| + LoRA r=8（修正，全窗口） | 3.1 s | 1396 MB | **17.64** |
+| + LoRA r=16（修正，掩前缀） | 3.1 s | 1396 MB | 18.59 |
 
-LoRA（rank 8、alpha 16）只更新 144 个投影层，训练 300 步、约 1.7 分钟、峰值显存 1295 MB；
-测试集未参与训练与选参。**这是负结果**：loss 只从 10.4 降到 7.63（均匀分布 7.62），
-目标对齐没调好，因此只作为"参数高效适配在 8 GB 上可行"的工程验证，不宣称生成质量提升。
+**一次被修正的负结果。** 初版 LoRA（300 步、1.7 分钟）的 loss 从 8.81 只降到 7.81，
+仍停在均匀分布 ln 2048 = 7.62 之上，当时记为"跑通但无增益"。排查后发现根因是
+**标签维度错误**：`MusicgenForCausalLM` 要求 `input_ids` 为 `(B·K, T)`、`labels`
+为 `(B, T, K)`，而初版把 `(B, K, T)` 同时当成两者传入，库内部据 `labels.shape[1]`
+截取 logits，loss 只在末尾 K 帧上与错位目标计算。用未训练的原始模型直接对照：
+错误布局 11.08、正确布局 5.46（均匀分布 7.62）——错误布局下"比乱猜还差"，
+梯度方向本身无意义，训多少步都不会收敛。
+
+修正维度、batch 从 2 提到 16（原设置只用掉 8 GB 显存的 16%）、1200 步、只对续写帧
+计 loss 后，目标值降到 5.98，音频 RMSE 从 19.23 降到 17.91，8 首中 7 首变好；
+**去掉改善最大的那一首后仍有 −0.99，而未修正版本在同样处理后只剩 −0.16（噪声）**。
+
+消融的意外发现：rank 提到 16 后训练 loss 更低（5.68）但音频反而更差（18.59，
+去掉最好一首只剩 −0.22）——**Token 级目标值低不等于音频更接近**，两者必须分开报告。
+不掩前缀（全窗口 loss）得到 17.64，与掩码版本差 0.27，在 8 个样本上不显著。
+
 另外，decoder 直连路径上生成超过约 3 秒会触发位置索引越界断言，续写长度统一取 3 秒。
 
 复现命令：`bash scripts/run_token.sh`、`bash scripts/run_generation.sh`；
-详细分析与限制见技术报告第 8 节与 `docs/research_log.md`。
+夜间加长训练队列：`bash scripts/overnight_queue.sh`；
+详细分析与限制见技术报告第 8 节、`docs/research_log.md` 与 `docs/night_run_handoff.md`。
 
 ---
 
@@ -534,14 +560,16 @@ Streamlit 单页：上传音频并选前缀长度 → 显示波形与播放器 �
 |---|---|---|---|
 | 0 | 环境与数据审计 | ✅ | `docs/phase0_audit_phase2.md` |
 | 1 | EnCodec Token 化与窗口切分 | ✅ | `data/features/token_prediction/`（15,988 窗口） |
-| 1 | Baseline / LSTM / Transformer | ✅ | `results/token_prediction/metrics.csv` |
-| 1 | Token 解码与音频样例 | ✅ | `results/token_prediction/audio/`、`decode.json` |
+| 1 | Baseline / LSTM / Transformer | ✅ | `results/token_prediction_long/metrics.csv`（加长 45 轮） |
+| 1 | Token 解码与音频样例 | ✅ | `results/token_prediction_long/audio/`、`decode.json` |
 | 2 | MusicGen-small 原始推理 | ✅ | `results/generation/metrics_base.json` |
-| 2 | 轻量微调 / 参数高效适配 | ◐ | LoRA 跑通但 loss 未收敛（负结果），`results/generation/finetune.json` |
+| 2 | 轻量微调 / 参数高效适配 | ✅ | 修正标签维度后有效：`results/generation/finetune_v2.json` |
+| 2 | 训练预算消融 | ✅ | 加长训练对照，`results/*_long/` + 报告表 5 |
 | 3 | Streamlit 统一展示 | ⬜ | 未开始（两阶段验收后做） |
 
-二期结论一句话：**Token 层面的"预测真实未来"可度量可复现，但绝对水平低、误差累积明显；
-预训练生成模型的续写可在 8 GB 卡上量化成本，轻量适配可行但本次未调出有效收益。**
+二期结论一句话：**Token 层面的"预测真实未来"可度量可复现，LSTM 与 Transformer 均
+显著优于 n-gram 基线但仍未训够；预训练生成模型的续写可在 8 GB 卡上量化成本，
+修正目标对齐后 LoRA 适配能稳定改善客观音频距离（8 首中 7 首变好）。**
 
 ---
 
@@ -731,10 +759,11 @@ Failed to initialize NVML: GPU access blocked by the operating system
 | P1 | FMA-small 主实验 | ✅ 完成 | 5 模型 + AST，3 seed；泄漏对照与优化消融同步完成，见第六节 6.5 |
 | P2 | 分段时间轴（功能 C） | ✅ 完成 | 已集成 Demo，见 `docs/timeline.md` |
 | 二期 P0 | EnCodec Token 化与窗口切分 | ✅ 完成 | 15,988 窗口，见 6.6 |
-| 二期 P0 | Baseline / LSTM / Transformer | ✅ 完成 | 同一测试集、3 seed；Transformer free Top-1 1.94% |
+| 二期 P0 | Baseline / LSTM / Transformer | ✅ 完成 | 加长 45 轮：Transformer free Top-1 2.19%，LSTM 2.08% |
 | 二期 P1 | Token 解码与音频样例 | ✅ 完成 | 多码本可解码；单码本限制如实记录 |
 | 二期 P1 | MusicGen-small 前缀续写 | ✅ 完成 | 8 流派 × 3 秒续写，3.7 s/条、1.39 GB |
-| 二期 P2 | LoRA 适配 | ◐ 跑通但负结果 | 300 步 1.7 分钟可训，loss 未收敛，如实记录 |
+| 二期 P2 | LoRA 适配 | ✅ 完成 | 修正标签维度 bug 后有效：RMSE 19.23→17.91，7/8 首改善 |
+| 二期 P2 | 训练预算消融 | ✅ 完成 | `results/*_long/`；FMA 上证实原预算够用，诚实记录 |
 | 二期 P3 | Streamlit 统一展示 | ⬜ 未开始 | 两阶段验收后做，优先保证命令行可复现 |
 | P2 | PPT 与彩排 | ⬜ 未开始 | 按第十一节故事线制作，准备盲测音频与备用录屏 |
 
@@ -750,8 +779,13 @@ Failed to initialize NVML: GPU access blocked by the operating system
 - **SVM 概率**：`predict()` 与 `predict_proba()` 存在少量不一致（见第八节）。
 - **鲁棒性**：已做七种扰动（噪声/增益/EQ/裁剪/重采样/静音/时长），未做更细的
   片段长度扫描。
-- **二期**：Token 预测 horizon 只有 1 秒；生成评估以客观距离 + 少量试听为主，
-  没有规模化主观评分；LoRA 的训练步数与数据量受 8 GB 显存与时间预算限制。
+- **二期**：Token 预测 horizon 只有 1 秒；加长到 45 轮后最优轮次仍贴着上限，
+  两个神经模型**仍未充分收敛**，上表数字应视为下界而非收敛值；生成评估以客观距离
+  + 少量试听为主，没有规模化主观评分；LoRA 的步数与数据量受 8 GB 显存与时间预算限制，
+  且音频指标只在 8 首测试曲上统计，不足以支撑显著性结论。
+- **训练预算消融的边界**：加长训练在 GTZAN 上带来 +0.75 / +1.36 个百分点的提升，
+  但测试集仅 147 首、单一种子，尚不能与随机波动区分；FMA 上则未见系统性收益。
+  因此主表仍采用原 30 轮协议，加长结果作为稳健性检查保留。
 - **PPT / 彩排**：未开始（按安排暂缓，命令行与报告已可复现全部结果）。
 - **运行环境**：`librosa` 首次导入 `notation` 时 numba 需建缓存；在无写权限的沙箱里
   需显式 `export NUMBA_CACHE_DIR=<可写目录>`，否则报 `no locator available`。
