@@ -238,3 +238,94 @@ python -m src.evaluate
 - 新增本日志、`docs/data_card.md`、`docs/audit_report.md`、`docs/mvp_checklist.md`。
 - 更新 `.gitignore`：不提交数据与权重，提交代码、配置、结果与图表。
 - 初始化 git 仓库，准备推送到 GitHub 供队友查看。
+
+## 2026-10-19 12:55
+
+**P0 错误分析：从预测文件挖失败案例**
+
+```
+python -m src.error_analysis
+```
+- 读取 5 个模型 seed 42 的测试预测，复算混淆对与置信度，不重新训练。
+- 结果：CNN 最大混淆对为 `reggae→pop`(3)、`blues→reggae`(2)、`hiphop→pop`(2)；
+  per-class F1 最低 `rock` 0.429、最高 `classical` 0.933。
+- 置信度：Transformer 有 16/64 个错误样本置信度 ≥ 0.9；CNN 只有 3/37。
+- 典型翻车：`jazz.00003` 被 CNN 以 99.6% 判成 classical。
+- 产物：`results/error_analysis.csv/.json`、`error_confusions.png`、
+  `error_cases.png`、`docs/error_analysis.md`。
+
+## 2026-10-19 12:58
+
+**P0 鲁棒性：5 模型 × 7 种扰动**
+
+```
+python -m src.robustness --workers 12
+```
+- 在 147 首测试曲目上重算特征并推理，条件为 clean / 3 s / 10 s / 增益 0.5×、1.5× /
+  噪声 10 dB、0 dB；35 行结果，每行 n=147，耗时约 80 秒。
+- clean 行与 `metrics.csv` 五个模型全部零误差；连跑两次 CSV 逐字节相同。
+- 主要发现：
+  - 深度模型对增益完全不敏感（Log-Mel `ref=np.max`），SVM/MLP 掉 2–3.4 pp；
+  - 噪声让所有模型崩塌（10 dB 平均约 −42 pp，0 dB 约 −50 pp）；
+  - 除增益外，每个扰动下绝对准确率第一都是 SVM——深度模型赢在干净输入，
+    传统模型赢在输入变脏时；
+  - 3 s 片段最伤 CRNN（−53.1 pp）与 CNN（−34.0 pp）。
+- 产物：`results/robustness.csv`、`figures/robustness.png`、`docs/robustness.md`。
+
+## 2026-10-19 13:00
+
+**P2 功能 C：滑动窗口时间轴**
+
+```
+python -m src.timeline data/raw/gtzan/genres/rock/rock.00072.wav --model cnn
+```
+- 实现 5 秒窗口、2.5 秒步长的逐段预测，输出热力图与逐窗表格，并接入 Streamlit Demo。
+- 扫描 147 首测试曲目：**88 首**至少出现一次窗口级判断变化；最不稳定的
+  `rock.00072` 在 11 个窗口里改判 9 次（rock/disco/blues/country 交替）。
+- 修复了两个小问题：matplotlib 中文字体缺失、音频略长于 30 s 时的重复尾窗。
+- 产物：`src/timeline.py`、`results/timeline_scan.csv`、`figures/timeline_*.png`、
+  `docs/timeline.md`。
+
+## 2026-10-19 13:10
+
+**P1 AST 预训练迁移：冻结主干 + 线性头**
+
+```
+python -m src.train_ast
+```
+- 模型 `MIT/ast-finetuned-audioset-10-10-0.4593`（86M 参数，346 MB），
+  16 kHz、中心 5 秒补零到 10.24 秒，冻结主干取 `pooler_output`。
+- 线性头 = StandardScaler（仅 train）+ LogisticRegression，C 在 val 上选得 3；
+  测试集只评估一次。
+- 结果：test n=147，Acc **0.8231** / Macro-F1 **0.8135**，比 CNN 高 6.8 / 6.0 个百分点。
+- 成本：embedding 提取 214 秒（985 首）、头训练 23.4 秒、推理 204 ms/片段、
+  权重 346 MB。
+- 局限：16 kHz 与 GTZAN 22.05 kHz 存在域差异；5 秒补零到 10.24 秒；
+  收益来自 AudioSet 预训练，不能归因于 Transformer 架构本身。
+- 产物：`src/train_ast.py`、`results/ast_metrics.json`、`results/ast_eval.json`、
+  `docs/ast.md`。
+
+## 2026-10-19 13:35
+
+**Windows 自动关机后恢复，合并 AST 结果并重新出图**
+
+- 关机中断了 AST 的二次复跑与 `evaluate`，但 13:09 的首轮结果完整可用。
+- 新增 `scripts/integrate_ast.py`：把 AST 结果规范化为统一 eval schema 并写入
+  `results/metrics.csv`（16 行）。
+- 重跑 `python -m src.evaluate`：排行榜与混淆矩阵变为 6 个模型，
+  AST 以 Macro-F1 0.814 居首。
+- 重新运行协议测试（4 passed）、Demo 冒烟与文档更新。
+
+## 2026-10-19 13:45
+
+**统一鲁棒性实验的决策规则并重跑**
+
+- 独立校验发现：鲁棒性实验对 SVM 使用 `predict_proba().argmax`，而训练/评估使用
+  `SVC.predict()`，导致 clean_5s 的 SVM Macro-F1 为 0.6976、与 `metrics.csv` 的
+  0.6987 相差 0.0011（准确率一致）。
+- 修复：`src/robustness.py` 对 SVM/MLP 改用 `.predict()`，深度模型仍用 softmax argmax。
+- 重跑后 clean 行五个模型的 Accuracy 与 F1 均与 `metrics.csv` 完全一致；
+  SVM 在扰动下的数值随之更新（如 noise_0db 0.2653 → 0.2993）。
+- 新增 `scripts/robustness_flips.py` 与 `results/robustness_flips.csv`，
+  重算预测翻转数（SVM clip_3s 46、noise_0db 98 等）。
+- 同步更新 `docs/robustness.md` 中所有受影响的表格与结论。

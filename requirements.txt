@@ -7,6 +7,8 @@ pandas==3.0.3
 scikit-learn==1.9.0
 scipy==1.18.0
 librosa==1.0.0
+torchaudio==2.11.0
+transformers==5.16.1
 soundfile==0.14.0
 matplotlib==3.11.0
 streamlit==1.66.0

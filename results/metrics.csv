@@ -1,4 +1,5 @@
 model,seed,split,n_samples,accuracy,macro_f1,train_time_s,infer_ms_per_clip,n_params,model_size_mb,notes
+ast,42,test,147,0.8231,0.8135,23.42,204.058,86194954,346.455,frozen_backbone;embed_extract=213.9s;head_train=23.42s;best_C=3;val_acc=0.8591;val_f1=0.8591;head_params=7690;backbone_params=86187264;16k;5s-center-zero-pad-10.24s;pooler_output;cache=miss
 cnn,42,test,147,0.7483,0.7493,57.63,0.769,592554,2.392,best_ep=23;best_val_f1=0.7276;cuda
 cnn,123,test,147,0.7551,0.7496,57.4,0.759,592554,2.392,best_ep=30;best_val_f1=0.7582;cuda
 cnn,2024,test,147,0.7619,0.7602,57.55,0.763,592554,2.392,best_ep=27;best_val_f1=0.7513;cuda

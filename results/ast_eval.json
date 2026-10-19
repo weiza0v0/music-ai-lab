@@ -1,0 +1,1310 @@
+{
+  "model": "ast",
+  "seed": 42,
+  "split": "test",
+  "n_samples": 147,
+  "accuracy": 0.8231,
+  "macro_f1": 0.8135,
+  "class_names": [
+    "blues",
+    "classical",
+    "country",
+    "disco",
+    "hiphop",
+    "jazz",
+    "metal",
+    "pop",
+    "reggae",
+    "rock"
+  ],
+  "per_class_f1": {
+    "blues": 0.8125,
+    "classical": 0.967741935483871,
+    "country": 0.875,
+    "disco": 0.8387096774193549,
+    "hiphop": 0.8666666666666667,
+    "jazz": 0.9333333333333333,
+    "metal": 0.8387096774193549,
+    "pop": 0.7857142857142857,
+    "reggae": 0.8,
+    "rock": 0.4166666666666667
+  },
+  "confusion_matrix": [
+    [
+      13,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1
+    ],
+    [
+      0,
+      15,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      14,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1
+    ],
+    [
+      0,
+      0,
+      0,
+      13,
+      1,
+      0,
+      1,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      13,
+      0,
+      0,
+      1,
+      0,
+      0
+    ],
+    [
+      0,
+      1,
+      0,
+      0,
+      0,
+      14,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      13,
+      0,
+      0,
+      1
+    ],
+    [
+      0,
+      0,
+      0,
+      1,
+      1,
+      0,
+      0,
+      11,
+      0,
+      1
+    ],
+    [
+      1,
+      0,
+      0,
+      2,
+      0,
+      0,
+      0,
+      2,
+      10,
+      0
+    ],
+    [
+      3,
+      0,
+      2,
+      0,
+      1,
+      1,
+      3,
+      0,
+      0,
+      5
+    ]
+  ],
+  "classification_report": "              precision    recall  f1-score   support\n\n       blues      0.765     0.867     0.812        15\n   classical      0.938     1.000     0.968        15\n     country      0.824     0.933     0.875        15\n       disco      0.812     0.867     0.839        15\n      hiphop      0.812     0.929     0.867        14\n        jazz      0.933     0.933     0.933        15\n       metal      0.765     0.929     0.839        14\n         pop      0.786     0.786     0.786        14\n      reggae      1.000     0.667     0.800        15\n        rock      0.556     0.333     0.417        15\n\n    accuracy                          0.823       147\n   macro avg      0.819     0.824     0.814       147\nweighted avg      0.820     0.823     0.813       147\n",
+  "val": {
+    "n_samples": 149,
+    "accuracy": 0.8591,
+    "macro_f1": 0.8591,
+    "per_class_f1": {
+      "blues": 0.7647058823529411,
+      "classical": 1.0,
+      "country": 0.8125,
+      "disco": 0.9333333333333333,
+      "hiphop": 0.896551724137931,
+      "jazz": 0.896551724137931,
+      "metal": 0.896551724137931,
+      "pop": 0.9333333333333333,
+      "reggae": 0.8148148148148148,
+      "rock": 0.6428571428571429
+    },
+    "confusion_matrix": [
+      [
+        13,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      [
+        0,
+        15,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        13,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        14,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        13,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        2,
+        0,
+        0,
+        0,
+        0,
+        13,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        13,
+        0,
+        0,
+        1
+      ],
+      [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        14,
+        0,
+        0
+      ],
+      [
+        4,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        11,
+        0
+      ],
+      [
+        0,
+        0,
+        3,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        9
+      ]
+    ],
+    "classification_report": "              precision    recall  f1-score   support\n\n       blues      0.684     0.867     0.765        15\n   classical      1.000     1.000     1.000        15\n     country      0.765     0.867     0.812        15\n       disco      0.933     0.933     0.933        15\n      hiphop      0.929     0.867     0.897        15\n        jazz      0.929     0.867     0.897        15\n       metal      0.867     0.929     0.897        14\n         pop      0.933     0.933     0.933        15\n      reggae      0.917     0.733     0.815        15\n        rock      0.692     0.600     0.643        15\n\n    accuracy                          0.859       149\n   macro avg      0.865     0.860     0.859       149\nweighted avg      0.865     0.859     0.859       149\n"
+  },
+  "head": {
+    "type": "StandardScaler+LogisticRegression",
+    "C_grid": [
+      0.001,
+      0.003,
+      0.01,
+      0.03,
+      0.1,
+      0.3,
+      1.0,
+      3.0,
+      10.0
+    ],
+    "selected_C": 3.0,
+    "selection_metric": "val_macro_f1",
+    "grid": [
+      {
+        "C": 0.001,
+        "val_accuracy": 0.8188,
+        "val_macro_f1": 0.8196,
+        "fit_s": 5.523
+      },
+      {
+        "C": 0.003,
+        "val_accuracy": 0.8121,
+        "val_macro_f1": 0.8136,
+        "fit_s": 2.263
+      },
+      {
+        "C": 0.01,
+        "val_accuracy": 0.8255,
+        "val_macro_f1": 0.8257,
+        "fit_s": 2.972
+      },
+      {
+        "C": 0.03,
+        "val_accuracy": 0.8456,
+        "val_macro_f1": 0.8473,
+        "fit_s": 3.235
+      },
+      {
+        "C": 0.1,
+        "val_accuracy": 0.8456,
+        "val_macro_f1": 0.8459,
+        "fit_s": 2.948
+      },
+      {
+        "C": 0.3,
+        "val_accuracy": 0.8523,
+        "val_macro_f1": 0.8521,
+        "fit_s": 1.688
+      },
+      {
+        "C": 1.0,
+        "val_accuracy": 0.8591,
+        "val_macro_f1": 0.8579,
+        "fit_s": 2.049
+      },
+      {
+        "C": 3.0,
+        "val_accuracy": 0.8591,
+        "val_macro_f1": 0.8591,
+        "fit_s": 0.844
+      },
+      {
+        "C": 10.0,
+        "val_accuracy": 0.8591,
+        "val_macro_f1": 0.8591,
+        "fit_s": 0.724
+      }
+    ],
+    "final_fit_s": 0.863,
+    "train_time_s": 23.42,
+    "head_params": 7690,
+    "scaler_fit_on": "train only"
+  },
+  "predictions": [
+    {
+      "track_id": "blues.00008",
+      "y_true": "blues",
+      "y_pred": "blues",
+      "confidence": 0.9968
+    },
+    {
+      "track_id": "blues.00012",
+      "y_true": "blues",
+      "y_pred": "blues",
+      "confidence": 0.9999
+    },
+    {
+      "track_id": "blues.00013",
+      "y_true": "blues",
+      "y_pred": "blues",
+      "confidence": 1.0
+    },
+    {
+      "track_id": "blues.00014",
+      "y_true": "blues",
+      "y_pred": "blues",
+      "confidence": 1.0
+    },
+    {
+      "track_id": "blues.00019",
+      "y_true": "blues",
+      "y_pred": "blues",
+      "confidence": 0.9998
+    },
+    {
+      "track_id": "blues.00022",
+      "y_true": "blues",
+      "y_pred": "blues",
+      "confidence": 1.0
+    },
+    {
+      "track_id": "blues.00035",
+      "y_true": "blues",
+      "y_pred": "blues",
+      "confidence": 0.9921
+    },
+    {
+      "track_id": "blues.00036",
+      "y_true": "blues",
+      "y_pred": "blues",
+      "confidence": 1.0
+    },
+    {
+      "track_id": "blues.00041",
+      "y_true": "blues",
+      "y_pred": "rock",
+      "confidence": 0.5334
+    },
+    {
+      "track_id": "blues.00047",
+      "y_true": "blues",
+      "y_pred": "blues",
+      "confidence": 0.9081
+    },
+    {
+      "track_id": "blues.00053",
+      "y_true": "blues",
+      "y_pred": "blues",
+      "confidence": 0.7538
+    },
+    {
+      "track_id": "blues.00064",
+      "y_true": "blues",
+      "y_pred": "blues",
+      "confidence": 1.0
+    },
+    {
+      "track_id": "blues.00065",
+      "y_true": "blues",
+      "y_pred": "blues",
+      "confidence": 0.9987
+    },
+    {
+      "track_id": "blues.00066",
+      "y_true": "blues",
+      "y_pred": "country",
+      "confidence": 0.5226
+    },
+    {
+      "track_id": "blues.00077",
+      "y_true": "blues",
+      "y_pred": "blues",
+      "confidence": 0.9993
+    },
+    {
+      "track_id": "classical.00001",
+      "y_true": "classical",
+      "y_pred": "classical",
+      "confidence": 1.0
+    },
+    {
+      "track_id": "classical.00005",
+      "y_true": "classical",
+      "y_pred": "classical",
+      "confidence": 1.0
+    },
+    {
+      "track_id": "classical.00022",
+      "y_true": "classical",
+      "y_pred": "classical",
+      "confidence": 1.0
+    },
+    {
+      "track_id": "classical.00044",
+      "y_true": "classical",
+      "y_pred": "classical",
+      "confidence": 0.9982
+    },
+    {
+      "track_id": "classical.00048",
+      "y_true": "classical",
+      "y_pred": "classical",
+      "confidence": 0.8778
+    },
+    {
+      "track_id": "classical.00049",
+      "y_true": "classical",
+      "y_pred": "classical",
+      "confidence": 0.9919
+    },
+    {
+      "track_id": "classical.00058",
+      "y_true": "classical",
+      "y_pred": "classical",
+      "confidence": 0.9998
+    },
+    {
+      "track_id": "classical.00059",
+      "y_true": "classical",
+      "y_pred": "classical",
+      "confidence": 0.994
+    },
+    {
+      "track_id": "classical.00061",
+      "y_true": "classical",
+      "y_pred": "classical",
+      "confidence": 0.9992
+    },
+    {
+      "track_id": "classical.00073",
+      "y_true": "classical",
+      "y_pred": "classical",
+      "confidence": 0.9961
+    },
+    {
+      "track_id": "classical.00076",
+      "y_true": "classical",
+      "y_pred": "classical",
+      "confidence": 0.9998
+    },
+    {
+      "track_id": "classical.00078",
+      "y_true": "classical",
+      "y_pred": "classical",
+      "confidence": 0.9998
+    },
+    {
+      "track_id": "classical.00085",
+      "y_true": "classical",
+      "y_pred": "classical",
+      "confidence": 0.9915
+    },
+    {
+      "track_id": "classical.00093",
+      "y_true": "classical",
+      "y_pred": "classical",
+      "confidence": 0.7904
+    },
+    {
+      "track_id": "classical.00099",
+      "y_true": "classical",
+      "y_pred": "classical",
+      "confidence": 1.0
+    },
+    {
+      "track_id": "country.00001",
+      "y_true": "country",
+      "y_pred": "country",
+      "confidence": 0.8866
+    },
+    {
+      "track_id": "country.00007",
+      "y_true": "country",
+      "y_pred": "country",
+      "confidence": 0.9977
+    },
+    {
+      "track_id": "country.00008",
+      "y_true": "country",
+      "y_pred": "country",
+      "confidence": 0.9951
+    },
+    {
+      "track_id": "country.00023",
+      "y_true": "country",
+      "y_pred": "rock",
+      "confidence": 0.9663
+    },
+    {
+      "track_id": "country.00027",
+      "y_true": "country",
+      "y_pred": "country",
+      "confidence": 0.9999
+    },
+    {
+      "track_id": "country.00030",
+      "y_true": "country",
+      "y_pred": "country",
+      "confidence": 0.7619
+    },
+    {
+      "track_id": "country.00031",
+      "y_true": "country",
+      "y_pred": "country",
+      "confidence": 0.9999
+    },
+    {
+      "track_id": "country.00032",
+      "y_true": "country",
+      "y_pred": "country",
+      "confidence": 0.9919
+    },
+    {
+      "track_id": "country.00043",
+      "y_true": "country",
+      "y_pred": "country",
+      "confidence": 0.6855
+    },
+    {
+      "track_id": "country.00047",
+      "y_true": "country",
+      "y_pred": "country",
+      "confidence": 1.0
+    },
+    {
+      "track_id": "country.00058",
+      "y_true": "country",
+      "y_pred": "country",
+      "confidence": 0.9998
+    },
+    {
+      "track_id": "country.00060",
+      "y_true": "country",
+      "y_pred": "country",
+      "confidence": 0.9992
+    },
+    {
+      "track_id": "country.00078",
+      "y_true": "country",
+      "y_pred": "country",
+      "confidence": 0.8724
+    },
+    {
+      "track_id": "country.00085",
+      "y_true": "country",
+      "y_pred": "country",
+      "confidence": 1.0
+    },
+    {
+      "track_id": "country.00093",
+      "y_true": "country",
+      "y_pred": "country",
+      "confidence": 0.9977
+    },
+    {
+      "track_id": "disco.00003",
+      "y_true": "disco",
+      "y_pred": "disco",
+      "confidence": 0.462
+    },
+    {
+      "track_id": "disco.00016",
+      "y_true": "disco",
+      "y_pred": "disco",
+      "confidence": 0.9996
+    },
+    {
+      "track_id": "disco.00027",
+      "y_true": "disco",
+      "y_pred": "hiphop",
+      "confidence": 0.8349
+    },
+    {
+      "track_id": "disco.00030",
+      "y_true": "disco",
+      "y_pred": "disco",
+      "confidence": 0.9997
+    },
+    {
+      "track_id": "disco.00052",
+      "y_true": "disco",
+      "y_pred": "disco",
+      "confidence": 0.9903
+    },
+    {
+      "track_id": "disco.00060",
+      "y_true": "disco",
+      "y_pred": "disco",
+      "confidence": 1.0
+    },
+    {
+      "track_id": "disco.00065",
+      "y_true": "disco",
+      "y_pred": "disco",
+      "confidence": 0.9999
+    },
+    {
+      "track_id": "disco.00069",
+      "y_true": "disco",
+      "y_pred": "disco",
+      "confidence": 1.0
+    },
+    {
+      "track_id": "disco.00073",
+      "y_true": "disco",
+      "y_pred": "disco",
+      "confidence": 0.966
+    },
+    {
+      "track_id": "disco.00075",
+      "y_true": "disco",
+      "y_pred": "disco",
+      "confidence": 0.9898
+    },
+    {
+      "track_id": "disco.00088",
+      "y_true": "disco",
+      "y_pred": "disco",
+      "confidence": 0.9984
+    },
+    {
+      "track_id": "disco.00093",
+      "y_true": "disco",
+      "y_pred": "disco",
+      "confidence": 0.9001
+    },
+    {
+      "track_id": "disco.00094",
+      "y_true": "disco",
+      "y_pred": "metal",
+      "confidence": 0.515
+    },
+    {
+      "track_id": "disco.00095",
+      "y_true": "disco",
+      "y_pred": "disco",
+      "confidence": 0.9984
+    },
+    {
+      "track_id": "disco.00097",
+      "y_true": "disco",
+      "y_pred": "disco",
+      "confidence": 0.9998
+    },
+    {
+      "track_id": "hiphop.00001",
+      "y_true": "hiphop",
+      "y_pred": "hiphop",
+      "confidence": 0.9908
+    },
+    {
+      "track_id": "hiphop.00005",
+      "y_true": "hiphop",
+      "y_pred": "hiphop",
+      "confidence": 1.0
+    },
+    {
+      "track_id": "hiphop.00021",
+      "y_true": "hiphop",
+      "y_pred": "hiphop",
+      "confidence": 0.9978
+    },
+    {
+      "track_id": "hiphop.00032",
+      "y_true": "hiphop",
+      "y_pred": "hiphop",
+      "confidence": 0.9999
+    },
+    {
+      "track_id": "hiphop.00037",
+      "y_true": "hiphop",
+      "y_pred": "hiphop",
+      "confidence": 0.9777
+    },
+    {
+      "track_id": "hiphop.00039",
+      "y_true": "hiphop",
+      "y_pred": "pop",
+      "confidence": 0.5988
+    },
+    {
+      "track_id": "hiphop.00041",
+      "y_true": "hiphop",
+      "y_pred": "hiphop",
+      "confidence": 0.4184
+    },
+    {
+      "track_id": "hiphop.00055",
+      "y_true": "hiphop",
+      "y_pred": "hiphop",
+      "confidence": 0.5608
+    },
+    {
+      "track_id": "hiphop.00059",
+      "y_true": "hiphop",
+      "y_pred": "hiphop",
+      "confidence": 0.9997
+    },
+    {
+      "track_id": "hiphop.00073",
+      "y_true": "hiphop",
+      "y_pred": "hiphop",
+      "confidence": 0.9991
+    },
+    {
+      "track_id": "hiphop.00075",
+      "y_true": "hiphop",
+      "y_pred": "hiphop",
+      "confidence": 0.9788
+    },
+    {
+      "track_id": "hiphop.00076",
+      "y_true": "hiphop",
+      "y_pred": "hiphop",
+      "confidence": 0.9957
+    },
+    {
+      "track_id": "hiphop.00088",
+      "y_true": "hiphop",
+      "y_pred": "hiphop",
+      "confidence": 0.9997
+    },
+    {
+      "track_id": "hiphop.00095",
+      "y_true": "hiphop",
+      "y_pred": "hiphop",
+      "confidence": 1.0
+    },
+    {
+      "track_id": "jazz.00003",
+      "y_true": "jazz",
+      "y_pred": "classical",
+      "confidence": 0.996
+    },
+    {
+      "track_id": "jazz.00010",
+      "y_true": "jazz",
+      "y_pred": "jazz",
+      "confidence": 1.0
+    },
+    {
+      "track_id": "jazz.00016",
+      "y_true": "jazz",
+      "y_pred": "jazz",
+      "confidence": 1.0
+    },
+    {
+      "track_id": "jazz.00021",
+      "y_true": "jazz",
+      "y_pred": "jazz",
+      "confidence": 1.0
+    },
+    {
+      "track_id": "jazz.00022",
+      "y_true": "jazz",
+      "y_pred": "jazz",
+      "confidence": 0.9991
+    },
+    {
+      "track_id": "jazz.00032",
+      "y_true": "jazz",
+      "y_pred": "jazz",
+      "confidence": 1.0
+    },
+    {
+      "track_id": "jazz.00035",
+      "y_true": "jazz",
+      "y_pred": "jazz",
+      "confidence": 1.0
+    },
+    {
+      "track_id": "jazz.00038",
+      "y_true": "jazz",
+      "y_pred": "jazz",
+      "confidence": 1.0
+    },
+    {
+      "track_id": "jazz.00053",
+      "y_true": "jazz",
+      "y_pred": "jazz",
+      "confidence": 1.0
+    },
+    {
+      "track_id": "jazz.00059",
+      "y_true": "jazz",
+      "y_pred": "jazz",
+      "confidence": 0.9983
+    },
+    {
+      "track_id": "jazz.00065",
+      "y_true": "jazz",
+      "y_pred": "jazz",
+      "confidence": 0.9979
+    },
+    {
+      "track_id": "jazz.00067",
+      "y_true": "jazz",
+      "y_pred": "jazz",
+      "confidence": 0.9933
+    },
+    {
+      "track_id": "jazz.00081",
+      "y_true": "jazz",
+      "y_pred": "jazz",
+      "confidence": 0.9811
+    },
+    {
+      "track_id": "jazz.00084",
+      "y_true": "jazz",
+      "y_pred": "jazz",
+      "confidence": 0.9999
+    },
+    {
+      "track_id": "jazz.00096",
+      "y_true": "jazz",
+      "y_pred": "jazz",
+      "confidence": 1.0
+    },
+    {
+      "track_id": "metal.00000",
+      "y_true": "metal",
+      "y_pred": "metal",
+      "confidence": 1.0
+    },
+    {
+      "track_id": "metal.00005",
+      "y_true": "metal",
+      "y_pred": "metal",
+      "confidence": 1.0
+    },
+    {
+      "track_id": "metal.00008",
+      "y_true": "metal",
+      "y_pred": "metal",
+      "confidence": 0.9916
+    },
+    {
+      "track_id": "metal.00026",
+      "y_true": "metal",
+      "y_pred": "metal",
+      "confidence": 0.9745
+    },
+    {
+      "track_id": "metal.00033",
+      "y_true": "metal",
+      "y_pred": "metal",
+      "confidence": 1.0
+    },
+    {
+      "track_id": "metal.00042",
+      "y_true": "metal",
+      "y_pred": "metal",
+      "confidence": 0.9941
+    },
+    {
+      "track_id": "metal.00060",
+      "y_true": "metal",
+      "y_pred": "metal",
+      "confidence": 0.995
+    },
+    {
+      "track_id": "metal.00068",
+      "y_true": "metal",
+      "y_pred": "metal",
+      "confidence": 0.9957
+    },
+    {
+      "track_id": "metal.00076",
+      "y_true": "metal",
+      "y_pred": "metal",
+      "confidence": 1.0
+    },
+    {
+      "track_id": "metal.00091",
+      "y_true": "metal",
+      "y_pred": "rock",
+      "confidence": 0.805
+    },
+    {
+      "track_id": "metal.00095",
+      "y_true": "metal",
+      "y_pred": "metal",
+      "confidence": 0.9826
+    },
+    {
+      "track_id": "metal.00096",
+      "y_true": "metal",
+      "y_pred": "metal",
+      "confidence": 0.9997
+    },
+    {
+      "track_id": "metal.00098",
+      "y_true": "metal",
+      "y_pred": "metal",
+      "confidence": 0.9834
+    },
+    {
+      "track_id": "metal.00099",
+      "y_true": "metal",
+      "y_pred": "metal",
+      "confidence": 0.9965
+    },
+    {
+      "track_id": "pop.00000",
+      "y_true": "pop",
+      "y_pred": "pop",
+      "confidence": 1.0
+    },
+    {
+      "track_id": "pop.00003",
+      "y_true": "pop",
+      "y_pred": "pop",
+      "confidence": 0.732
+    },
+    {
+      "track_id": "pop.00004",
+      "y_true": "pop",
+      "y_pred": "pop",
+      "confidence": 0.9759
+    },
+    {
+      "track_id": "pop.00006",
+      "y_true": "pop",
+      "y_pred": "rock",
+      "confidence": 0.9732
+    },
+    {
+      "track_id": "pop.00012",
+      "y_true": "pop",
+      "y_pred": "disco",
+      "confidence": 0.5989
+    },
+    {
+      "track_id": "pop.00022",
+      "y_true": "pop",
+      "y_pred": "pop",
+      "confidence": 0.9973
+    },
+    {
+      "track_id": "pop.00036",
+      "y_true": "pop",
+      "y_pred": "pop",
+      "confidence": 0.9988
+    },
+    {
+      "track_id": "pop.00059",
+      "y_true": "pop",
+      "y_pred": "pop",
+      "confidence": 0.9875
+    },
+    {
+      "track_id": "pop.00061",
+      "y_true": "pop",
+      "y_pred": "pop",
+      "confidence": 0.6663
+    },
+    {
+      "track_id": "pop.00062",
+      "y_true": "pop",
+      "y_pred": "pop",
+      "confidence": 0.9964
+    },
+    {
+      "track_id": "pop.00072",
+      "y_true": "pop",
+      "y_pred": "hiphop",
+      "confidence": 0.9884
+    },
+    {
+      "track_id": "pop.00074",
+      "y_true": "pop",
+      "y_pred": "pop",
+      "confidence": 0.9627
+    },
+    {
+      "track_id": "pop.00078",
+      "y_true": "pop",
+      "y_pred": "pop",
+      "confidence": 1.0
+    },
+    {
+      "track_id": "pop.00089",
+      "y_true": "pop",
+      "y_pred": "pop",
+      "confidence": 1.0
+    },
+    {
+      "track_id": "reggae.00006",
+      "y_true": "reggae",
+      "y_pred": "reggae",
+      "confidence": 1.0
+    },
+    {
+      "track_id": "reggae.00011",
+      "y_true": "reggae",
+      "y_pred": "reggae",
+      "confidence": 0.9994
+    },
+    {
+      "track_id": "reggae.00020",
+      "y_true": "reggae",
+      "y_pred": "reggae",
+      "confidence": 1.0
+    },
+    {
+      "track_id": "reggae.00030",
+      "y_true": "reggae",
+      "y_pred": "reggae",
+      "confidence": 0.9985
+    },
+    {
+      "track_id": "reggae.00031",
+      "y_true": "reggae",
+      "y_pred": "reggae",
+      "confidence": 0.999
+    },
+    {
+      "track_id": "reggae.00032",
+      "y_true": "reggae",
+      "y_pred": "disco",
+      "confidence": 0.9517
+    },
+    {
+      "track_id": "reggae.00039",
+      "y_true": "reggae",
+      "y_pred": "disco",
+      "confidence": 0.7758
+    },
+    {
+      "track_id": "reggae.00049",
+      "y_true": "reggae",
+      "y_pred": "blues",
+      "confidence": 0.9632
+    },
+    {
+      "track_id": "reggae.00063",
+      "y_true": "reggae",
+      "y_pred": "reggae",
+      "confidence": 0.996
+    },
+    {
+      "track_id": "reggae.00069",
+      "y_true": "reggae",
+      "y_pred": "reggae",
+      "confidence": 0.9999
+    },
+    {
+      "track_id": "reggae.00072",
+      "y_true": "reggae",
+      "y_pred": "reggae",
+      "confidence": 0.9042
+    },
+    {
+      "track_id": "reggae.00088",
+      "y_true": "reggae",
+      "y_pred": "pop",
+      "confidence": 0.6744
+    },
+    {
+      "track_id": "reggae.00090",
+      "y_true": "reggae",
+      "y_pred": "reggae",
+      "confidence": 0.8367
+    },
+    {
+      "track_id": "reggae.00091",
+      "y_true": "reggae",
+      "y_pred": "reggae",
+      "confidence": 0.9998
+    },
+    {
+      "track_id": "reggae.00097",
+      "y_true": "reggae",
+      "y_pred": "pop",
+      "confidence": 0.5556
+    },
+    {
+      "track_id": "rock.00000",
+      "y_true": "rock",
+      "y_pred": "rock",
+      "confidence": 0.8334
+    },
+    {
+      "track_id": "rock.00003",
+      "y_true": "rock",
+      "y_pred": "jazz",
+      "confidence": 0.9999
+    },
+    {
+      "track_id": "rock.00008",
+      "y_true": "rock",
+      "y_pred": "hiphop",
+      "confidence": 0.9918
+    },
+    {
+      "track_id": "rock.00011",
+      "y_true": "rock",
+      "y_pred": "rock",
+      "confidence": 0.9412
+    },
+    {
+      "track_id": "rock.00012",
+      "y_true": "rock",
+      "y_pred": "blues",
+      "confidence": 0.6033
+    },
+    {
+      "track_id": "rock.00014",
+      "y_true": "rock",
+      "y_pred": "blues",
+      "confidence": 0.9717
+    },
+    {
+      "track_id": "rock.00020",
+      "y_true": "rock",
+      "y_pred": "rock",
+      "confidence": 0.8828
+    },
+    {
+      "track_id": "rock.00043",
+      "y_true": "rock",
+      "y_pred": "rock",
+      "confidence": 0.3568
+    },
+    {
+      "track_id": "rock.00050",
+      "y_true": "rock",
+      "y_pred": "country",
+      "confidence": 0.7653
+    },
+    {
+      "track_id": "rock.00055",
+      "y_true": "rock",
+      "y_pred": "metal",
+      "confidence": 0.7733
+    },
+    {
+      "track_id": "rock.00072",
+      "y_true": "rock",
+      "y_pred": "country",
+      "confidence": 0.728
+    },
+    {
+      "track_id": "rock.00077",
+      "y_true": "rock",
+      "y_pred": "blues",
+      "confidence": 0.8665
+    },
+    {
+      "track_id": "rock.00080",
+      "y_true": "rock",
+      "y_pred": "rock",
+      "confidence": 0.932
+    },
+    {
+      "track_id": "rock.00088",
+      "y_true": "rock",
+      "y_pred": "metal",
+      "confidence": 0.8551
+    },
+    {
+      "track_id": "rock.00094",
+      "y_true": "rock",
+      "y_pred": "metal",
+      "confidence": 0.9587
+    }
+  ],
+  "timing": {
+    "embedding_extract_s": 213.86,
+    "featurize_s": 16.92,
+    "gpu_forward_s": 192.05,
+    "peak_gpu_mb": 1139.7,
+    "model_load_s": 6.62,
+    "latency": {
+      "n_clips": 28,
+      "median_ms": 204.058,
+      "mean_ms": 203.756,
+      "p90_ms": 206.368,
+      "std_ms": 2.18,
+      "predict_all_test_s": 0.0151
+    },
+    "predict_all_test_s": 0.0151
+  },
+  "cost": {
+    "backbone_params": 86187264,
+    "head_params": 7690,
+    "n_params": 86194954,
+    "backbone_mb": 346.405,
+    "head_mb": 0.050537,
+    "model_size_mb": 346.455,
+    "train_time_s": 23.42
+  },
+  "config": {
+    "model_id": "MIT/ast-finetuned-audioset-10-10-0.4593",
+    "pooling": "pooler_output",
+    "preproc": "gtzan-16k-5s-center-zero-pad-10.24s-v1",
+    "sample_rate": 16000,
+    "clip_seconds": 5.0,
+    "padded_seconds": 10.24,
+    "n_mels": 128,
+    "n_frames": 1024,
+    "batch_size": 16,
+    "device": "cuda",
+    "cache_reused": false,
+    "backbone_path": "/home/weizai0v0/.cache/huggingface/hub/models--MIT--ast-finetuned-audioset-10-10-0.4593/snapshots/f826b80d28226b62986cc218e5cec390b1096902/model.safetensors"
+  },
+  "versions": {
+    "python": "3.12.13",
+    "torch": "2.12.1+cu130",
+    "transformers": "5.16.1",
+    "sklearn": "1.9.0",
+    "librosa": "1.0.0",
+    "numpy": "2.4.6"
+  },
+  "notes": [
+    "Backbone frozen: eval mode, requires_grad=False, inference_mode forwards.",
+    "Only the 768->10 logistic head (plus train-only scaler) is fit.",
+    "C selected on val macro-F1; test evaluated once after freezing.",
+    "Latency is batch-1 feature-extractor + backbone + head, excluding wav decode.",
+    "Pooling is pooler_output = (CLS + distillation token) / 2, the AST classification representation.",
+    "NO_PROXY is dropped before importing transformers to work around a huggingface_hub 1.30 bracket-IPv6 parsing bug; proxy remains active."
+  ]
+}

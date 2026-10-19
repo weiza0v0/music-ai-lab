@@ -22,6 +22,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from src.predict import available, predict_audio  # noqa: E402
+from src.timeline import plot_timeline, predict_windows  # noqa: E402
 
 st.set_page_config(page_title="Music AI Lab · 音乐 AI 鉴定所", page_icon="🎧", layout="wide")
 
@@ -121,4 +122,28 @@ if run:
             st.success(f"所有模型都认为这是 {tops.pop()}。")
 
 st.divider()
+with st.expander("🎞 进阶：一首歌的「性格变化」（滑动窗口时间轴）", expanded=False):
+    st.caption("把音频切成 5 秒窗口、步长 2.5 秒，逐段预测流派，看模型判断是否随段落变化。"
+               "这不是预测未来，而是对不同时间片段分类。")
+    c1, c2 = st.columns([1, 1])
+    with c1:
+        tl_model = st.selectbox("时间轴模型", MODELS,
+                                index=MODELS.index("cnn") if "cnn" in MODELS else 0)
+    with c2:
+        st.write("")
+        tl_run = st.button("生成时间轴", use_container_width=True)
+    if tl_run:
+        with st.spinner("逐段推理中…"):
+            tl_df = predict_windows(y, tl_model)
+        fig = plot_timeline(tl_df, f"{uploaded.name} · {tl_model.upper()} · 每 5 秒一窗")
+        st.pyplot(fig)
+        plt.close(fig)
+        st.dataframe(tl_df[["start_s", "end_s", "top1", "prob"]],
+                     hide_index=True, use_container_width=True)
+        changes = int((tl_df["top1"] != tl_df["top1"].shift()).sum() - 1)
+        if changes > 0:
+            st.info(f"模型在 {changes} 处改变了判断：{ ' → '.join(tl_df['top1'].tolist()) }")
+        else:
+            st.success(f"整首歌都被稳定判为 {tl_df['top1'].iloc[0]}。")
+
 st.caption("预测来自真实 checkpoint；页面不包含任何预设结果。")

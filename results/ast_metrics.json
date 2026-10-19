@@ -1,0 +1,13 @@
+{
+  "model": "ast",
+  "seed": 42,
+  "split": "test",
+  "n_samples": 147,
+  "accuracy": 0.8231,
+  "macro_f1": 0.8135,
+  "train_time_s": 23.42,
+  "infer_ms_per_clip": 204.058,
+  "n_params": 86194954,
+  "model_size_mb": 346.455,
+  "notes": "frozen_backbone;embed_extract=213.9s;head_train=23.42s;best_C=3;val_acc=0.8591;val_f1=0.8591;head_params=7690;backbone_params=86187264;16k;5s-center-zero-pad-10.24s;pooler_output;cache=miss"
+}

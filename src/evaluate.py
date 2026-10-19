@@ -39,9 +39,9 @@ plt.rcParams.update({"figure.dpi": 150, "font.size": 10, "axes.spines.top": Fals
                      "axes.spines.right": False})
 
 MODEL_LABEL = {"svm": "SVM", "mlp": "MLP", "cnn": "CNN", "crnn": "CRNN",
-               "transformer": "Transformer"}
+               "transformer": "Transformer", "ast": "AST(预训练)"}
 COLORS = {"svm": "#8a8f98", "mlp": "#6b8ea8", "cnn": "#c2703d", "crnn": "#9c6b8f",
-          "transformer": "#4f7a5f"}
+          "transformer": "#4f7a5f", "ast": "#b08d57"}
 
 
 def load_metrics() -> pd.DataFrame:
@@ -135,7 +135,7 @@ def training_curves() -> None:
     rows = []
     for model, p in eval_files().items():
         d = json.loads(p.read_text())
-        if "history" in d:
+        if d.get("history"):
             rows.append((model, d["history"]))
     if not rows:
         return

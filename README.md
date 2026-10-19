@@ -135,15 +135,21 @@ music-ai-lab/
 │   ├── models/              # cnn.py（CNN / CRNN / Transformer）
 │   ├── train_classical.py   # SVM + MLP
 │   ├── train_cnn.py         # 深度模型统一训练器
+│   ├── train_ast.py         # AST 冻结主干 + 线性头
 │   ├── evaluate.py          # 图表 + 汇总
 │   ├── predict.py           # 单文件推理
+│   ├── error_analysis.py    # P0 错误分析
+│   ├── robustness.py        # P0 七种扰动鲁棒性
+│   ├── timeline.py          # P2 滑动窗口时间轴
 │   └── metrics.py
-├── scripts/                 # run_all.sh, extract_features.py, env_audit.py
+├── scripts/                 # run_all.sh, extract_features.py, env_audit.py,
+│                            #   run_robustness.py, integrate_ast.py
 ├── app/demo.py              # Streamlit 音乐 AI 鉴定所
 ├── tests/                   # 协议测试
 ├── checkpoints/             # 权重（不提交）
 ├── results/                 # metrics.csv、预测、图表、summary.md
-├── docs/                    # 环境报告、研究日志、数据卡、审计、验收清单
+├── docs/                    # 环境报告、研究日志、数据卡、审计、验收清单、
+│                            #   错误分析、鲁棒性、时间轴
 ├── requirements.txt
 └── README.md
 ```
@@ -163,7 +169,7 @@ music-ai-lab/
 | 01 环境审计与数据检查 | 第 1 天 | 检查 Python/PyTorch/CUDA/GPU/磁盘，接入数据集，统计损坏文件、标签分布、时长与采样率 | GPU 可用；数据可读；生成统计表与固定划分 | ✅ 完成（GPU 沙箱问题已定位并解决） |
 | 02 特征工程与传统 Baseline | 第 2–3 天 | 实现 MFCC 等特征、标准化、SVM 与 MLP；标准化器只在训练集拟合 | 两个模型可独立训练、评估、保存并复现预测 | ✅ 完成 |
 | 03 搭建深度学习擂台 | 第 4–6 天 | 实现 CNN、CRNN、轻量 Transformer；统一训练循环、优化器、早停、日志、权重保存与显存监控 | 三种模型各完成一次小规模训练，输出同格式指标 | ✅ 完成（显存监控未单独记录） |
-| 04 批量实验与预训练模型 | 第 7–9 天 | 正式实验、至少 3 个随机种子；资源允许时接入 AST | 每个模型有配置、日志、最佳权重、验证记录与测试指标 | ◐ 3 seed 已完成；AST 未做 |
+| 04 批量实验与预训练模型 | 第 7–9 天 | 正式实验、至少 3 个随机种子；资源允许时接入 AST | 每个模型有配置、日志、最佳权重、验证记录与测试指标 | ✅ 3 seed + AST 完成 |
 | 05 错误分析与演示应用 | 第 10–11 天 | 排行榜、混淆矩阵、训练曲线、推理时间；Streamlit 上传/预测/置信度/多模型比较 | 对新音频真实推理，不能是预设结果 | ◐ Demo 完成；错误分析待深化 |
 | 06 复现检查、PPT 与彩排 | 第 12–14 天 | 干净环境重跑关键实验，图表数字可追溯，准备盲测音频、备用录屏、讲稿 | 任何组员按 README 可重现，现场按时演示 | ⬜ 未开始 |
 
@@ -202,7 +208,10 @@ music-ai-lab/
   RTX 4060 Laptop 8GB），依赖见 `requirements.txt`。
 - 数据：GTZAN 清洗后 985 首，按曲目 70/15/15（689/149/147），seed=42 固定。
 - 特征：209 维人工特征 + 64×216 Log-Mel，一次缓存、五个模型共用。
-- 模型：SVM / MLP / CNN / CRNN / 轻量 Transformer × 3 seeds，共 15 次训练。
+- 模型：SVM / MLP / CNN / CRNN / 轻量 Transformer × 3 seeds，共 15 次训练；
+  另加 AST 预训练迁移组（冻结主干 + 线性头）。
+- P0 进阶：错误分析（混淆对、置信度、典型翻车案例）与 5 模型 × 7 种扰动鲁棒性。
+- P2 进阶：滑动窗口时间轴（功能 C），已集成进 Demo。
 - 评估：`results/metrics.csv`、逐类 F1、混淆矩阵、训练曲线、排行榜、预测 CSV。
 - Demo：Streamlit 上传音频实时推理，调用真实 checkpoint，已冒烟验证 HTTP 200。
 - 文档：环境报告、数据卡、研究日志、验收清单、独立审计报告。
@@ -211,6 +220,7 @@ music-ai-lab/
 
 | 模型 | Accuracy | Macro-F1 | 训练耗时 | 单片段推理 | 参数量 | 模型大小 |
 |---|---|---|---|---|---|---|
+| AST（预训练，迁移组） | **0.823** | **0.814** | 23.4 s | 204.1 ms | 86,194,954 | 346.45 MB |
 | CNN | **0.755 ± 0.007** | **0.753 ± 0.006** | 57.5 s | 0.76 ms | 592,554 | 2.39 MB |
 | CRNN | 0.726 ± 0.034 | 0.723 ± 0.034 | 56.0 s | 0.76 ms | 418,986 | 1.69 MB |
 | SVM | 0.708 ± 0.000 | 0.699 ± 0.000 | 0.2 s | 0.07 ms | 140,657 | 1.23 MB |
@@ -221,6 +231,9 @@ music-ai-lab/
 
 可直接用于汇报的观察：
 
+- **预训练知识确实值钱**：冻结 AST 主干、只训练 7,690 个参数的线性头，测试
+  Macro-F1 0.814，比从头训练的 CNN 高 6.0 个百分点；代价是 346 MB 权重、
+  204 ms/片段的推理（约 270 倍），且收益不能归因于 Transformer 架构本身。
 - 训练最久的 CNN 只比 SVM 高约 4.7 个百分点，**深度模型不是免费午餐**。
 - CNN 三个种子非常稳定（±0.7），CRNN 波动 ±3.4，MLP ±5.1（小样本对初始化敏感）。
 - 最佳模型 CNN 在 `rock` 上最差（F1 0.43），`classical` 最好（F1 0.93）。
@@ -237,6 +250,48 @@ music-ai-lab/
   结果与预测 CSV/JSON 完全对账；同 seed 重训得到逐字节相同的 checkpoint。
   详见 [`docs/audit_report.md`](docs/audit_report.md)。
 - 开启 cuDNN 确定性后，seed 42 复跑结果逐位一致（0.7483 / 0.7493）。
+
+### 6.4 进阶实验（P0 / P2）
+
+**错误分析**：从保存的预测文件复算，不重新训练。CNN 最大的混淆对是
+`reggae→pop`、`blues→reggae`；`rock` 的 F1 仅 0.429（最差），`classical` 最高
+0.933。置信度不等于正确率：Transformer 有 16/64 个错误样本的置信度 ≥ 0.9。
+典型翻车案例包括 `jazz.00003` 被 CNN 以 99.6% 判成 classical。
+详见 [`docs/error_analysis.md`](docs/error_analysis.md) 与
+`results/figures/error_cases.png`。
+
+**鲁棒性**：测试集 147 首 × 7 种扰动（3 s / 10 s 片段、增益 0.5× / 1.5×、
+白噪声 10 dB / 0 dB），五个模型只做推理：
+
+| 模型 | clean Acc | 最差条件 | 最差 Acc | 掉点 | 六个扰动平均\|Δ\| |
+|---|---|---|---|---|---|
+| SVM | 0.708 | 噪声 0 dB | 0.299 | −40.8 pp | 16.6 pp |
+| MLP | 0.639 | 噪声 0 dB | 0.218 | −42.2 pp | 16.6 pp |
+| CNN | 0.748 | 噪声 0 dB | 0.122 | −62.6 pp | 28.6 pp |
+| CRNN | 0.742 | 噪声 0 dB | 0.163 | −57.8 pp | 30.3 pp |
+| Transformer | 0.565 | 噪声 0 dB | 0.150 | −41.5 pp | 13.6 pp |
+
+三条结论：深度模型对**增益**完全不变（Log-Mel 用 `ref=np.max` 归一化），
+传统模型反而掉 2–3.4 pp；**噪声**让所有模型崩塌，10 dB 平均掉约 42 pp，
+且 CNN 从干净第一变成 0 dB 最差；**除增益外，每个扰动下绝对准确率第一都是 SVM**
+——深度模型赢在干净输入，传统模型赢在输入变脏时。
+详见 [`docs/robustness.md`](docs/robustness.md) 与
+[`results/robustness.csv`](results/robustness.csv)。
+
+**片段时间轴（功能 C）**：把一首歌切成 5 秒窗口、步长 2.5 秒逐段预测。
+147 首测试曲目中 **88 首**至少出现一次窗口级判断变化；`rock.00072` 在 11 个窗口里
+改判 9 次（rock / disco / blues / country 交替），而 classical 曲目全程稳定。
+该功能已集成进 Streamlit Demo，详见 [`docs/timeline.md`](docs/timeline.md)。
+
+![时间轴示例](results/figures/timeline_rock.00072.png)
+
+**AST 预训练迁移（P1）**：使用 `MIT/ast-finetuned-audioset-10-10-0.4593`
+（86M 参数，AudioSet 预训练），16 kHz、中心 5 秒补零到 10.24 秒，冻结主干提取
+`pooler_output`，在 train 上训练 `StandardScaler + LogisticRegression` 头
+（C 由 val 选择，test 只评一次）。结果 **Acc 0.823 / Macro-F1 0.814**，
+比 CNN 高 6.8 / 6.0 个百分点；代价是 346 MB 权重、214 秒 embedding 提取、
+204 ms/片段推理。详见 [`docs/ast.md`](docs/ast.md)、
+[`results/ast_metrics.json`](results/ast_metrics.json)。
 
 ---
 
@@ -358,12 +413,12 @@ Failed to initialize NVML: GPU access blocked by the operating system
 |---|---|---|---|
 | 1 | 环境审计报告与可复现依赖 | ✅ | `docs/environment_report.md`、`requirements.txt` |
 | 2 | 数据集说明、授权检查与固定划分 | ✅ | `docs/data_card.md`、`data/splits/*` |
-| 3 | 五个 Baseline 均可运行 | ✅ | `checkpoints/*`、`results/metrics.csv` |
+| 3 | 五个 Baseline + AST 迁移组均可运行 | ✅ | `checkpoints/*`、`results/metrics.csv`（16 行） |
 | 4 | 训练日志、权重与配置完整 | ◐ | 权重 + 逐 epoch history + configs；缺独立 stdout 日志 |
 | 5 | Accuracy、Macro-F1 与混淆矩阵 | ✅ | `results/metrics.csv`、`figures/confusion_matrices.png` |
 | 6 | 至少三个随机种子的核心结果 | ✅ | 5 模型 × 3 seed |
 | 7 | 训练时间、推理延迟、模型大小与显存 | ◐ | 前三项有；峰值显存未记录 |
-| 8 | 至少两个错误案例与一次鲁棒性实验 | ◐ | 混淆矩阵已定位 rock→country/blues；鲁棒性未做 |
+| 8 | 至少两个错误案例与一次鲁棒性实验 | ✅ | `docs/error_analysis.md`（含 5 个案例）、`docs/robustness.md`（7 条件 × 5 模型） |
 | 9 | 可上传音频的真实推理 Demo | ✅ | `app/demo.py` + `src/predict.py` |
 | 10 | 模型排行榜与可视化图表 | ✅ | `results/figures/*.png`、`results/summary.md` |
 | 11 | PPT 数字可追溯到结果文件 | ◐ | 数字均来自 `results/`；PPT 未制作 |
@@ -385,14 +440,14 @@ Failed to initialize NVML: GPU access blocked by the operating system
 
 ## 十三、下一步计划
 
-| 优先级 | 任务 | 说明 |
-|---|---|---|
-| P0 | 错误分析深化 | rock↔country、disco↔pop 混淆案例听感对照；`jazz.00003` 自信误判 |
-| P0 | 鲁棒性实验 | 片段长度 3 s / 10 s、加噪、音量缩放，比较五个模型稳定性 |
-| P1 | AST 迁移学习 | 冻结主干训练分类头，记录权重来源与额外成本 |
-| P1 | FMA-small 主实验 | 若磁盘与时间允许，替换主数据集并重新划分 |
-| P2 | 片段级预测时间轴 | 功能 C：把一首歌切片预测，画置信度随时间变化 |
-| P2 | PPT 与彩排 | 按第十节故事线制作，准备盲测音频与备用录屏 |
+| 优先级 | 任务 | 状态 | 说明 |
+|---|---|---|---|
+| P0 | 错误分析 | ✅ 完成 | 混淆对、置信度、典型翻车案例，见 `docs/error_analysis.md` |
+| P0 | 鲁棒性实验 | ✅ 完成 | 5 模型 × 7 扰动，见 `docs/robustness.md` |
+| P1 | AST 迁移学习 | ✅ 完成 | 冻结主干 + 线性头：Acc 0.823 / F1 0.814，见 `docs/ast.md` |
+| P1 | FMA-small 主实验 | ⬜ 未开始 | 需 7.2 GiB 与较长训练时间，留作后续 |
+| P2 | 分段时间轴（功能 C） | ✅ 完成 | 已集成 Demo，见 `docs/timeline.md` |
+| P2 | PPT 与彩排 | ⬜ 未开始 | 按第十节故事线制作，准备盲测音频与备用录屏 |
 
 ---
 

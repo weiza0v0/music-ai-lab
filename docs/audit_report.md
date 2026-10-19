@@ -59,3 +59,22 @@ generator。校验员在 `/tmp` 隔离副本重训 cnn/crnn/transformer 的 seed
 - 已知真实错误案例：测试集 `jazz.00003` 被 CNN 以 99.6% 置信度判成 `classical`，
   适合作为「AI 自信犯错」的演示素材。
 - 审计过程未修改仓库任何源文件/数据/产物。
+
+---
+
+## 扩展审计（P0 / P1 / P2，2026-10-19）
+
+MVP 之后新增了错误分析、鲁棒性、AST 迁移与时间轴四组实验。独立校验员做了聚焦复审：
+
+| 审计项 | 结果 | 关键证据 |
+|---|---|---|
+| AST 迁移 | PASS | 147 条预测重算 0.823129 / 0.813504，与 JSON、`metrics.csv` 一致；预测集合 == test split；C 在 val 网格上选择，scaler 仅 train 拟合；test-optimal C=0.03 会更高（0.8367），说明没有用测试集选 C |
+| 鲁棒性 | PASS | 35 行 = 5 模型 × 7 条件，每行 n=147；clean Accuracy 与 `metrics.csv` 五个模型全部零误差；文档抽查 8 格一致 |
+| 错误分析 | PASS | 从 CNN 预测复算 0.7483、37 错；rock F1 0.4286；reggae→pop 3、blues→reggae 2；Transformer 16/64 个高置信错误 |
+| 时间轴 | PASS | `timeline_scan.csv` 147 行、88/147 有变化、rock.00072=9；CLI 输出 11 窗口、9 次变化，无重复尾窗 |
+| 测试与指标 | PASS | pytest 4 passed；`metrics.csv` 16 行、6 个模型 |
+
+**审计发现并已修复的不一致**：鲁棒性实验最初对 SVM 用概率 argmax，而训练/评估用
+`SVC.predict()`，导致 clean Macro-F1 差 0.0011。已统一为 `.predict()`（深度模型仍用
+softmax argmax）并重跑，新增 `results/robustness_flips.csv` 记录翻转数；文档与图表
+同步更新。

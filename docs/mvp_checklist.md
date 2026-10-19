@@ -9,7 +9,7 @@
 |---|---|---|---|
 | 1 | 环境审计报告与可复现依赖 | ✅ | `docs/environment_report.md`、`requirements.txt`；含 GPU 沙箱排查全过程 |
 | 2 | 数据集说明、授权检查与固定划分 | ✅ | `docs/data_card.md`、`data/splits/splits.csv`、`stats.json` |
-| 3 | SVM、MLP、CNN、CRNN、Transformer 均可运行 | ✅ | `checkpoints/*`（15 个权重）、`results/metrics.csv` 15 行 |
+| 3 | SVM、MLP、CNN、CRNN、Transformer + AST 均可运行 | ✅ | `checkpoints/*`（15 个权重）+ AST 主干；`results/metrics.csv` 16 行 |
 | 4 | 训练日志、模型权重与配置文件完整 | ◐ | 权重 + 逐 epoch history（`*_eval.json`）+ `configs/`；缺独立 stdout 日志文件 |
 
 ## 实验结果
@@ -17,9 +17,9 @@
 | # | 条目 | 状态 | 证据 / 缺口 |
 |---|---|---|---|
 | 5 | Accuracy、Macro-F1 与混淆矩阵 | ✅ | `results/metrics.csv`、`figures/confusion_matrices.png`、逐类 F1 |
-| 6 | 至少三个随机种子的核心结果 | ✅ | seed 42/123/2024 全部跑完（5 模型 × 3 seed）；均值±std 见 `results/summary.md` |
-| 7 | 训练时间、推理延迟、模型大小和显存对比 | ◐ | 前三项有；峰值显存未记录（8 GB 卡上 batch=32 远未打满） |
-| 8 | 至少两个错误案例及一次鲁棒性实验 | ◐ | 混淆矩阵已定位 rock→country/blues；鲁棒性扰动未做 |
+| 6 | 至少三个随机种子的核心结果 | ✅ | 5 个自建模型 × 3 seed（42/123/2024）；AST 为单 seed 的迁移组，已在文档注明 |
+| 7 | 训练时间、推理延迟、模型大小和显存对比 | ◐ | 前三项全有；AST 记录了峰值 1139.7 MB，自建模型未单独记录 |
+| 8 | 至少两个错误案例及一次鲁棒性实验 | ✅ | `docs/error_analysis.md`（5 个案例）+ `docs/robustness.md`（5 模型 × 7 扰动） |
 
 ## 展示材料
 
@@ -32,9 +32,9 @@
 
 ## MVP 判定
 
-**“最小 MVP” 已达成**：数据 → 特征 → 5 个模型 → 3 seed 复测 → 评估 → 图表 →
-真实推理 Demo 全链路可运行、可复现。协议约束（按曲目划分、去重、训练集拟合
-标准化、测试集只用一次）由 `tests/test_protocol.py` 自动校验，并由独立校验员
-只读复核（`docs/audit_report.md`，6/6 PASS）。
+**“最小 MVP” 已达成并扩展**：数据 → 特征 → 5 个自建模型 → 3 seed 复测 →
+P0 错误分析 / 鲁棒性 → P1 AST 迁移 → P2 时间轴 → 真实推理 Demo 全链路可运行、
+可复现。协议约束由 `tests/test_protocol.py` 自动校验，并由独立校验员只读复核
+（`docs/audit_report.md`，6/6 PASS）。
 
-距离完整课程项目还差：鲁棒性实验、AST、FMA-small、PPT 与彩排。
+距离完整课程项目还差：FMA-small 主实验、PPT 与现场彩排。

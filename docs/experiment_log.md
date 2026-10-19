@@ -145,3 +145,38 @@ CLI 默认 seed 123、示例用了训练集曲目、SVM 概率与硬预测不一
 3. AST 迁移学习（`MIT/ast-finetuned-audioset-10-10-0.4593`）。
 4. FMA-small 主实验（若磁盘与时间允许）。
 5. PPT 故事线与现场盲测素材。
+
+## 阶段后扩展（P0 / P1 / P2）
+
+MVP 完成后按 `README.md`「下一步计划」继续做了三组实验：
+
+### P0 错误分析
+
+- `python -m src.error_analysis`；读取 seed 42 的预测文件复算，不重新训练。
+- CNN 最大混淆对：`reggae→pop`(3)、`blues→reggae`(2)、`hiphop→pop`(2)；
+  `rock` F1 0.429 最低，`classical` 0.933 最高。
+- 置信度：Transformer 有 16/64 个错误样本置信度 ≥ 0.9；CNN 3/37。
+- 产物：`docs/error_analysis.md`、`results/error_analysis.csv/.json`、
+  `figures/error_confusions.png`、`figures/error_cases.png`。
+
+### P0 鲁棒性
+
+- `python -m src.robustness --workers 12`；147 首测试曲目 × 7 条件 × 5 模型。
+- clean 行与 `metrics.csv` 零误差；连跑两次 CSV 逐字节相同。
+- 噪声破坏最大（10 dB 平均约 −42 pp，0 dB 约 −50 pp）；深度模型对增益完全不敏感；
+  3 s 片段最伤 CRNN（−53.1 pp）；除增益外每个扰动下第一名都是 SVM。
+- 产物：`docs/robustness.md`、`results/robustness.csv`、`figures/robustness.png`。
+
+### P1 AST 迁移
+
+- `python -m src.train_ast`；冻结 86M 主干，只训练 7,690 参数线性头。
+- test n=147：Acc 0.8231 / Macro-F1 0.8135；比 CNN 高 6.8 / 6.0 个百分点。
+- 成本：346 MB、embedding 提取 214 s、推理 204 ms/片段。
+- 产物：`docs/ast.md`、`results/ast_metrics.json`、`results/ast_eval.json`。
+
+### P2 分段预测时间轴（功能 C）
+
+- `python -m src.timeline <audio> --model cnn`；5 秒窗、2.5 秒步长。
+- 147 首测试曲目中 88 首至少出现一次窗口级判断变化；`rock.00072` 改判 9 次。
+- 已集成进 Streamlit Demo 的「🎞 进阶」区。
+- 产物：`docs/timeline.md`、`results/timeline_scan.csv`、`figures/timeline_*.png`。
