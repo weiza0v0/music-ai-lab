@@ -1,0 +1,13 @@
+\begin{table}[H]
+\centering\small
+\caption{MusicGen-small 前缀续写（同一批测试前缀，5 s 前缀 → 3 s 续写；采样 $T=1$、top-$k=250$、无 CFG）。}
+\label{tab:generation}
+\begin{tabular}{lcccc}
+\toprule
+模型 & 生成耗时(s) & 峰值显存(MB) & 输出时长(s) & Log-Mel RMSE\\
+\midrule
+MusicGen-small（原始） & 3.7 & 1393 & 3.0 & 19.23\\
+MusicGen-small + LoRA & 4.9 & 1393 & 3.0 & 18.43\\
+\bottomrule
+\end{tabular}
+\end{table}

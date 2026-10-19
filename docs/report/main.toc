@@ -47,21 +47,33 @@
 \contentsline {subsection}{\numberline {7.6}数据规模与任务难度}{19}{subsection.7.6}%
 \contentsline {subsection}{\numberline {7.7}鲁棒性的进一步解读}{19}{subsection.7.7}%
 \contentsline {subsection}{\numberline {7.8}对课程项目的启示}{19}{subsection.7.8}%
-\contentsline {section}{\numberline {8}讨论与局限}{19}{section.8}%
-\contentsline {subsection}{\numberline {8.1}主要发现}{19}{subsection.8.1}%
-\contentsline {subsection}{\numberline {8.2}威胁与局限}{20}{subsection.8.2}%
-\contentsline {paragraph}{构念效度}{20}{paragraph*.29}%
-\contentsline {paragraph}{内部效度}{20}{paragraph*.30}%
-\contentsline {paragraph}{外部效度}{20}{paragraph*.31}%
-\contentsline {paragraph}{统计效度}{20}{paragraph*.32}%
-\contentsline {paragraph}{实现层面}{20}{paragraph*.33}%
-\contentsline {subsection}{\numberline {8.3}伦理与数据授权}{20}{subsection.8.3}%
-\contentsline {subsection}{\numberline {8.4}可复现性总结}{20}{subsection.8.4}%
-\contentsline {section}{\numberline {9}结论与展望}{20}{section.9}%
-\contentsline {section}{\numberline {A}附录：数据、超参与复现细节}{22}{appendix.A}%
-\contentsline {subsection}{\numberline {A.1}数据集统计}{22}{subsection.A.1}%
-\contentsline {subsection}{\numberline {A.2}完整超参数}{22}{subsection.A.2}%
-\contentsline {subsection}{\numberline {A.3}鲁棒性完整变化表}{22}{subsection.A.3}%
-\contentsline {subsection}{\numberline {A.4}AST 的 C 网格}{23}{subsection.A.4}%
-\contentsline {subsection}{\numberline {A.5}仓库结构与复现命令}{23}{subsection.A.5}%
-\contentsline {subsection}{\numberline {A.6}结果文件说明}{24}{subsection.A.6}%
+\contentsline {section}{\numberline {8}二期：离散 Token 预测与音乐生成}{19}{section.8}%
+\contentsline {subsection}{\numberline {8.1}任务定义与动机}{19}{subsection.8.1}%
+\contentsline {subsection}{\numberline {8.2}离散音频 Token：EnCodec 32 kHz}{20}{subsection.8.2}%
+\contentsline {subsection}{\numberline {8.3}数据窗口与泄漏控制}{20}{subsection.8.3}%
+\contentsline {subsection}{\numberline {8.4}预测模型}{20}{subsection.8.4}%
+\contentsline {subsection}{\numberline {8.5}训练与评价口径}{21}{subsection.8.5}%
+\contentsline {subsection}{\numberline {8.6}Token 预测结果}{21}{subsection.8.6}%
+\contentsline {subsection}{\numberline {8.7}把 Token 解码回音频}{23}{subsection.8.7}%
+\contentsline {subsection}{\numberline {8.8}MusicGen-small 的前缀续写}{24}{subsection.8.8}%
+\contentsline {paragraph}{长度限制（如实记录）}{24}{paragraph*.38}%
+\contentsline {subsection}{\numberline {8.9}参数高效适配：LoRA}{24}{subsection.8.9}%
+\contentsline {subsection}{\numberline {8.10}小结与局限}{24}{subsection.8.10}%
+\contentsline {section}{\numberline {9}讨论与局限}{25}{section.9}%
+\contentsline {subsection}{\numberline {9.1}主要发现}{25}{subsection.9.1}%
+\contentsline {subsection}{\numberline {9.2}威胁与局限}{25}{subsection.9.2}%
+\contentsline {paragraph}{构念效度}{25}{paragraph*.39}%
+\contentsline {paragraph}{内部效度}{25}{paragraph*.40}%
+\contentsline {paragraph}{外部效度}{25}{paragraph*.41}%
+\contentsline {paragraph}{统计效度}{25}{paragraph*.42}%
+\contentsline {paragraph}{实现层面}{25}{paragraph*.43}%
+\contentsline {subsection}{\numberline {9.3}伦理与数据授权}{25}{subsection.9.3}%
+\contentsline {subsection}{\numberline {9.4}可复现性总结}{25}{subsection.9.4}%
+\contentsline {section}{\numberline {10}结论与展望}{26}{section.10}%
+\contentsline {section}{\numberline {A}附录：数据、超参与复现细节}{27}{appendix.A}%
+\contentsline {subsection}{\numberline {A.1}数据集统计}{27}{subsection.A.1}%
+\contentsline {subsection}{\numberline {A.2}完整超参数}{27}{subsection.A.2}%
+\contentsline {subsection}{\numberline {A.3}鲁棒性完整变化表}{28}{subsection.A.3}%
+\contentsline {subsection}{\numberline {A.4}AST 的 C 网格}{28}{subsection.A.4}%
+\contentsline {subsection}{\numberline {A.5}仓库结构与复现命令}{28}{subsection.A.5}%
+\contentsline {subsection}{\numberline {A.6}结果文件说明}{30}{subsection.A.6}%

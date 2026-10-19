@@ -25,7 +25,7 @@
 \captionsetup{font=small,labelfont=bf}
 \setlist{nosep,leftmargin=1.4em}
 \hypersetup{colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black}
-\graphicspath{{../../results/gtzan/figures/}{../../results/fma/figures/}{figures/}}
+\graphicspath{{../../results/gtzan/figures/}{../../results/fma/figures/}{../../results/token_prediction/figures/}{../../results/generation/figures/}{figures/}}
 \input{macros.tex}
 
 \title{\vspace{-1.2cm}\textbf{从传统机器学习到预训练 Transformer：\\音乐流派分类的系统性基准与优化}}
@@ -92,7 +92,7 @@
 
 \subsection{报告组织}
 
-第~\ref{sec:related} 节回顾相关工作；第~\ref{sec:data} 节介绍数据与协议；第~\ref{sec:method} 节描述模型与训练方法；第~\ref{sec:setup} 节给出实验设置与指标；第~\ref{sec:results} 节报告 GTZAN 与 FMA-small 的结果；第~\ref{sec:analysis} 节做错误、鲁棒性、时间轴与泄漏分析；第~\ref{sec:discussion} 节讨论局限与启示；第~\ref{sec:conclusion} 节总结。附录给出逐 seed 结果、完整超参与复现命令。
+第~\ref{sec:related} 节回顾相关工作；第~\ref{sec:data} 节介绍数据与协议；第~\ref{sec:method} 节描述模型与训练方法；第~\ref{sec:setup} 节给出实验设置与指标；第~\ref{sec:results} 节报告 GTZAN 与 FMA-small 的结果；第~\ref{sec:analysis} 节做错误、鲁棒性、时间轴与泄漏分析；第~\ref{sec:phase2} 节把任务从判别式分类扩展到离散 Token 预测与音乐生成；第~\ref{sec:discussion} 节讨论局限与启示；第~\ref{sec:conclusion} 节总结。附录给出逐 seed 结果、完整超参与复现命令。
 
 % ================= 2 相关工作 =================
 \section{相关工作}\label{sec:related}
@@ -609,6 +609,8 @@ FMA-small & 8 & 5,596 / 1,199 & 0.470 & AST & 0.590\\
   \item \textbf{可视化与失败案例比单一准确率更有解释力}：混淆矩阵、置信度、时间轴让观众直观看到模型「什么时候会翻车」。
 \end{enumerate}
 
+\input{phase2}
+
 \section{讨论与局限}\label{sec:discussion}
 
 \subsection{主要发现}
@@ -626,6 +628,10 @@ FMA-small & 8 & 5,596 / 1,199 & 0.470 & AST & 0.590\\
   模型选择与论文结论失效。
   \item \textbf{干净输入上的冠军在扰动下可能垫底}。CNN 在 GTZAN 上排名第一，但在 0\,dB 噪声
   下是五个模型中最差的（0.122）；除增益外，每个扰动条件的绝对第一都是 SVM。
+  \item \textbf{把任务从分类推到预测，问题并没有变简单}。在离散 Token 层面，
+  小模型确实能从 \TokBigramFree{}（n-gram）学到 \TokTransformerFree{}（Transformer）的 Top-1，
+  但一旦让模型吃自己的预测，误差就会累积；解码成音频后，它与真实未来"像"但不同。
+  这提醒我们：判别式的高准确率不能外推为"理解了音乐的时间结构"。
 \end{enumerate}
 
 \subsection{威胁与局限}
@@ -673,6 +679,12 @@ GTZAN 与 FMA 的音频版权归各权利人所有，本文只使用其进行研
 传统方法稳健；小数据上的轻量 Transformer 容易过拟合；数据划分中的艺术家泄漏足以让结论
 虚高近 10 个百分点。
 
+二期把这套协议搬到了生成式任务上：用同一套 EnCodec Token 与同一份按艺术家分离的划分，
+先验证"预测真实未来"能否被度量，再验证"前缀续写"能否在 8\,GB 卡上跑通。
+结论是分层的：Token 级预测可复现、可比较，但受自回归误差累积限制；预训练生成模型的
+推理可以量化成本，而参数高效适配的收益必须与显存预算一起报告，不能把"跑通推理"
+写成"完成微调"。
+
 作为课程项目，本文的另一个目标是把「做研究」的流程完整走一遍：先审计环境与数据，再固定
 协议、做消融、分析失败案例，最后把结果写成可追溯的报告并开源。我们刻意保留了几个负结果
 （优化消融无效、Transformer 失利、噪声下全面崩塌），因为诚实报告失败模式比堆叠准确率更有
@@ -687,7 +699,9 @@ GTZAN 与 FMA 的音频版权归各权利人所有，本文只使用其进行研
   \item \textbf{知识蒸馏与轻量化}：把 AST 的表征蒸馏到 CNN/CRNN，在保留大部分收益的同时
   把推理成本降回毫秒级；
   \item \textbf{跨文化与多模态}：引入非西方音乐、歌词与元数据，重新审视「流派」标签体系，
-  并扩展到乐器识别、情绪识别等相关任务。
+  并扩展到乐器识别、情绪识别等相关任务；
+  \item \textbf{更长的生成 horizon}：当前 Token 预测只有 1 秒，续写只有 5 秒；下一步可把
+  预测器与生成模型级联（预测器提词、生成模型续写），并用规模化的主观评分检验"好听"。
 \end{enumerate}
 
 
@@ -781,6 +795,8 @@ MUSIC_AI/
 ├── src/
 │   ├── data/           prepare_dataset.py, prepare_fma.py, audio_features.py
 │   ├── models/         cnn.py (GenreCNN / CRNN / SmallTransformer)
+│   ├── forecasting/    EnCodec Token 化、预测模型、解码与出图
+│   ├── generation/     MusicGen 续写推理与 LoRA 适配
 │   ├── train_classical.py, train_cnn.py, train_ast.py
 │   ├── evaluate.py, predict.py, error_analysis.py, robustness.py, timeline.py
 │   └── metrics.py
@@ -788,8 +804,10 @@ MUSIC_AI/
 │                       ast_fma_fast.py, robustness_flips.py, …
 ├── app/demo.py         Streamlit 演示
 ├── tests/test_protocol.py
-├── checkpoints/        gtzan/, fma/, fma_leak/, fma_ablation/
-├── results/            gtzan/, fma/, fma_leak/, fma_ablation/（与权重同名）
+├── checkpoints/        gtzan/, fma/, fma_leak/, fma_ablation/,
+│                       token_prediction/, generation/
+├── results/            gtzan/, fma/, fma_leak/, fma_ablation/,
+│                       token_prediction/, generation/（与权重同名）
 ├── docs/                MD 文档 + report/（LaTeX 源与 PDF）
 └── README.md
 \end{verbatim}
@@ -813,6 +831,16 @@ $PY scripts/ast_fma_fast.py --reuse-feats --half
 MUSIC_FEATURES=data/features/fma/features_tracklevel.npz \
   MUSIC_RESULTS=results/fma_leak MUSIC_CKPT=checkpoints/fma_leak \
   $PY -m src.train_cnn --model cnn --seeds 42 --epochs 30
+# 二期：Token 预测
+bash scripts/run_token.sh 42 123 2024
+$PY -m src.forecasting.decode_tokens --model transformer --seed 42
+$PY -m src.forecasting.plot_tokens
+# 二期：MusicGen 前缀续写（约 5.8 GB 权重，一次性下载）
+$PY -m src.generation.run_musicgen --tag base --n 6 --seconds 5
+# 二期：LoRA 适配（可选，8 GB 显存先验证再跑）
+$PY -m src.forecasting.prepare_tokens --prefix-s 5 --target-s 5 --subdir _ft \
+    --windows-per-track 2 --shard-size 512 --encode-batch 16
+$PY -m src.generation.finetune_lora --steps 300
 # 报告
 cd docs/report && bash build.sh
 # 测试
@@ -837,6 +865,9 @@ $PY -m pytest -q tests
 \texttt{results/fma/metrics.csv} & FMA 逐 seed 指标（16 行，含 AST）\\
 \texttt{results/fma/ast\_metrics.json} & AST 迁移结果与成本\\
 \texttt{results/fma\_leak/metrics.csv} & 曲目级划分的泄漏对照\\
+\texttt{results/token\_prediction/metrics.csv} & Token 预测逐 seed 指标\\
+\texttt{results/token\_prediction/decode.json} & 解码回音频的对照样例\\
+\texttt{results/generation/metrics\_base.json} & MusicGen 原始模型续写与成本\\
 \texttt{docs/audit\_report.md} & 独立只读审计报告\\
 \bottomrule
 \end{tabular}

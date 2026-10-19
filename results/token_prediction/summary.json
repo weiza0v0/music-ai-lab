@@ -1,0 +1,11 @@
+{
+  "n_train": 11192,
+  "n_val": 2398,
+  "n_test": 2398,
+  "n_tracks_test": 1199,
+  "prefix_frames": 250,
+  "target_frames": 50,
+  "vocab": 2048,
+  "n_codebooks": 4,
+  "rows": 9
+}

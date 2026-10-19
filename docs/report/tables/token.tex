@@ -1,0 +1,16 @@
+\begin{table}[H]
+\centering\small
+\caption{Token 预测结果（FMA-small 测试集，5 s 前缀 → 1 s 目标）。神经网络为 3 个种子的均值 $\pm$ 标准差，基线为确定性预测。}
+\label{tab:token}
+\begin{tabular}{lccccc}
+\toprule
+模型 & 参数量 & NLL & Teacher Top-1 & Free Top-1 & 码本 0 Top-1\\
+\midrule
+Persistence & -- & -- & 0.016 & 0.016 & 0.024\\
+频率先验 & -- & -- & 0.012 & 0.012 & 0.009\\
+Bigram & -- & -- & 0.017 & 0.017 & 0.024\\
+LSTM & 5.3M & 6.821 & 0.020$\pm$0.000 & 0.016$\pm$0.000 & 0.016\\
+Transformer & 5.0M & 6.725 & 0.024$\pm$0.000 & 0.019$\pm$0.000 & 0.023\\
+\bottomrule
+\end{tabular}
+\end{table}

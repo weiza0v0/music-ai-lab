@@ -226,3 +226,48 @@ MVP 完成后按 `README.md`「下一步计划」继续做了三组实验：
   （0.492）高 9.8 个百分点；权重 345 MB，推理约 231 ms/片段。
 - 实现中改为多进程特征化 + GPU 批量前向（fp16），把 8,000 首的提取时间从预估
   2 小时降到约 7 分钟；结果见 `docs/ast_fma.md`、`results/fma/ast_metrics.json`。
+
+---
+
+## 二期扩展（Token 预测与音乐生成）
+
+### 阶段 0：审计
+
+| 项目 | 结论 |
+|---|---|
+| 环境 | torch 2.12.1+cu130 / RTX 4060 8 GB / 内存 7.9 GB / 磁盘余 1.4 TB |
+| 依赖 | `transformers` 5.16.1 已含 `EncodecModel` 与 `MusicgenForConditionalGeneration`，无需 `audiocraft` |
+| 数据 | FMA-small artist-disjoint 划分可直接复用（5,596/1,199/1,199） |
+| 产物 | `docs/phase0_audit_phase2.md` |
+
+### 阶段一：EnCodec Token 预测
+
+- Tokenizer：`facebook/encodec_32khz`，32 kHz、4 码本、2048 词表、50 Hz；6 s 窗口 = 4×300 Token。
+- 数据：每首 2 个 6 s 窗口（5 s 前缀 + 1 s 目标），共 15,988 窗口，
+  train/val/test = 11,192 / 2,398 / 2,398，窗口不跨集合。
+- 模型：Persistence、频率先验、Bigram、LSTM(2×256)、Transformer(4 层, d=192)；
+  AdamW + 余弦退火 + 早停，batch 64，12 epoch，3 seed。
+- 结果（test，free-running Top-1 / teacher-forced Top-1 / NLL）：
+
+| 模型 | Free Top-1 | Teacher Top-1 | NLL |
+|---|---|---|---|
+| Persistence | 1.62% | 1.62% | -- |
+| 频率先验 | 1.16% | 1.16% | -- |
+| Bigram | 1.71% | 1.71% | -- |
+| LSTM | 1.61% | 2.05% | 6.82 |
+| Transformer | **1.94%** | **2.43%** | **6.72** |
+
+- 解码：Transformer 自回归 50 帧 × 4 码本 → EnCodec 解码 1 秒音频，
+  与真实后 1 秒的 Log-Mel RMSE 为 7.7–21.1 dB（8 个流派样例已保存）。
+- 单码本不可单独解码，故本文不做单码本主结果。
+
+### 阶段二：MusicGen-small 续写与 LoRA
+
+- 续写：前缀 5 s → 4×250 Token → decoder.generate（delay pattern），文本条件为流派描述。
+  8 个流派各 1 首：生成 3 秒耗时 **3.7 s（均值）**、峰值显存 **1,393 MB**、
+  Log-Mel RMSE **19.2 dB**。
+- 长度限制：>150 帧触发位置索引越界断言，统一取 3 秒，base 与 LoRA 同参数。
+- LoRA：144 个投影层、rank 8、alpha 16、2.36 M 可训练参数，300 步 1.7 分钟、峰值 1,295 MB；
+  loss 10.4 → 7.63（均匀 7.62），**未收敛**，作为负结果记录。
+- 产物：`results/generation/`（音频、metrics、figures、finetune.json）、
+  `checkpoints/generation/musicgen-small-lora/`。

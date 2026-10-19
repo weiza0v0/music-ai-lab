@@ -288,6 +288,131 @@ def ast_grid_table() -> str:
     return "\n".join(lines)
 
 
+
+# --------------------------------------------------------------------------- #
+# phase 2: token forecasting + MusicGen continuation
+# --------------------------------------------------------------------------- #
+TOK = ROOT / "results/token_prediction"
+GEN = ROOT / "results/generation"
+TOKEN_ORDER = ["persistence", "frequency", "bigram", "lstm", "transformer"]
+TOKEN_LABEL = {"persistence": "Persistence", "frequency": "频率先验", "bigram": "Bigram",
+               "lstm": "LSTM", "transformer": "Transformer"}
+
+
+def token_table() -> tuple[str, dict]:
+    """Main comparison table for phase-1 token forecasting."""
+    p = TOK / "metrics.csv"
+    if not p.exists():
+        return ("% phase-1 token results not generated yet\n", {})
+    df = pd.read_csv(p)
+    macros: dict[str, str] = {}
+    lines = [r"\begin{table}[H]", r"\centering\small",
+             r"\caption{Token 预测结果（FMA-small 测试集，5 s 前缀 → 1 s 目标）。神经网络为 3 个种子的均值 $\pm$ 标准差，基线为确定性预测。}",
+             r"\label{tab:token}",
+             r"\begin{tabular}{lccccc}", r"\toprule",
+             r"模型 & 参数量 & NLL & Teacher Top-1 & Free Top-1 & 码本 0 Top-1" + "\\\\",
+             r"\midrule"]
+    for m in TOKEN_ORDER:
+        sub = df[df.model == m]
+        if sub.empty:
+            continue
+        neural = m in ("lstm", "transformer")
+        if neural:
+            t1 = f"{sub.teacher_top1.mean():.3f}$\\pm${sub.teacher_top1.std(ddof=0):.3f}"
+            f1 = f"{sub.free_top1.mean():.3f}$\\pm${sub.free_top1.std(ddof=0):.3f}"
+            nll = f"{sub.nll.mean():.3f}"
+            cb0 = f"{sub.free_top1_cb0.mean():.3f}"
+            params = fmt_params(sub.params.mean())
+            macros[f"Tok{m.capitalize()}Free"] = f"{sub.free_top1.mean():.3f}"
+            macros[f"Tok{m.capitalize()}Nll"] = f"{sub.nll.mean():.3f}"
+            if m == "transformer":
+                macros["TokTfFreeStd"] = f"{sub.free_top1.std(ddof=0):.3f}"
+                macros["TokTfTeacher"] = f"{sub.teacher_top1.mean():.3f}"
+                macros["TokTfTrainS"] = f"{sub.train_s.mean():.0f}"
+                macros["TokTfParams"] = params
+            else:
+                macros["TokLstmTrainS"] = f"{sub.train_s.mean():.0f}"
+        else:
+            t1 = f"{sub.teacher_top1.mean():.3f}"
+            f1 = f"{sub.free_top1.mean():.3f}"
+            nll = "--"
+            cb0 = f"{sub.free_top1_cb0.mean():.3f}"
+            params = "--"
+            macros[f"Tok{m.capitalize()}Free"] = f"{sub.free_top1.mean():.3f}"
+        lines.append(f"{TOKEN_LABEL[m]} & {params} & {nll} & {t1} & {f1} & {cb0}" + "\\\\")
+    lines += [r"\bottomrule", r"\end{tabular}", r"\end{table}"]
+    summ = TOK / "summary.json"
+    if summ.exists():
+        s = json.loads(summ.read_text())
+        macros["TokNTest"] = f"{s.get('n_test', 0):,}"
+        macros["TokNTrain"] = f"{s.get('n_train', 0):,}"
+        macros["TokNTracks"] = f"{s.get('n_tracks_test', 0):,}"
+    return ("\n".join(lines) + "\n", macros)
+
+
+def token_decode_table() -> str:
+    p = TOK / "decode.json"
+    if not p.exists():
+        return "% decode results not generated yet\n"
+    d = json.loads(p.read_text())
+    lines = [r"\begin{table}[H]", r"\centering\small",
+             r"\caption{预测 Token 解码回音频后与真实后 1 秒的对照（Log-Mel RMSE，越小越接近）。}",
+             r"\label{tab:tokensamples}",
+             r"\begin{tabular}{llcc}", r"\toprule",
+             r"曲目 & 流派 & Log-Mel RMSE & 试听" + "\\\\", r"\midrule"]
+    for it in d["items"]:
+        lines.append(f"{it['track_id']} & {it['genre']} & {it['logmel_rmse']:.2f} & "
+                     "\\texttt{" + Path(it['pred_wav']).name.replace('_', '\\_') + "}" + "\\\\")
+    lines += [r"\bottomrule", r"\end{tabular}", r"\end{table}"]
+    return "\n".join(lines) + "\n"
+
+
+def generation_table() -> tuple[str, dict]:
+    macros: dict[str, str] = {}
+    items = []
+    for tag, label in (("base", "MusicGen-small（原始）"), ("ft", "MusicGen-small + LoRA")):
+        p = GEN / f"metrics_{tag}.json"
+        if p.exists():
+            d = json.loads(p.read_text())
+            if d["items"]:
+                lat = np.mean([x["latency_s"] for x in d["items"]])
+                mem = np.mean([x["peak_mem_mb"] for x in d["items"]])
+                rmse = np.mean([x["logmel_rmse"] for x in d["items"]])
+                items.append((label, lat, mem, d["seconds"], rmse))
+                macros[f"Gen{tag.upper()}Lat"] = f"{lat:.1f}"
+                macros[f"Gen{tag.upper()}Mem"] = f"{mem:.0f}"
+                macros[f"Gen{tag.upper()}Rmse"] = f"{rmse:.2f}"
+    if not items:
+        return "% generation results not generated yet\n", macros
+    lines = [r"\begin{table}[H]", r"\centering\small",
+             r"\caption{MusicGen-small 前缀续写（同一批测试前缀，5 s 前缀 → 3 s 续写；采样 $T=1$、top-$k=250$、无 CFG）。}",
+             r"\label{tab:generation}",
+             r"\begin{tabular}{lcccc}", r"\toprule",
+             r"模型 & 生成耗时(s) & 峰值显存(MB) & 输出时长(s) & Log-Mel RMSE" + "\\\\",
+             r"\midrule"]
+    for label, lat, mem, sec, rmse in items:
+        lines.append(f"{label} & {lat:.1f} & {mem:.0f} & {sec:.1f} & {rmse:.2f}" + "\\\\")
+    lines += [r"\bottomrule", r"\end{tabular}", r"\end{table}"]
+    return "\n".join(lines) + "\n", macros
+
+
+def finetune_sentence() -> tuple[str, dict]:
+    p = GEN / "finetune.json"
+    if not p.exists():
+        f = GEN / "finetune_failure.json"
+        if f.exists():
+            d = json.loads(f.read_text())
+            return (f"LoRA 适配在 8\\,GB 显存下于第 {d.get('steps_done', 0)} 步触发 CUDA OOM"
+                    f"（峰值 {d.get('peak_mem_mb', 0):.0f}\\,MB），按计划记录失败而不下调结论。"), {}
+        return "（微调结果待生成）", {}
+    d = json.loads(p.read_text())["meta"]
+    return (f"LoRA（rank {d['rank']}，alpha {d['alpha']}）在 {d['train_windows']} 个训练窗口上"
+            f"训练 {d['steps']} 步、约 {d['train_minutes']} 分钟，峰值显存 {d['peak_mem_mb']:.0f}\\,MB，"
+            f"仅更新 {d['merged']} 个投影层，测试集未参与。"), dict(
+        FtSteps=str(d["steps"]), FtRank=str(d["rank"]),
+        FtMinutes=f"{d['train_minutes']:.0f}", FtMem=f"{d['peak_mem_mb']:.0f}")
+
+
 def main() -> None:
     mvp = agg(MVP / "metrics.csv")
     (TAB / "mvp.tex").write_text(
@@ -414,6 +539,15 @@ def main() -> None:
     else:
         m += [macro("FmaTrackLeak", "--"), macro("FmaTrackLeakN", "1,200"),
               macro("FmaTrackLeakPct", "--"), macro("FmaArtistLeak", "0")]
+    tok_tex, tok_macros = token_table()
+    (TAB / "token.tex").write_text(tok_tex, encoding="utf-8")
+    (TAB / "token_samples.tex").write_text(token_decode_table(), encoding="utf-8")
+    gen_tex, gen_macros = generation_table()
+    (TAB / "generation.tex").write_text(gen_tex, encoding="utf-8")
+    ft_sentence, ft_macros = finetune_sentence()
+    m.append(macro("FinetuneSentence", ft_sentence))
+    for k, v in {**tok_macros, **gen_macros, **ft_macros}.items():
+        m.append(macro(k, v))
     (OUT / "macros.tex").write_text("".join(m), encoding="utf-8")
 
     (OUT / "numbers_abstract.tex").write_text(

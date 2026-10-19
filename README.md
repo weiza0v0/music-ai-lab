@@ -331,9 +331,221 @@ FMA-small 含 8,000 首、8 个流派（每类 1,000 首），采样率混合（
 - **难度差异**：FMA 比 GTZAN 难得多（CNN 0.470 vs 0.753），8 个流派中
   Experimental / International 等标签本身覆盖多种风格。
 
+### 6.6 二期：EnCodec Token 预测与 MusicGen 后缀续写
+
+一期只做判别式分类。二期把任务推到"预测下一个离散 Token"：用 `facebook/encodec_32khz`
+把 FMA-small 的 2 个 6 秒窗口编成 4×300 个 Token（50 Hz、4 码本、2048 词表），
+共 **15,988 个窗口**（训练 11,192 / 验证 2,398 / 测试 2,398），窗口继承曲目所属的
+artist-disjoint 划分，因此没有跨集合泄漏。
+
+| 模型 | Teacher-forced Top-1 | Free-running Top-1 | 码本 0 Top-1 | NLL | 训练时间/seed |
+|---|---|---|---|---|---|
+| Persistence（重复末帧） | 1.62% | 1.62% | 2.43% | -- | -- |
+| 频率先验 | 1.16% | 1.16% | 0.89% | -- | -- |
+| Bigram（$p(t\mid t-1)$） | 1.71% | 1.71% | 2.41% | -- | -- |
+| LSTM（2 层, 256） | 2.05% ± 0.02 | 1.61% ± 0.03 | 1.63% | 6.821 | 260 s |
+| Transformer（4 层, d=192） | 2.43% ± 0.01 | 1.94% ± 0.01 | 2.28% | 6.725 | 677 s |
+
+关键观察：
+
+- **信号真实但幅度有限**：随机猜的 Top-1 是 0.049%，Transformer 的 free-running
+  Top-1 约为随机的 40 倍，NLL 比均匀分布（ln 2048 = 7.62）低约 0.9 nat。
+- **误差累积是主要损失**：teacher-forced 与 free-running 之间差 0.5 个百分点左右，
+  一旦让模型吃自己的预测，准确率就掉一截。
+- **LSTM 没有赢过 n-gram**：LSTM 的 free-running Top-1 与 Bigram 持平甚至略低，
+  说明"有记忆"不等于"有结构"；小 Transformer 的因果注意力更适合这个任务。
+- **单码本不可解码**：本实验预测全部 4 个码本，因此可以把 Token 交回 EnCodec 解码成
+  1 秒音频；只预测码本 0 的简化版本无法单独解码，这一点在报告里作为限制写明。
+
+解码样例与试听：
+
+- 预测 Token 解码后的 1 秒音频与真实后 1 秒对照：`results/token_prediction/audio/`
+- 客观距离（Log-Mel RMSE）与逐曲目对照：`results/token_prediction/decode.json`
+- 训练曲线与对比图：`results/token_prediction/figures/`
+
+预训练生成模型（`facebook/musicgen-small`）的前缀续写，同一批测试前缀、相同采样参数：
+
+| 模型 | 生成耗时（3 s 音频） | 峰值显存 | Log-Mel RMSE vs 真实后半段 |
+|---|---|---|---|
+| MusicGen-small（原始） | 3.7 s | 1393 MB | 19.23 |
+| MusicGen-small + LoRA | 4.9 s | 1393 MB | 18.43 |
+
+LoRA（rank 8、alpha 16）只更新 144 个投影层，训练 300 步、约 1.7 分钟、峰值显存 1295 MB；
+测试集未参与训练与选参。**这是负结果**：loss 只从 10.4 降到 7.63（均匀分布 7.62），
+目标对齐没调好，因此只作为"参数高效适配在 8 GB 上可行"的工程验证，不宣称生成质量提升。
+另外，decoder 直连路径上生成超过约 3 秒会触发位置索引越界断言，续写长度统一取 3 秒。
+
+复现命令：`bash scripts/run_token.sh`、`bash scripts/run_generation.sh`；
+详细分析与限制见技术报告第 8 节与 `docs/research_log.md`。
+
 ---
 
-## 七、快速开始
+## 七、二期扩展：音乐 Token 预测与生成模型微调
+
+一期做的是判别式任务（流派分类）。二期补上生成式视角，拆成两个**独立验收**的实验：
+阶段一先用 EnCodec 把音乐编码成离散 Token，训练 LSTM 与小自回归 Transformer 预测
+"接下来 1 秒"的真实 Token；阶段二再对预训练音乐生成模型做轻量微调，测试"给前缀续写"。
+两阶段共用数据处理与评估基础，但分别验收，避免一次铺开太多任务、最后只留下一个
+能运行却解释不清的 Demo。
+
+最终形态是一次上传、三路对照：
+
+1. Token 预测模型对原曲真实后半段的预测（teacher-forced 与自回归两种口径）；
+2. 原始预训练生成模型的续写；
+3. 微调 / 参数高效适配后的续写。
+
+外加定量指标、耗时、显存与试听片段。
+
+硬约束：不破坏一期分类实验与结果目录；不在未验证硬件可行性前开展大规模训练；
+"单码本 Token 预测准确率高"与"生成音乐好听"是两件事，分开报告。
+
+### 7.1 环境与目录约定
+
+沿用一期环境（WSL2 Ubuntu 22.04 / Python 3.12 / torch 2.12.1+cu130 /
+RTX 4060 Laptop 8 GB / 共享内存 16 GB，conda `DataAnalysis`），
+**不升级**既有 PyTorch/CUDA 与分类依赖；若二期依赖与之冲突，另建独立 conda 环境并锁版本
+（例如 MusicGen 官方实现 `audiocraft` 对 torch 版本有强约束）。
+
+计划原文建议的 `forecasting/token_prediction/`、`generation/finetuning/`、
+`outputs/token_prediction/`、`outputs/generation/` 与一期既定约定统一映射为：
+
+| 计划中的目录 | 本项目实际目录 | 内容 |
+|---|---|---|
+| `forecasting/token_prediction/` | `src/forecasting/` | Token 化、模型、训练、解码 |
+| `generation/finetuning/` | `src/generation/` | 原始模型推理、微调 / 适配 |
+| `outputs/token_prediction/` | `results/token_prediction/` | 指标、图表、音频样例、划分清单 |
+| `outputs/generation/` | `results/generation/` | 续写音频、耗时显存、对照表 |
+| — | `checkpoints/token_prediction/`、`checkpoints/generation/` | 权重 |
+
+沿用一期「一个顶层目录 + 每个实验同名子目录」的规则，Demo、报告与文档里的路径写法一致。
+
+### 7.2 阶段 0：审计与准备（先审计，再改代码）
+
+在动任何代码之前完成：
+
+1. 复核环境：PyTorch/CUDA 可用性、显卡型号与显存、Python 版本、已装依赖
+   （`transformers`、`encodec`、`audiocraft`、`peft`、`accelerate`、`soundfile`、`librosa`）。
+2. 复核数据：FMA-small 的许可、采样率分布、可解码比例、artist-disjoint 划分能否直接复用。
+3. 复核既有产物：`results/{gtzan,fma,...}` 与 `checkpoints/*`，避免重复下载或覆盖已有模型。
+4. 输出审计报告 `docs/phase0_audit_phase2.md`（环境、依赖、数据路径、GPU 实测、结论）。
+
+审计不通过（缺依赖、显存不足、数据缺失）时先修最小必要项，再继续。
+
+### 7.3 阶段一：EnCodec Token 预测
+
+**目标**：验证 LSTM 与小型自回归 Transformer 能否根据 5 秒前缀预测"接下来 1 秒"的
+**真实**离散 Token。这是一个可控的神经语言模型实验，不是直接调用生成大模型。
+
+**Tokenizer**：优先 `facebook/encodec_32khz`（MusicGen 使用的同款配置），核实采样率、
+声道、归一化方式、码本数、码本大小、Token 帧率与张量形状，并**实测**编码器输出与解码器
+输入是否兼容（能解码回放才算兼容，不能只看模型名）。Token 必须缓存，避免每轮训练重复
+编码，并记录 tokenizer 版本。
+
+> 不假设所有 EnCodec 检查点都与 MusicGen 的 Token 格式互换：本项目的兼容性结论只覆盖
+> `facebook/encodec_32khz`（32 kHz、4 码本、50 Hz、2048 词表、2.2 kbps）。
+
+**数据与切分**：复用 FMA-small 与一期的 artist-disjoint 划分；先在曲目/艺术家层面划分，
+再在曲目内部构造滑动窗口，保证同一首歌的窗口不跨集合。窗口参数：前缀 5 s、目标 1 s
+（每码本 50 帧），后续可试 2 s 目标并记录调整理由。固定种子并保存窗口清单。
+
+**模型**：
+
+| 组别 | 结构 | 备注 |
+|---|---|---|
+| Baseline A | Persistence：重复最后一个 Token | 下界 |
+| Baseline B | 训练集 Token 频率先验 / 二阶 n-gram（带回落） | 无神经网络下界 |
+| LSTM | Embedding → 2 层 LSTM → 逐帧输出头，teacher forcing + 交叉熵 | 先做单码本 |
+| Transformer | Token Embedding + 位置编码 + 因果注意力 + LM 头，next-token 预测 | 先做单码本，推理自回归 |
+
+单码本预测是**简化实验**：只对 4 个码本中的第 0 个建模，不能还原完整音频；报告必须写成
+限制，并在条件允许时补多码本扩展（4 个码本联合建模 → 可解码）。
+
+**训练与评估**：train 学参数 / val 选超参 / test 只评一次；至少 3 个随机种子；
+记录 loss 曲线、最佳 epoch、训练耗时；指标为 Token Top-1 Accuracy、Cross-Entropy（NLL），
+可选 Top-5，以及推理延迟与峰值显存。
+
+**解码**：只有在 tokenizer 输入格式与多码本要求都满足时才解码；单码本不兼容就**如实报告**，
+不得伪造音频。可行做法是多码本模型预测出 4 个码本后交给 EnCodec 解码，并与原曲真实
+后半段做波形/频谱对照与试听。
+
+**交付物与验收**：可复现的数据准备/编码/训练/评估/推理代码；三组对比表；训练曲线与音频
+样例；窗口清单与配置；README 命令；单码本 vs 多码本差异说明。
+验收条件：全流程可重复；LSTM 与 Transformer 都能训练/保存/加载/推理；Baseline 与神经
+网络用同一测试集与同一评价规则；结果可追溯，不只挑成功案例。
+
+### 7.4 阶段二：预训练音乐生成模型轻量微调
+
+**目标**：评估预训练生成模型在"音乐前缀 → 续写"条件下的能力，并比较微调前后。这一阶段
+是生成任务，不能与阶段一的"真实未来 Token 预测"混为一谈。
+
+**候选模型**：优先 `facebook/musicgen-small`。选定前先核实：结构/参数量、权重许可、
+是否提供音频提示/续写接口、官方训练代码是否支持所需的条件生成任务、Token 格式、
+8 GB 显存下的推理与训练可行性。不依据模型名称假设它能直接续写，也不假设通用
+Hugging Face 接口能完成全部训练步骤。
+
+**先推理后微调**：加载检查点 → 准备短前缀 → 用模型支持的方式生成续写 → 保存输入/输出
+WAV → 记录耗时与峰值显存 → 确认输出采样率/声道/有效长度 → 检查输出是否重复提示片段
+并固定截取规则。先短片段跑通，再增长度。原始模型在 8 GB 上跑不稳时，先做显存优化或退到
+CPU，不得直接开始大规模微调。
+
+**微调方案**：优先参数高效适配（LoRA 等），但必须先确认官方实现支持；MusicGen 是多码本
+Token，必须沿用其原有 tokenization / 条件输入 / 训练目标，不能把阶段一的单码本代码直接
+套上去。训练样本为「前缀音频 → 紧接其后的真实音频」，数据沿用阶段一的曲目/艺术家隔离
+划分，测试集不参与微调与选参；先用小数据过拟合验证 loss 正确，再放大；小学习率、梯度
+裁剪、混合精度、梯度累积；记录参数/显存/耗时/权重。若全量微调超出预算，停止并切换到
+更轻量方案，而不是无限调参。
+
+**生成评估**：同一批测试前缀上比较原始模型与微调模型，生成参数尽量一致并记录种子；
+指标包括生成耗时、峰值显存、输出时长、人工试听（连贯性/节奏稳定/音色一致），条件允许时
+补客观音频指标，但不用单一指标断言"音乐质量"。与真实后半段的相似性、生成质量分别报告。
+
+**交付物与验收**：推理脚本、可复现微调配置与训练脚本、两模型生成音频、loss 曲线与
+显存/耗时报告、失败案例分析、依赖锁定文件、限制与许可说明。
+验收：原始模型至少能对一段前缀生成有效音频；微调成功则能保存/加载 checkpoint；
+两者能在相同前缀下公平比较；若微调不可行（显存/依赖/官方实现），提交失败原因、日志与
+替代方案，不得把未完成的微调写成已完成。
+
+### 7.5 统一展示（两阶段验收后再做）
+
+Streamlit 单页：上传音频并选前缀长度 → 显示波形与播放器 → 运行 Token 预测并显示指标
+（可行时给出预测音频）→ 运行原始模型续写 → 运行微调模型续写 → 并排播放
+"真实后半段 / 原始续写 / 微调续写" → 显示耗时、显存、模型版本与实验配置。
+界面必须调用已验证的推理代码，不能用预生成结果伪装实时预测。时间不足时优先保证命令行
+可复现，再做简洁界面。
+
+### 7.6 执行原则
+
+- 先审计、再改代码；先小规模验证、再扩大训练。
+- 不覆盖一期的分类模型与实验结果；不未经确认就下载多个大型模型。
+- 不默认 8 GB 显存一定能微调。
+- 重要命令、错误日志、指标、模型版本全部留档。
+- 每个阶段结束提交实际结果与验收报告，不只给计划。
+- 未运行 / 未验证 / 不可复现的结果必须显式标注。
+
+三个关键验收点：
+
+1. 阶段一先确认真实可复现的 Token 预测指标，且三个模型用同一测试集；
+2. 阶段二先让原始 MusicGen 推理成功，再谈微调；
+3. 最后才做 Streamlit，避免"能演示但解释不清"。
+
+### 7.7 二期进度
+
+| 阶段 | 任务 | 状态 | 产物 |
+|---|---|---|---|
+| 0 | 环境与数据审计 | ✅ | `docs/phase0_audit_phase2.md` |
+| 1 | EnCodec Token 化与窗口切分 | ✅ | `data/features/token_prediction/`（15,988 窗口） |
+| 1 | Baseline / LSTM / Transformer | ✅ | `results/token_prediction/metrics.csv` |
+| 1 | Token 解码与音频样例 | ✅ | `results/token_prediction/audio/`、`decode.json` |
+| 2 | MusicGen-small 原始推理 | ✅ | `results/generation/metrics_base.json` |
+| 2 | 轻量微调 / 参数高效适配 | ◐ | LoRA 跑通但 loss 未收敛（负结果），`results/generation/finetune.json` |
+| 3 | Streamlit 统一展示 | ⬜ | 未开始（两阶段验收后做） |
+
+二期结论一句话：**Token 层面的"预测真实未来"可度量可复现，但绝对水平低、误差累积明显；
+预训练生成模型的续写可在 8 GB 卡上量化成本，轻量适配可行但本次未调出有效收益。**
+
+---
+
+## 八、快速开始
 
 环境：WSL2 Ubuntu 22.04，复用带 CUDA 的 conda 环境 `DataAnalysis`。
 
@@ -362,15 +574,30 @@ $PY -m src.evaluate
 bash scripts/run_fma.sh 42 123 2024
 $PY scripts/ast_fma_fast.py --reuse-feats --half
 
-# 7) 技术报告（LaTeX）
+# 7) 二期：Token 预测（EnCodec 编码 + 三个模型 + 解码 + 出图）
+bash scripts/run_token.sh 42 123 2024
+
+# 8) 二期：MusicGen-small 前缀续写（首次下载约 5.8 GB 权重）
+$PY -m src.generation.run_musicgen --tag base --n 6 --seconds 5
+
+# 9) 二期：LoRA 适配（可选；8 GB 显存先跑通推理再尝试）
+# 复用阶段一的 5 s 前缀 + 1 s 目标 Token 缓存，不重复编码
+$PY -m src.generation.finetune_lora --steps 300
+$PY -m src.generation.run_musicgen --model checkpoints/generation/musicgen-small-lora \
+    --tag ft --n 6 --seconds 5
+
+# 10) 技术报告（LaTeX）
 cd docs/report && bash build.sh
 
-# 6) 协议测试
+# 11) 协议测试
 $PY -m pytest -q tests
 
-# 7) 现场 Demo
+# 12) 现场 Demo
 $PY -m streamlit run app/demo.py
 ```
+
+> 二期依赖注意：下载 Hugging Face 权重前需 `export NO_PROXY=localhost,127.0.0.1`，
+> 否则 `no_proxy` 里的 `[::1]` 会让 `httpx` 抛 `Invalid port`。
 
 一键脚本：`bash scripts/run_all.sh`（可用 `PYTHON=...` 覆盖解释器）。
 
@@ -378,7 +605,7 @@ $PY -m streamlit run app/demo.py
 
 - 数据卡：`docs/fma_data.md`
 - 主实验日志：`docs/experiment_log.md`「主实验（FMA-small）」
-- 技术报告（LaTeX 源码 + 24 页 PDF）：`docs/report/main.tex`、`docs/Music_AI_Lab_Technical_Report.pdf`
+- 技术报告（LaTeX 源码 + 30 页 PDF，含二期章节）：`docs/report/main.tex`、`docs/Music_AI_Lab_Technical_Report.pdf`
 
 单文件推理：
 
@@ -392,7 +619,7 @@ $PY -m src.predict data/raw/gtzan/genres/classical/classical.00001.wav --model c
 
 ---
 
-## 八、RTX 4060 8GB 下的参数建议
+## 九、RTX 4060 8GB 下的参数建议
 
 | 参数 | 建议起点 | 本项目实际 |
 |---|---|---|
@@ -413,11 +640,11 @@ $PY -m src.predict data/raw/gtzan/genres/classical/classical.00001.wav --model c
 
 如果 WSL 中 PyTorch 看不到 GPU，优先排查 Windows NVIDIA 驱动与 WSL GPU 支持，
 不要急着在 Ubuntu 内安装独立 Linux 显卡驱动。本次实际遇到的却是另一类问题：
-**进程沙箱拦截 `/dev/dxg`**，详见第九节。
+**进程沙箱拦截 `/dev/dxg`**，详见第十节。
 
 ---
 
-## 九、环境与排障
+## 十、环境与排障
 
 首次运行时 `nvidia-smi` 报：
 
@@ -438,7 +665,7 @@ Failed to initialize NVML: GPU access blocked by the operating system
 
 ---
 
-## 十、PPT 故事线
+## 十一、PPT 故事线
 
 汇报按「有故事线的实验报告」组织，而不是按模型教科书顺序：
 
@@ -458,7 +685,7 @@ Failed to initialize NVML: GPU access blocked by the operating system
 
 ---
 
-## 十一、验收清单（12 项 Definition of Done）
+## 十二、验收清单（12 项 Definition of Done）
 
 | # | 条目 | 状态 | 证据 / 缺口 |
 |---|---|---|---|
@@ -477,7 +704,7 @@ Failed to initialize NVML: GPU access blocked by the operating system
 
 ---
 
-## 十二、创新点
+## 十三、创新点
 
 如果只是「在同一数据集上跑五种模型」，项目会像常规课程作业。创新集中在三方面：
 
@@ -489,33 +716,42 @@ Failed to initialize NVML: GPU access blocked by the operating system
 
 ---
 
-## 十三、下一步计划
+## 十四、下一步计划
 
 | 优先级 | 任务 | 状态 | 说明 |
 |---|---|---|---|
 | P0 | 错误分析 | ✅ 完成 | 混淆对、置信度、典型翻车案例，见 `docs/error_analysis.md` |
 | P0 | 鲁棒性实验 | ✅ 完成 | 5 模型 × 7 扰动，见 `docs/robustness.md` |
 | P1 | AST 迁移学习 | ✅ 完成 | 冻结主干 + 线性头：Acc 0.823 / F1 0.814，见 `docs/ast.md` |
-| P1 | FMA-small 主实验 | ⬜ 未开始 | 需 7.2 GiB 与较长训练时间，留作后续 |
+| P1 | FMA-small 主实验 | ✅ 完成 | 5 模型 + AST，3 seed；泄漏对照与优化消融同步完成，见第六节 6.5 |
 | P2 | 分段时间轴（功能 C） | ✅ 完成 | 已集成 Demo，见 `docs/timeline.md` |
-| P2 | PPT 与彩排 | ⬜ 未开始 | 按第十节故事线制作，准备盲测音频与备用录屏 |
+| 二期 P0 | EnCodec Token 化与窗口切分 | ✅ 完成 | 15,988 窗口，见 6.6 |
+| 二期 P0 | Baseline / LSTM / Transformer | ✅ 完成 | 同一测试集、3 seed；Transformer free Top-1 1.94% |
+| 二期 P1 | Token 解码与音频样例 | ✅ 完成 | 多码本可解码；单码本限制如实记录 |
+| 二期 P1 | MusicGen-small 前缀续写 | ✅ 完成 | 8 流派 × 3 秒续写，3.7 s/条、1.39 GB |
+| 二期 P2 | LoRA 适配 | ◐ 跑通但负结果 | 300 步 1.7 分钟可训，loss 未收敛，如实记录 |
+| 二期 P3 | Streamlit 统一展示 | ⬜ 未开始 | 两阶段验收后做，优先保证命令行可复现 |
+| P2 | PPT 与彩排 | ⬜ 未开始 | 按第十一节故事线制作，准备盲测音频与备用录屏 |
 
 ---
 
-## 十四、已知问题与限制
+## 十五、已知问题与限制
 
-- **数据集**：MVP 使用 GTZAN，主实验 FMA-small 未下载；GTZAN 存在标签噪声与
-  重复曲目，绝对准确率不宜过度解读。
-- **显存**：未记录峰值显存；当前 batch 32 远未打满 8 GB。
+- **数据集**：MVP 使用 GTZAN，主实验用 FMA-small（7,994 首可解码）；GTZAN 存在标签
+  噪声与重复曲目，绝对准确率不宜过度解读。
+- **显存**：峰值显存在二期任务中已记录（见技术报告）；一期未逐次记录。
 - **确定性**：开启 cuDNN 确定性后本机可逐位复现；但
   `adaptive_avg_pool2d_backward_cuda` 无确定性实现，跨硬件/版本不保证。
-- **SVM 概率**：`predict()` 与 `predict_proba()` 存在少量不一致（见第七节）。
-- **鲁棒性**：尚未做片段长度/噪声/音量扰动实验。
+- **SVM 概率**：`predict()` 与 `predict_proba()` 存在少量不一致（见第八节）。
+- **鲁棒性**：已做七种扰动（噪声/增益/EQ/裁剪/重采样/静音/时长），未做更细的
+  片段长度扫描。
+- **二期**：Token 预测 horizon 只有 1 秒；生成评估以客观距离 + 少量试听为主，
+  没有规模化主观评分；LoRA 的训练步数与数据量受 8 GB 显存与时间预算限制。
 - **AST / PPT / 彩排**：未开始。
 
 ---
 
-## 十五、参考
+## 十六、参考
 
 - FMA 数据集与说明：<https://github.com/mdeff/fma>
 - GTZAN（HuggingFace）：<https://huggingface.co/datasets/marsyas/gtzan>

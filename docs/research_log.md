@@ -471,3 +471,93 @@ bash scripts/run_fma.sh 42 123 2024
 - 验证：`pytest -q tests` 4 passed；`gen_tables.py` 重算表格与数字**无差异**；
   报告仍 24 页。移位后的根目录只剩 `configs/ data/ docs/ src/ scripts/ tests/ app/
   checkpoints/ results/` 与 `README.md`、`requirements.txt`、`.gitignore`。
+
+## 2026-10-19 19:06
+
+**二期启动：阶段 0 审计**
+
+- 把二期计划（Token 预测 + 预训练生成模型微调）拆成「阶段 0 审计 → 阶段一 Token 预测 →
+  阶段二 生成」，先审计再写代码，避免在跑不动的假设上铺开。
+- 审计结论：torch 2.12.1+cu130 / RTX 4060 8 GB / 内存 7.9 GB / 磁盘余 1.4 TB；
+  `transformers` 5.16.1 已含 `EncodecModel` 与 `MusicgenForConditionalGeneration`，
+  无需 `audiocraft`、无需升级环境。
+- 数据：FMA-small artist-disjoint 划分可直接复用（5,596/1,199/1,199）。
+- 环境坑：`no_proxy` 里的 `[::1]` 让 `httpx` 抛 `Invalid port`，下载 HF 权重前需
+  `export NO_PROXY=localhost,127.0.0.1`。
+- 产物：`docs/phase0_audit_phase2.md`。
+
+## 2026-10-19 19:45
+
+**EnCodec Token 化：形状语义踩坑与修复**
+
+- 用 `facebook/encodec_32khz` 把 FMA 窗口编码为 Token：32 kHz、4 码本、50 Hz、
+  2048 词表，6 s 窗口 = 4×300 Token。
+- 首次全量编码（512 窗/shard）跑完 20 个 shard 才发现：每 shard 只剩 32 行 Token。
+  原因不是 OOM，而是编码输出第一维是**分段数**（`nb_frames`）而非批大小，
+  `audio_codes[:, 0]` 把批内除第一段以外的样本全部丢掉，且不报错。
+- 修复：`audio_codes[0]` 取分段、保留批维；并加断言 `nb_frames == 1`。
+  重新编码 15,988 个窗口，shard 内行数与窗口数逐一对齐。
+- 教训写入审计报告与报告正文：形状对得上不代表语义对，静默丢样本比报错更危险。
+
+## 2026-10-19 21:20
+
+**阶段一：Token 预测训练完成（3 seed）**
+
+- 数据：15,988 个 6 s 窗口（train 11,192 / val 2,398 / test 2,398），
+  artist-disjoint，窗口不跨集合。
+- 模型：Persistence / 频率先验 / Bigram / LSTM(2×256) / Transformer(4 层, d=192)。
+  统一 AdamW + 余弦退火 + 早停，batch 64，12 epoch（受时间预算约束，记录在案）。
+- 测试集 Top-1（4 码本平均，free-running 口径）：
+  Persistence 1.62\%、频率先验 1.16\%、Bigram 1.71\%、LSTM 1.61\%、Transformer **1.95\%**。
+  Transformer teacher-forced 2.43\%，NLL 6.72（均匀分布 ln2048 = 7.62）。
+- 结论：信号真实（约随机猜的 40 倍），但绝对水平低；误差累积显著；
+  LSTM 在回灌条件下不如 n-gram；码本 0 靠"重复"就够，增益来自残差码本。
+- 产物：`results/token_prediction/`、`checkpoints/token_prediction/`。
+
+## 2026-10-19 21:40
+
+**阶段一：Token 解码回音频**
+
+- 用 Transformer（seed 42）自回归生成 50 帧 × 4 码本，交回 EnCodec 解码成 1 秒音频，
+  与真实后 1 秒做 Log-Mel 对照并保存 8 个流派的 wav。
+- 客观距离（Log-Mel RMSE）7.7–21.1 dB：包络接近，高频细节差异明显。
+- 如实记录：单码本模型无法单独解码，本文只对"四码本联合预测"做解码。
+
+## 2026-10-19 21:55
+
+**阶段二：MusicGen-small 前缀续写（原始模型）**
+
+- 用 `transformers` 的解码器直连方式做续写：前缀 5 s → EnCodec 4×250 Token →
+  `decoder.generate`（自带 delay pattern），文本条件用流派描述。
+- 8 个流派各 1 首测试曲：生成 3 秒耗时 **3.0–4.2 s**，峰值显存 **1,356–1,431 MB**，
+  Log-Mel RMSE 12.9–29.2 dB。
+- 踩坑：① `pad/bos=2048` 在 decoder 直连时需要显式传 `decoder_start_token_id`，
+  否则 delay pattern 里 `pad_token_id=None` 直接 TypeError；② 生成超过约 150 帧
+  （>3 s）会触发位置索引越界断言，因此统一取 3 秒，并如实写进报告；
+  ③ 逐曲单进程运行，避免一次进程内多曲导致的上下文污染。
+
+## 2026-10-19 22:00
+
+**阶段二：LoRA 适配（手写，不引入新依赖）**
+
+- 对解码器自注意力/交叉注意力的 144 个投影加 LoRA（rank 8、alpha 16，2.36 M 可训练参数），
+  冻结全部原始权重，沿用 MusicGen 自己的 token 级交叉熵与 delay pattern。
+- 8 GB 卡上训练 300 步仅 **1.7 分钟**、峰值显存 **1,295 MB**——可行性没问题。
+- 但 loss 只从 10.4 降到 7.63（均匀分布 7.62），说明目标对齐没调好，
+  属于**负结果**：只作为"参数高效适配可行"的工程验证，不宣称生成质量提升。
+- 期间修了两个实现 bug：LoRA 层没跟着 base 搬到 GPU、bf16 下 `-100` 标签掩码
+  破坏 delay pattern 导致 NaN。
+
+## 2026-10-19 22:15
+
+**二期收尾：技术报告扩到 30 页 + 文档同步**
+
+- 报告新增第 8 节「二期扩展：从判别式分类到离散 Token 预测与音乐生成」，
+  含 EnCodec 规格表、窗口协议、模型表、Token 结果表、解码样例表、
+  MusicGen 成本表与两张新图（Top-1 对比、逐码本、解码对照、续写频谱对比），
+  并在讨论/结论补充二期结论；总页数 24 → **30 页**。
+- 期间修了四个排版/转义问题：Markdown 的 `**` 残留进 LaTeX、表格行分隔符被
+  转义成单反斜杠、样例文件名下划线未转义、一段带长 token 的文字溢出右边界。
+- README 增加 6.6 节（二期结果）与 7.7 进度表；`docs/experiment_log.md` 增加二期小节。
+- 如实保留的负结果：LSTM 在回灌条件下不如 Bigram；LoRA loss 未收敛（7.63 vs 均匀 7.62）；
+  续写受 3 秒长度限制。
