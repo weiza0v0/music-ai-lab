@@ -564,7 +564,7 @@ Streamlit 单页：上传音频并选前缀长度 → 显示波形与播放器 �
 | 1 | Token 解码与音频样例 | ✅ | `results/token_prediction_long/audio/`、`decode.json` |
 | 2 | MusicGen-small 原始推理 | ✅ | `results/generation/metrics_base.json` |
 | 2 | 轻量微调 / 参数高效适配 | ✅ | 修正标签维度后有效：`results/generation/finetune_v2.json` |
-| 2 | 训练预算消融 | ✅ | 加长训练对照，`results/*_long/` + 报告表 5 |
+| 2 | 训练预算消融 | ✅ | 加长训练对照，`results/*_long/` + 报告 §6.5 表 14 |
 | 3 | Streamlit 统一展示 | ⬜ | 未开始（两阶段验收后做） |
 
 二期结论一句话：**Token 层面的"预测真实未来"可度量可复现，LSTM 与 Transformer 均
