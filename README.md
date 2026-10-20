@@ -127,7 +127,7 @@ $PY -m streamlit run app/demo.py
 
 - 数据卡：`docs/fma_data.md`
 - 主实验日志：`docs/experiment_log.md`「主实验（FMA-small）」
-- 技术报告（LaTeX 源码 + 30 页 PDF，含生成式任务章节）：`docs/report/main.tex`、`docs/Music_AI_Lab_Technical_Report.pdf`
+- 技术报告（LaTeX 源码 + 42 页 PDF，总—分—总三部分，判别式与生成式两任务对称）：`docs/report/main.tex`、`docs/Music_AI_Lab_Technical_Report.pdf`
 
 单文件推理：
 
@@ -602,7 +602,7 @@ Token，必须沿用其原有 tokenization / 条件输入 / 训练目标，不�
 
 复现命令：`bash scripts/run_token.sh`、`bash scripts/run_generation.sh`；
 夜间加长训练队列：`bash scripts/overnight_queue.sh`；
-详细分析与限制见技术报告 §8、`docs/research_log.md` 与 `docs/night_run_handoff.md`。
+详细分析与限制见技术报告 §7.9（威胁与局限）、`docs/research_log.md` 与 `docs/night_run_handoff.md`。
 
 ---
 
@@ -639,7 +639,7 @@ Streamlit 单页：上传音频并选前缀长度 → 显示波形与播放器 �
 | 1 | Token 解码与音频样例 | ✅ | `results/token_prediction_long/audio/`、`decode.json` |
 | 2 | MusicGen-small 原始推理 | ✅ | `results/generation/metrics_base.json` |
 | 2 | 轻量微调 / 参数高效适配 | ✅ | 修正标签维度后有效：`results/generation/finetune_v2.json` |
-| 2 | 训练预算消融 | ✅ | 加长训练对照，`results/*_long/` + 报告 §6.5 表 14 |
+| 2 | 训练预算消融 | ✅ | 加长训练对照，`results/*_long/` + 报告 §5.3 表 13 |
 | 3 | Streamlit 统一展示 | ⬜ | 未开始（两个实验验收后做） |
 
 生成式任务结论一句话：**Token 层面的"预测真实未来"可度量可复现，LSTM 与 Transformer 均

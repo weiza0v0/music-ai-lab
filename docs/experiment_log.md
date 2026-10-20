@@ -312,4 +312,4 @@ FMA CRNN seed42），需检验"继续训练是否更好"。统一加长到 60 �
 不能与随机波动区分；轻量 Transformer 更差与其早过拟合（最优轮 7–13）一致。
 因此**主表保持 30 轮协议不变**，加长结果作为稳健性检查。
 
-产物：`results/gtzan_long/`、`results/fma_long/`、报告 §6.5 与表 14。
+产物：`results/gtzan_long/`、`results/fma_long/`、报告 §5.3 与表 13。

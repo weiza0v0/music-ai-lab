@@ -558,6 +558,46 @@ def budget_table() -> tuple[str, dict]:
     return ("\n".join(lines) + "\n", {"BudgetSentence": sentence})
 
 
+
+def generation_pertrack_table() -> str:
+    """逐曲 Log-Mel RMSE 对照（base vs 修正后 LoRA），支撑「整体变好而非一首变好」。"""
+    base, ft = GEN / "metrics_base.json", GEN / "metrics_ft.json"
+    if not (base.exists() and ft.exists()):
+        return "% generation per-track results not generated yet\n"
+    b = {x["track_id"]: x for x in json.loads(base.read_text())["items"]}
+    f = {x["track_id"]: x for x in json.loads(ft.read_text())["items"]}
+    keys = sorted(set(b) & set(f))
+    if not keys:
+        return "% generation per-track results empty\n"
+    rows, diffs = [], []
+    for k in keys:
+        rb, rf = float(b[k]["logmel_rmse"]), float(f[k]["logmel_rmse"])
+        d = rf - rb
+        diffs.append(d)
+        mark = "$\\downarrow$" if d < 0 else "$\\uparrow$"
+        rows.append(f'{k} & {b[k].get("genre", "")} & {rb:.2f} & {rf:.2f} & {d:+.2f} {mark}' + "\\\\")
+    diffs = np.array(diffs)
+    improved = int((diffs < 0).sum())
+    mean = diffs.mean()
+    # 去掉改善最大的一首后重算：这是本文判定「整体变好」的关键检验
+    worst = diffs.min()
+    excl = np.delete(diffs, diffs.argmin()).mean() if len(diffs) > 1 else float("nan")
+    lines = [r"\begin{table}[H]", r"\centering\small",
+             r"\caption{生成式任务的逐曲结果（8 首测试曲，Log-Mel RMSE，越低越好；"
+             r"差值为 LoRA $-$ 原始，负值表示改善）。}",
+             r"\label{tab:gentrack}",
+             r"\begin{tabular}{llccc}", r"\toprule",
+             r"曲目 & 流派 & 原始 & $+$LoRA & 差值" + "\\\\", r"\midrule"]
+    lines += rows
+    lines += [r"\midrule",
+              f"均值 & & {np.mean([float(b[k]['logmel_rmse']) for k in keys]):.2f} & "
+              f"{np.mean([float(f[k]['logmel_rmse']) for k in keys]):.2f} & {mean:+.2f}" + "\\\\",
+              f"\\multicolumn{{5}}{{l}}{{改善 {improved}/{len(keys)} 首；去掉改善最大的一首后均值差 {excl:+.2f}}}"
+              + "\\\\",
+              r"\bottomrule", r"\end{tabular}", r"\end{table}"]
+    return "\n".join(lines) + "\n"
+
+
 def main() -> None:
     mvp = agg(MVP / "metrics.csv")
     (TAB / "mvp.tex").write_text(
@@ -612,6 +652,7 @@ def main() -> None:
     (TAB / "arch.tex").write_text(arch_table())
     (TAB / "robust_delta.tex").write_text(robustness_delta_table())
     (TAB / "ast_grid.tex").write_text(ast_grid_table())
+    (TAB / "generation_pertrack.tex").write_text(generation_pertrack_table())
     import shutil
     for src, dst in [(FMA / "figures/confusion_matrices.png", OUT / "figures/confusion_fma.png"),
                      (FMA / "figures/training_curves.png", OUT / "figures/curves_fma.png"),

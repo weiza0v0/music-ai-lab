@@ -6,84 +6,87 @@
 \contentsline {subsection}{\numberline {1.5}报告组织}{5}{subsection.1.5}%
 \contentsline {section}{\numberline {2}相关工作}{5}{section.2}%
 \contentsline {subsection}{\numberline {2.1}音乐信息检索与流派分类}{5}{subsection.2.1}%
-\contentsline {subsection}{\numberline {2.2}人工特征与浅层模型}{5}{subsection.2.2}%
-\contentsline {subsection}{\numberline {2.3}端到端深度模型}{5}{subsection.2.3}%
-\contentsline {subsection}{\numberline {2.4}Transformer 与预训练}{6}{subsection.2.4}%
-\contentsline {subsection}{\numberline {2.5}数据集与评测偏差}{6}{subsection.2.5}%
-\contentsline {subsection}{\numberline {2.6}鲁棒性与可复现性}{6}{subsection.2.6}%
-\contentsline {subsection}{\numberline {2.7}离散音频 Token 与音乐生成}{6}{subsection.2.7}%
-\contentsline {section}{\numberline {3}数据与实验协议}{6}{section.3}%
-\contentsline {subsection}{\numberline {3.1}GTZAN（MVP 数据集）}{6}{subsection.3.1}%
-\contentsline {subsection}{\numberline {3.2}FMA-small（主实验数据集）}{7}{subsection.3.2}%
-\contentsline {subsection}{\numberline {3.3}统一预处理}{8}{subsection.3.3}%
-\contentsline {subsection}{\numberline {3.4}划分协议与泄漏诊断}{8}{subsection.3.4}%
-\contentsline {subsection}{\numberline {3.5}防泄漏与可复现约束}{9}{subsection.3.5}%
-\contentsline {subsection}{\numberline {3.6}两个任务的协议共享与差异}{9}{subsection.3.6}%
-\contentsline {part}{I\hskip 1em\relax 判别式任务：音乐流派分类}{10}{section*.8}%
-\contentsline {section}{\numberline {4}方法与实验设置}{11}{section.4}%
-\contentsline {subsection}{\numberline {4.1}传统基线：SVM 与 MLP}{11}{subsection.4.1}%
-\contentsline {subsection}{\numberline {4.2}CNN}{11}{subsection.4.2}%
-\contentsline {subsection}{\numberline {4.3}CRNN}{11}{subsection.4.3}%
-\contentsline {subsection}{\numberline {4.4}轻量 Transformer}{11}{subsection.4.4}%
-\contentsline {subsection}{\numberline {4.5}AST 迁移学习}{11}{subsection.4.5}%
-\contentsline {subsection}{\numberline {4.6}训练细节与优化}{11}{subsection.4.6}%
-\contentsline {subsection}{\numberline {4.7}训练算法}{12}{subsection.4.7}%
-\contentsline {subsection}{\numberline {4.8}优化策略}{12}{subsection.4.8}%
-\contentsline {subsection}{\numberline {4.9}复杂度与实现细节}{12}{subsection.4.9}%
-\contentsline {subsection}{\numberline {4.10}软硬件环境}{12}{subsection.4.10}%
-\contentsline {subsection}{\numberline {4.11}评估指标}{13}{subsection.4.11}%
-\contentsline {subsection}{\numberline {4.12}重复实验与统计}{13}{subsection.4.12}%
-\contentsline {subsection}{\numberline {4.13}实验矩阵}{13}{subsection.4.13}%
-\contentsline {subsection}{\numberline {4.14}可复现性措施}{13}{subsection.4.14}%
-\contentsline {section}{\numberline {5}结果与分析}{14}{section.5}%
-\contentsline {subsection}{\numberline {5.1}GTZAN：最小可行 MVP}{14}{subsection.5.1}%
+\contentsline {subsection}{\numberline {2.2}人工特征与浅层模型}{6}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}端到端深度模型}{6}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}神经音频编解码与离散 Token}{6}{subsection.2.4}%
+\contentsline {subsection}{\numberline {2.5}自回归音乐生成：从 AudioLM 到 MusicGen}{6}{subsection.2.5}%
+\contentsline {subsection}{\numberline {2.6}参数高效适配：LoRA}{6}{subsection.2.6}%
+\contentsline {subsection}{\numberline {2.7}数据集、划分与评测口径}{6}{subsection.2.7}%
+\contentsline {subsection}{\numberline {2.8}鲁棒性与可复现性}{7}{subsection.2.8}%
+\contentsline {section}{\numberline {3}数据与实验协议}{7}{section.3}%
+\contentsline {subsection}{\numberline {3.1}GTZAN：判别式任务的 MVP 数据集}{7}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}FMA-small：两个任务共用的主数据}{7}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}两条前端：频谱特征与离散 Token}{8}{subsection.3.3}%
+\contentsline {paragraph}{（a）判别式前端：特征与频谱}{8}{paragraph*.4}%
+\contentsline {paragraph}{（b）生成式前端：离散 Token}{9}{paragraph*.7}%
+\contentsline {subsection}{\numberline {3.4}划分协议与泄漏诊断}{10}{subsection.3.4}%
+\contentsline {subsection}{\numberline {3.5}防泄漏与可复现约束}{10}{subsection.3.5}%
+\contentsline {subsection}{\numberline {3.6}两个任务的协议对照}{10}{subsection.3.6}%
+\contentsline {subsection}{\numberline {3.7}软硬件环境（两个任务共用）}{11}{subsection.3.7}%
+\contentsline {part}{I\hskip 1em\relax 判别式任务：音乐流派分类}{12}{section*.12}%
+\contentsline {section}{\numberline {4}方法与实验设置}{13}{section.4}%
+\contentsline {subsection}{\numberline {4.1}模型族}{13}{subsection.4.1}%
+\contentsline {paragraph}{传统基线：SVM 与 MLP}{13}{paragraph*.13}%
+\contentsline {paragraph}{CNN}{13}{paragraph*.14}%
+\contentsline {paragraph}{CRNN}{13}{paragraph*.15}%
+\contentsline {paragraph}{轻量 Transformer}{13}{paragraph*.16}%
+\contentsline {paragraph}{AST 迁移学习}{13}{paragraph*.17}%
+\contentsline {subsection}{\numberline {4.2}训练流程与正则化}{13}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}实现与资源占用}{14}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}评估指标}{14}{subsection.4.4}%
+\contentsline {subsection}{\numberline {4.5}重复实验与统计}{15}{subsection.4.5}%
+\contentsline {subsection}{\numberline {4.6}实验矩阵}{15}{subsection.4.6}%
+\contentsline {section}{\numberline {5}结果与分析}{15}{section.5}%
+\contentsline {subsection}{\numberline {5.1}GTZAN：最小可行 MVP}{15}{subsection.5.1}%
 \contentsline {subsection}{\numberline {5.2}FMA-small：主实验}{16}{subsection.5.2}%
-\contentsline {subsection}{\numberline {5.3}优化消融}{18}{subsection.5.3}%
-\contentsline {subsection}{\numberline {5.4}训练预算消融}{19}{subsection.5.4}%
-\contentsline {subsection}{\numberline {5.5}计算成本与部署取舍}{19}{subsection.5.5}%
-\contentsline {subsection}{\numberline {5.6}错误分析}{20}{subsection.5.6}%
-\contentsline {subsection}{\numberline {5.7}鲁棒性}{20}{subsection.5.7}%
-\contentsline {subsection}{\numberline {5.8}片段级分析}{21}{subsection.5.8}%
-\contentsline {part}{II\hskip 1em\relax 生成式任务：离散 Token 预测与音频续写}{22}{section*.31}%
-\contentsline {section}{\numberline {6}生成式任务：离散 Token 预测与音频续写}{23}{section.6}%
-\contentsline {subsection}{\numberline {6.1}任务定义与动机}{23}{subsection.6.1}%
-\contentsline {subsection}{\numberline {6.2}离散音频 Token：EnCodec 32 kHz}{23}{subsection.6.2}%
-\contentsline {subsection}{\numberline {6.3}数据窗口与泄漏控制}{23}{subsection.6.3}%
-\contentsline {subsection}{\numberline {6.4}预测模型}{24}{subsection.6.4}%
-\contentsline {subsection}{\numberline {6.5}训练与评价口径}{24}{subsection.6.5}%
-\contentsline {subsection}{\numberline {6.6}Token 预测结果}{24}{subsection.6.6}%
-\contentsline {paragraph}{是否还需要继续训练}{26}{paragraph*.38}%
-\contentsline {subsection}{\numberline {6.7}把 Token 解码回音频}{26}{subsection.6.7}%
-\contentsline {subsection}{\numberline {6.8}MusicGen-small 的前缀续写}{27}{subsection.6.8}%
-\contentsline {paragraph}{长度限制（如实记录）}{27}{paragraph*.42}%
-\contentsline {subsection}{\numberline {6.9}参数高效适配：LoRA}{27}{subsection.6.9}%
-\contentsline {paragraph}{一次被修正的负结果}{28}{paragraph*.43}%
-\contentsline {paragraph}{消融：三个旋钮都不如"修好对齐"重要}{28}{paragraph*.44}%
-\contentsline {subsection}{\numberline {6.10}小结与局限}{28}{subsection.6.10}%
-\contentsline {part}{III\hskip 1em\relax 综合讨论与结论}{29}{section*.45}%
-\contentsline {section}{\numberline {7}讨论}{30}{section.7}%
-\contentsline {subsection}{\numberline {7.1}主要发现}{30}{subsection.7.1}%
-\contentsline {subsection}{\numberline {7.2}判别式与生成式：同一种纪律，两种可度量性}{30}{subsection.7.2}%
-\contentsline {subsection}{\numberline {7.3}负结果是怎么被辨别出来的}{30}{subsection.7.3}%
-\contentsline {subsection}{\numberline {7.4}预训练的收益与代价}{31}{subsection.7.4}%
-\contentsline {subsection}{\numberline {7.5}为什么从头训练的 Transformer 会输}{31}{subsection.7.5}%
-\contentsline {subsection}{\numberline {7.6}数据规模与任务难度}{31}{subsection.7.6}%
-\contentsline {subsection}{\numberline {7.7}鲁棒性的进一步解读}{31}{subsection.7.7}%
-\contentsline {subsection}{\numberline {7.8}威胁与局限}{32}{subsection.7.8}%
-\contentsline {paragraph}{构念效度}{32}{paragraph*.47}%
-\contentsline {paragraph}{内部效度}{32}{paragraph*.48}%
-\contentsline {paragraph}{外部效度}{32}{paragraph*.49}%
-\contentsline {paragraph}{统计效度}{32}{paragraph*.50}%
-\contentsline {paragraph}{实现层面}{32}{paragraph*.51}%
-\contentsline {paragraph}{生成式任务的特有局限}{32}{paragraph*.52}%
-\contentsline {subsection}{\numberline {7.9}伦理与数据授权}{32}{subsection.7.9}%
-\contentsline {subsection}{\numberline {7.10}可复现性总结}{32}{subsection.7.10}%
-\contentsline {subsection}{\numberline {7.11}对课程项目的启示}{32}{subsection.7.11}%
-\contentsline {section}{\numberline {8}结论与展望}{33}{section.8}%
-\contentsline {section}{\numberline {A}附录：数据、超参与复现细节}{34}{appendix.A}%
-\contentsline {subsection}{\numberline {A.1}数据集统计}{34}{subsection.A.1}%
-\contentsline {subsection}{\numberline {A.2}完整超参数}{35}{subsection.A.2}%
-\contentsline {subsection}{\numberline {A.3}鲁棒性完整变化表}{35}{subsection.A.3}%
-\contentsline {subsection}{\numberline {A.4}AST 的 C 网格}{35}{subsection.A.4}%
-\contentsline {subsection}{\numberline {A.5}仓库结构与复现命令}{35}{subsection.A.5}%
-\contentsline {subsection}{\numberline {A.6}结果文件说明}{37}{subsection.A.6}%
+\contentsline {subsection}{\numberline {5.3}消融与训练预算检验}{18}{subsection.5.3}%
+\contentsline {subsection}{\numberline {5.4}计算成本与部署取舍}{19}{subsection.5.4}%
+\contentsline {subsection}{\numberline {5.5}错误分析：类别、置信度与时间稳定性}{20}{subsection.5.5}%
+\contentsline {subsection}{\numberline {5.6}鲁棒性}{21}{subsection.5.6}%
+\contentsline {subsection}{\numberline {5.7}小结}{22}{subsection.5.7}%
+\contentsline {part}{II\hskip 1em\relax 生成式任务：离散 Token 预测与音频续写}{23}{section*.37}%
+\contentsline {section}{\numberline {6}生成式任务：离散 Token 预测与音频续写}{24}{section.6}%
+\contentsline {subsection}{\numberline {6.1}任务定义与动机}{24}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}离散音频 Token：EnCodec 32 kHz 与窗口构造}{24}{subsection.6.2}%
+\contentsline {paragraph}{窗口切分与缓存}{24}{paragraph*.39}%
+\contentsline {subsection}{\numberline {6.3}预测模型}{25}{subsection.6.3}%
+\contentsline {subsection}{\numberline {6.4}训练与评价口径}{25}{subsection.6.4}%
+\contentsline {subsection}{\numberline {6.5}Token 预测结果}{25}{subsection.6.5}%
+\contentsline {subsection}{\numberline {6.6}收敛性复核：45 轮够不够}{27}{subsection.6.6}%
+\contentsline {subsection}{\numberline {6.7}把 Token 解码回音频}{27}{subsection.6.7}%
+\contentsline {subsection}{\numberline {6.8}MusicGen-small 的前缀续写}{28}{subsection.6.8}%
+\contentsline {paragraph}{长度限制（如实记录）}{29}{paragraph*.49}%
+\contentsline {subsection}{\numberline {6.9}LoRA 适配：方法与配置}{29}{subsection.6.9}%
+\contentsline {subsection}{\numberline {6.10}适配结果：一次被修正的负结果}{29}{subsection.6.10}%
+\contentsline {subsection}{\numberline {6.11}消融：三个旋钮都不如修好对齐重要}{30}{subsection.6.11}%
+\contentsline {subsection}{\numberline {6.12}小结与局限}{30}{subsection.6.12}%
+\contentsline {part}{III\hskip 1em\relax 综合讨论与结论}{31}{section*.51}%
+\contentsline {section}{\numberline {7}讨论}{32}{section.7}%
+\contentsline {subsection}{\numberline {7.1}主要发现}{32}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}判别式与生成式：同一种纪律，两种可度量性}{32}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}负结果是怎么被辨别出来的}{32}{subsection.7.3}%
+\contentsline {subsection}{\numberline {7.4}误差累积：3.36\% 为什么会掉到 2.19\%}{33}{subsection.7.4}%
+\contentsline {subsection}{\numberline {7.5}Token 指标与音频距离为何背离}{33}{subsection.7.5}%
+\contentsline {subsection}{\numberline {7.6}预训练、架构与成本}{33}{subsection.7.6}%
+\contentsline {subsection}{\numberline {7.7}数据规模与任务难度}{34}{subsection.7.7}%
+\contentsline {subsection}{\numberline {7.8}鲁棒性的进一步解读}{34}{subsection.7.8}%
+\contentsline {subsection}{\numberline {7.9}威胁与局限}{34}{subsection.7.9}%
+\contentsline {paragraph}{构念效度}{34}{paragraph*.54}%
+\contentsline {paragraph}{内部效度}{35}{paragraph*.55}%
+\contentsline {paragraph}{外部效度}{35}{paragraph*.56}%
+\contentsline {paragraph}{统计效度}{35}{paragraph*.57}%
+\contentsline {paragraph}{实现层面}{35}{paragraph*.58}%
+\contentsline {subsection}{\numberline {7.10}伦理与数据授权}{35}{subsection.7.10}%
+\contentsline {subsection}{\numberline {7.11}可复现性总结}{35}{subsection.7.11}%
+\contentsline {subsection}{\numberline {7.12}对课程项目的启示}{35}{subsection.7.12}%
+\contentsline {section}{\numberline {8}结论与展望}{36}{section.8}%
+\contentsline {section}{\numberline {A}附录：数据、超参与复现细节}{38}{appendix.A}%
+\contentsline {subsection}{\numberline {A.1}数据集统计}{38}{subsection.A.1}%
+\contentsline {subsection}{\numberline {A.2}逐 seed 结果}{38}{subsection.A.2}%
+\contentsline {subsection}{\numberline {A.3}完整超参数}{39}{subsection.A.3}%
+\contentsline {subsection}{\numberline {A.4}生成式任务的超参数与复现参数}{39}{subsection.A.4}%
+\contentsline {subsection}{\numberline {A.5}生成式任务的逐曲结果}{39}{subsection.A.5}%
+\contentsline {subsection}{\numberline {A.6}鲁棒性完整变化表}{40}{subsection.A.6}%
+\contentsline {subsection}{\numberline {A.7}AST 的 C 网格}{40}{subsection.A.7}%
+\contentsline {subsection}{\numberline {A.8}仓库结构与复现命令}{40}{subsection.A.8}%
+\contentsline {subsection}{\numberline {A.9}结果文件说明}{42}{subsection.A.9}%

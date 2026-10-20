@@ -6,6 +6,12 @@
 二是在\textbf{前缀条件}下的音乐续写。前者可以用交叉熵和 Top-1 精确度量，后者只能部分
 度量、必须结合试听，二者的评价口径不能混用。
 
+本章的结构与第一部分对应：先给任务定义与表示（第~\ref{sec:p2motivation}、\ref{sec:encodec} 节），
+再给模型与评价口径（第~\ref{sec:p2models}、\ref{sec:p2train} 节），然后是结果与两道复核
+（第~\ref{sec:p2results}--\ref{sec:p2conv} 节），最后是解码验证、续写与轻量适配
+（第~\ref{sec:p2decode}--\ref{sec:p2loraabl} 节）。数据来源、划分、前端与防泄漏纪律
+全部沿用第~\ref{sec:data} 节，本章不重复交代。
+
 \subsection{任务定义与动机}\label{sec:p2motivation}
 
 判别式与生成式两个任务的差别可以写成两个不同的条件分布：
@@ -25,11 +31,11 @@ roll-out），不需要设计波形回归损失或对抗训练。第二，它把
 模型是自己训练的小网络，不调用任何生成大模型；生成部分才引入预训练的
 MusicGen-small，并先验证原始模型能跑通、再讨论轻量适配。
 
-\subsection{离散音频 Token：EnCodec 32 kHz}\label{sec:encodec}
+\subsection{离散音频 Token：EnCodec 32 kHz 与窗口构造}\label{sec:encodec}
 
-编码器选用 \texttt{facebook/encodec\_32khz}，即 MusicGen 使用的同款配置。它把
-32 kHz 单声道波形经卷积编码器与残差向量量化（RVQ）压成 4 个码本、每码本 2048 个
-词条的离散序列，帧率 50 Hz，目标带宽 2.2 kbps。表~\ref{tab:encodec} 给出实测规格。
+编码器选用 \texttt{facebook/encodec\_32khz}，即 MusicGen 使用的同款配置。
+配置本身沿用第~\ref{sec:rw-token} 节所述的 32\,kHz / 4 码本 / 50\,Hz / 2.2\,kbps，
+本文只补两项工程核对：参数体积与编码吞吐（表~\ref{tab:encodec}）。
 
 \begin{table}[H]
 \centering\small
@@ -54,20 +60,23 @@ MusicGen-small，并先验证原始模型能跑通、再讨论轻量适配。
 "分段数"而不是批大小，若直接把 \texttt{audio\_codes[:, 0]} 当作批维，
 批内除第一段以外的样本会被静默丢弃——本项目在第一次全量编码时就踩了这个坑
 （每 512 个窗口只写入 1 行 Token），发现后修正并重跑。这类"形状对得上、语义却错"
-的 bug 不会报错，只会让数据静默变少，因此下表的所有统计都同时核对了 Token 行数与
-窗口行数。
+的 bug 不会报错，只会让数据静默变少，因此表~\ref{tab:encodec} 与后续所有统计都同时
+核对了 Token 行数与窗口行数。
 
-\subsection{数据窗口与泄漏控制}\label{sec:p2data}
-
-数据沿用 FMA-small 与此前按艺术家分离的划分（5\,596 / 1\,199 / 1\,199）。
-每首曲目在其内部取 2 个不重叠的 6 秒窗口：前 5 秒作为前缀（250 帧），
-后 1 秒作为预测目标（50 帧）。窗口继承曲目所属划分，因此\textbf{同一首歌的窗口不会同时出现在训练集与测试集}——这正是分类实验里那条"按艺术家划分"的约束在预测任务
-上的对应物。最终得到 \TokNTrain{} 个训练窗口、测试集 \TokNTest{} 个窗口
-（\TokNTracks{} 首曲目），Token 缓存以 shard 形式落盘，编码中断可从断点续跑。
+\paragraph{窗口切分与缓存}
+窗口规格（每首 2 个不重叠的 6 秒窗口、5 秒前缀 250 帧、1 秒目标 50 帧）已在
+第~\ref{sec:frontend} 节给出，这里只补实现与规模：最终得到 \TokNTrain{} 个训练窗口、
+测试集 \TokNTest{} 个窗口（\TokNTracks{} 首曲目）。窗口继承曲目所属划分，
+因此\textbf{同一首歌的窗口不会同时出现在训练集与测试集}——这是判别式任务那条
+"按艺术家划分"的约束在预测任务上的对应物。Token 缓存以 shard 形式落盘，
+编码中断可从断点续跑；全量编码约需一次 8 卡批次 0.34\,s 的 2,000 倍时间量级，
+在本机上是数小时级的一次性成本。
 
 \subsection{预测模型}\label{sec:p2models}
 
-所有模型都做同一件事：给定前 $t$ 帧的 4 个码本，预测第 $t+1$ 帧的 4 个码本。
+表~\ref{tab:tokenmodels} 列出参与比较的五个模型：三个不学习的统计基线（Persistence、
+频率先验、Bigram）与两个神经模型。它们都做同一件事：给定前 $t$ 帧的 4 个码本，
+预测第 $t+1$ 帧的 4 个码本。
 四条流共享一个主干，输出 4 个独立分类头（MusicGen 式的并行码本预测），
 这样可以避免自回归解码时四条流不同步的问题。
 
@@ -90,7 +99,7 @@ Transformer & 4 个 Embedding 求和 $+$ 位置编码 $+$ 4 层因果注意力($
 选择"并行码本"而不是"逐码本级联"，代价是模型必须同时刻画四条残差流之间的
 相关性；收益是推理时一次前向就能得到完整的一帧，且解码器可以直接消费。
 单码本（只预测码本 0）是更便宜的简化，但它\textbf{无法单独解码}，因此本文不做单码本
-主结果，只把它作为反面对照写进局限性。
+主结果——这一取舍的后果写在第~\ref{sec:limits} 节。
 
 \subsection{训练与评价口径}\label{sec:p2train}
 
@@ -109,13 +118,16 @@ Transformer & 4 个 Embedding 求和 $+$ 位置编码 $+$ 4 层因果注意力($
 
 \subsection{Token 预测结果}\label{sec:p2results}
 
+表~\ref{tab:token} 与图~\ref{fig:tokentop1} 给出测试集上的 Top-1 与 NLL，图~\ref{fig:tokencurves}
+是训练曲线，图~\ref{fig:tokencb} 是逐码本分解。
+
 \input{tables/token.tex}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{token_top1.png}
 \caption{测试集 Top-1（4 码本平均）。灰色为 teacher-forced，橙色为 free-running，
-误差棒为 3 个种子的标准差。}\label{fig:tokentop1}
+误差棒为 3 个种子的标准差；数值见表~\ref{tab:token}。}\label{fig:tokentop1}
 \end{figure}
 
 \begin{figure}[H]
@@ -132,7 +144,7 @@ Transformer & 4 个 Embedding 求和 $+$ 位置编码 $+$ 4 层因果注意力($
 与 RVQ 的残差结构一致。}\label{fig:tokencb}
 \end{figure}
 
-四点观察：
+图~\ref{fig:tokentop1} 的四点观察：
 
 \begin{enumerate}
   \item \textbf{学习信号真实存在，但绝对水平很低。}随机猜的 Top-1 是 $1/2048=0.049\%$；
@@ -156,9 +168,11 @@ Transformer & 4 个 Embedding 求和 $+$ 位置编码 $+$ 4 层因果注意力($
         但残差码本带来的收益同样真实。
 \end{enumerate}
 
-\paragraph{是否还需要继续训练}
-上表的最优轮次落在 41--45 之间（LSTM 为 45/45/42，Transformer 为 45/41/42），
-看上去像是"仍贴着轮数上限"。但只看最优轮次会误判，需要看逐轮下降速度：
+\subsection{收敛性复核：45 轮够不够}\label{sec:p2conv}
+
+表~\ref{tab:token} 的最优轮次落在 41--45 之间（LSTM 为 45/45/42，Transformer 为 45/41/42），
+看上去像是"仍贴着轮数上限"。但只看最优轮次会误判，需要看逐轮下降速度
+（图~\ref{fig:tokencurves}）：
 把验证 NLL 按 5 轮一段统计平均下降量，两条曲线都呈明显的几何衰减
 （LSTM 从 0.130 依次降到 0.099、0.060、0.030、0.015、0.0078、0.0048、0.0021；
 Transformer 从 0.155 降到 0.076、0.045、0.021、0.013、0.0060、0.0032、0.0013），
@@ -181,6 +195,8 @@ $0.002$（LSTM）与 $0.001$（Transformer）个 NLL——
   \item 与原曲真实后 1 秒做 Log-Mel 对照，并保存 wav 供试听。
 \end{enumerate}
 
+逐曲对照见表~\ref{tab:tokensamples}，解码后的频谱对照见图~\ref{fig:tokendecode}。
+
 \input{tables/token_samples.tex}
 
 \begin{figure}[H]
@@ -192,7 +208,7 @@ $0.002$（LSTM）与 $0.001$（Transformer）个 NLL——
 
 必须说明的局限：即便 4 个码本全部由模型预测，1 秒的预测也只能"猜"出下一个瞬间的
 音色与节奏，无法生成有结构的乐句。它验证的是"模型是否学到了局部动态"，而不是
-"能否续写一首歌"。后者属于下一节的生成任务。
+"能否续写一首歌"。后者属于下一节的生成式任务。
 
 \subsection{MusicGen-small 的前缀续写}\label{sec:musicgen}
 
@@ -210,8 +226,17 @@ $0.002$（LSTM）与 $0.001$（Transformer）个 NLL——
   \item 去掉前缀部分，只保留新生成的音频，与真实后 3 秒对照。
 \end{enumerate}
 
-生成参数统一为 temperature $=1.0$、top-$k=250$、CFG 系数见结果表；同一批测试前缀
-（每个流派各 1 首）下比较原始模型与适配后的模型，随机种子固定。
+生成参数统一为 temperature $=1.0$、top-$k=250$，\textbf{不做 CFG}（系数取 1.0）；
+同一批测试前缀（每个流派各 1 首）下比较原始模型与适配后的模型，随机种子固定。
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{generation_spec.png}
+\caption{前缀、真实后 3 秒与 MusicGen 续写的 Log-Mel 三列对照（有 LoRA 结果时加第四列）。
+前两列是"应该长什么样"，后两列是"实际生成了什么"；对应数字见表~\ref{tab:generation}。}\label{fig:genspec}
+\end{figure}
+
+表~\ref{tab:generation} 给出定量结果。
 
 \input{tables/generation.tex}
 
@@ -221,17 +246,24 @@ $0.002$（LSTM）与 $0.001$（Transformer）个 NLL——
 实现（其对本环境 PyTorch 版本有约束），这一点作为限制记录，不用"跑通 3 秒"冒充
 "完成 5 秒续写"。
 
-\subsection{参数高效适配：LoRA}\label{sec:lora}
+\subsection{LoRA 适配：方法与配置}\label{sec:lora}
 
 在 8\,GB 显存上全量微调一个 300\,M 参数的生成模型并不可取：仅 Adam 状态就要
 数 GB。本文按计划采用参数高效适配，并且\textbf{不引入新依赖}——直接对解码器的
-自注意力与交叉注意力投影实现 LoRA（rank 8、alpha 16），冻结全部原始权重，
-只训练低秩旁路；训练目标沿用 MusicGen 自己的 token 级交叉熵与 delay pattern，
-没有把上一节的单码本代码硬套上去。
+自注意力与交叉注意力投影实现 LoRA\cite{hu2021lora}（rank 8、alpha 16，共 144 个投影），
+冻结全部原始权重，只训练低秩旁路；训练目标沿用 MusicGen 自己的 Token 级交叉熵与
+delay pattern，没有把上一节的单码本代码硬套上去。适配后的代价对比见图~\ref{fig:gencost}。
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{generation_cost.png}
+\caption{生成成本与质量：base 与各适配配置的耗时、峰值显存与 Log-Mel RMSE。}\label{fig:gencost}
+\end{figure}
 
 \FinetuneSentence
 
-\paragraph{一次被修正的负结果}
+\subsection{适配结果：一次被修正的负结果}
+
 第一轮适配只更新 144 个投影层、训练 300 步，目标值从 8.81 到 7.81，
 \textbf{仍停在均匀分布 $\ln 2048=7.62$ 之上}，生成的音频也不比原始模型好。
 当时把它记成"跑通但无增益"的负结果。事后排查发现根因是一个\textbf{标签维度错误}，
@@ -249,9 +281,12 @@ $0.002$（LSTM）与 $0.001$（Transformer）个 NLL——
 音频侧的 Log-Mel RMSE 从原始模型的 19.23 降到 17.91（$-1.32$），
 8 首中 7 首变好。为避免"被单首拉低均值"的假增益，我们去掉改善最大的那一首后
 重新平均，仍有 $-0.99$ 的提升——作为对照，未修正版本的 $-0.80$ 在同样处理后
-只剩 $-0.16$，属于噪声。两者的差别正是"整体变好"与"一首变好"的差别。
+只剩 $-0.16$，属于噪声。两者的差别正是"整体变好"与"一首变好"的差别。这里要强调方法论上的教训：
+LoRA 只降低优化成本，不保证目标对齐正确；而目标对齐错误不会抛异常，只会让 loss
+稳定停在某个偏高的值上。若只看"跑通、loss 在降"，这个 bug 会被当成负结果归档。
 
-\paragraph{消融：三个旋钮都不如"修好对齐"重要}
+\subsection{消融：三个旋钮都不如修好对齐重要}\label{sec:p2loraabl}
+
 表~\ref{tab:generation} 还给出三个消融配置，分别扰动训练步数、目标窗口与适配秩。
 由于只有 8 首测试曲，单看均值容易被单首样本带偏，因此本文对每个配置都与对照做
 \textbf{逐曲配对检验}（配对差值的均值与标准误，$|t|>2.36$ 视为显著）：
@@ -294,6 +329,5 @@ NLL 压得更低，却没有一个能显著改善音频。真正显著的那一�
         当成整体增益。
 \end{enumerate}
 
-仍需承认的局限：预测 horizon 只有 1 秒；生成评估以客观距离与少量试听为主，
-没有做规模化的主观评分；两条实验线使用同一 Tokenizer 但不同模型规模，
-不能据此断言"自训练预测器可以替代生成模型"。
+仍需承认的局限——预测 horizon 只有 1 秒、评估以客观距离与少量试听为主、两条实验线
+规模不同因而不可互相替代——统一放在第~\ref{sec:limits} 节讨论，此处不再重复。

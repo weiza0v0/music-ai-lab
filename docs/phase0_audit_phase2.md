@@ -80,7 +80,7 @@
 |---|---|
 | `results/gtzan/`、`results/fma/`、`results/fma_leak/`、`results/fma_ablation/` | 一期分类结果 |
 | `checkpoints/gtzan/`、`checkpoints/fma/`、`checkpoints/fma_leak/` | 一期权重 |
-| `docs/Music_AI_Lab_Technical_Report.pdf` | 技术报告（写作时为 24 页，二期完成后 30 页） |
+| `docs/Music_AI_Lab_Technical_Report.pdf` | 技术报告（写作时为 24 页，二期完成 30 页，结构重构后 42 页） |
 
 二期使用独立目录 `results/token_prediction/`、`results/generation/`、
 `checkpoints/token_prediction/`、`checkpoints/generation/`，与一期零交叉。

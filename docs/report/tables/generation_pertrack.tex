@@ -1,0 +1,22 @@
+\begin{table}[H]
+\centering\small
+\caption{生成式任务的逐曲结果（8 首测试曲，Log-Mel RMSE，越低越好；差值为 LoRA $-$ 原始，负值表示改善）。}
+\label{tab:gentrack}
+\begin{tabular}{llccc}
+\toprule
+曲目 & 流派 & 原始 & $+$LoRA & 差值\\
+\midrule
+000010 & Pop & 12.90 & 11.51 & -1.39 $\downarrow$\\
+000182 & Rock & 16.73 & 15.57 & -1.16 $\downarrow$\\
+000704 & International & 15.34 & 13.70 & -1.64 $\downarrow$\\
+000814 & Folk & 29.23 & 28.04 & -1.19 $\downarrow$\\
+000995 & Experimental & 20.85 & 17.19 & -3.65 $\downarrow$\\
+001482 & Electronic & 27.13 & 27.46 & +0.33 $\uparrow$\\
+007481 & Hip-Hop & 16.91 & 16.09 & -0.81 $\downarrow$\\
+014568 & Instrumental & 14.74 & 13.71 & -1.03 $\downarrow$\\
+\midrule
+均值 & & 19.23 & 17.91 & -1.32\\
+\multicolumn{5}{l}{改善 7/8 首；去掉改善最大的一首后均值差 -0.99}\\
+\bottomrule
+\end{tabular}
+\end{table}
