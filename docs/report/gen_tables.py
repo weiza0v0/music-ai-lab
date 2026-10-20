@@ -389,13 +389,14 @@ def generation_table() -> tuple[str, dict]:
         if b["items"]:
             base_rmse = float(np.mean([x["logmel_rmse"] for x in b["items"]]))
 
-    # 行顺序：base → 旧（标签维度 bug）→ 修正后三个配置
+    # 行顺序：base → 旧（标签维度 bug）→ 修正后各配置（步数 / 目标 / rank 三个旋钮）
     runs = (
         ("base", "MusicGen-small（原始）", "Base"),
-        ("ft_v1_negative", "\\quad + LoRA（旧，标签维度错误）", "FtVOneNeg"),
-        ("ft", "\\quad + LoRA $r{=}8$（修正，掩前缀）", "Ft"),
-        ("full", "\\quad + LoRA $r{=}8$（修正，全窗口）", "Full"),
-        ("r16", "\\quad + LoRA $r{=}16$（修正，掩前缀）", "RSixteen"),
+        ("ft_v1_negative", "\\quad + LoRA 旧版（标签维度错误）", "FtVOneNeg"),
+        ("ft", "\\quad + LoRA $r{=}8$，1200 步，掩前缀", "Ft"),
+        ("v3", "\\quad + LoRA $r{=}8$，3600 步，掩前缀", "VThree"),
+        ("full", "\\quad + LoRA $r{=}8$，1200 步，全窗口", "Full"),
+        ("r16", "\\quad + LoRA $r{=}16$，1200 步，掩前缀", "RSixteen"),
     )
     items = []
     for tag, label, mac in runs:
@@ -418,6 +419,38 @@ def generation_table() -> tuple[str, dict]:
 
     if not items:
         return "% generation results not generated yet\n", macros
+
+    # 配对显著性检验：8 首测试曲逐曲配对，判断差异是否只是噪声。
+    # 这一步必需——本项目已有两个反例：v1 的 −0.80 靠单曲撑着，
+    # r16 的 loss 更低却音频更差。只看均值会得出错误结论。
+    def _per_track(tag):
+        fp = GEN / f"metrics_{tag}.json"
+        if not fp.exists():
+            return None
+        dd = json.loads(fp.read_text())
+        return {x["track_id"]: float(x["logmel_rmse"]) for x in dd["items"]} if dd["items"] else None
+
+    def _paired(a_tag, b_tag):
+        a, b = _per_track(a_tag), _per_track(b_tag)
+        if not a or not b:
+            return None
+        keys = [k for k in a if k in b]
+        if len(keys) < 3:
+            return None
+        diff = np.array([a[k] - b[k] for k in keys])
+        se = diff.std(ddof=1) / np.sqrt(len(diff))
+        return (float(diff.mean()), float(se),
+                float(diff.mean() / se) if se > 0 else 0.0)
+
+    for a_tag, b_tag, key in (("ft", "base", "FtVsBase"), ("v3", "ft", "VThreeVsFt"),
+                              ("full", "ft", "FullVsFt"), ("r16", "base", "RSixteenVsBase")):
+        st = _paired(a_tag, b_tag)
+        if st:
+            mean, se, tstat = st
+            macros[f"Gen{key}Mean"] = f"{mean:+.2f}"
+            macros[f"Gen{key}T"] = f"{tstat:+.2f}"
+            macros[f"Gen{key}Sig"] = "显著" if abs(tstat) > 2.36 else "不显著"
+
     lines = [r"\begin{table}[H]", r"\centering\small",
              r"\caption{MusicGen-small 前缀续写（同一批测试前缀，5 s 前缀 $\to$ 3 s 续写；"
              r"采样 $T=1$、top-$k=250$、无 CFG；每行为 8 首测试曲的均值）。}",

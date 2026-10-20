@@ -61,10 +61,10 @@
 \contentsline {paragraph}{长度限制（如实记录）}{24}{paragraph*.40}%
 \contentsline {subsection}{\numberline {8.9}参数高效适配：LoRA}{24}{subsection.8.9}%
 \contentsline {paragraph}{一次被修正的负结果}{25}{paragraph*.41}%
-\contentsline {paragraph}{消融：更低的目标值不等于更好的音频}{25}{paragraph*.42}%
+\contentsline {paragraph}{消融：三个旋钮都不如"修好对齐"重要}{25}{paragraph*.42}%
 \contentsline {subsection}{\numberline {8.10}小结与局限}{25}{subsection.8.10}%
-\contentsline {section}{\numberline {9}讨论与局限}{25}{section.9}%
-\contentsline {subsection}{\numberline {9.1}主要发现}{25}{subsection.9.1}%
+\contentsline {section}{\numberline {9}讨论与局限}{26}{section.9}%
+\contentsline {subsection}{\numberline {9.1}主要发现}{26}{subsection.9.1}%
 \contentsline {subsection}{\numberline {9.2}威胁与局限}{26}{subsection.9.2}%
 \contentsline {paragraph}{构念效度}{26}{paragraph*.43}%
 \contentsline {paragraph}{内部效度}{26}{paragraph*.44}%
@@ -73,7 +73,7 @@
 \contentsline {paragraph}{实现层面}{26}{paragraph*.47}%
 \contentsline {subsection}{\numberline {9.3}伦理与数据授权}{26}{subsection.9.3}%
 \contentsline {subsection}{\numberline {9.4}可复现性总结}{26}{subsection.9.4}%
-\contentsline {section}{\numberline {10}结论与展望}{26}{section.10}%
+\contentsline {section}{\numberline {10}结论与展望}{27}{section.10}%
 \contentsline {section}{\numberline {A}附录：数据、超参与复现细节}{28}{appendix.A}%
 \contentsline {subsection}{\numberline {A.1}数据集统计}{28}{subsection.A.1}%
 \contentsline {subsection}{\numberline {A.2}完整超参数}{28}{subsection.A.2}%
