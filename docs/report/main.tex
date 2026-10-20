@@ -33,6 +33,22 @@
 \small 代码与结果：\url{https://github.com/weiza0v0/music-ai-lab}}
 \date{2026 年 10 月}
 
+
+% ---- 分部标题：article 类的 \part 不换页且编号会串，这里自定义 ----
+\newcommand{\projectpart}[1]{%
+  \clearpage
+  \phantomsection
+  \addcontentsline{toc}{part}{#1}%
+  \thispagestyle{plain}%
+  \vspace*{6em}%
+  \begin{center}
+    {\Huge\bfseries #1}\par
+    \vspace{1.4em}
+    {\color{gray}\rule{0.4\linewidth}{0.6pt}}
+  \end{center}
+  \vspace{3em}
+  \clearpage}
+
 \begin{document}
 \maketitle
 
@@ -94,7 +110,7 @@
 
 \subsection{报告组织}
 
-第~\ref{sec:related} 节回顾相关工作；第~\ref{sec:data} 节介绍数据与协议；第~\ref{sec:method} 节描述模型与训练方法；第~\ref{sec:setup} 节给出实验设置与指标；第~\ref{sec:results} 节报告 GTZAN 与 FMA-small 的结果；第~\ref{sec:analysis} 节做错误、鲁棒性、时间轴与泄漏分析；第~\ref{sec:phase2} 节转入生成式任务，把目标从流派标签换成离散 Token 序列，并比较 Token 预测与音频续写；第~\ref{sec:discussion} 节讨论局限与启示；第~\ref{sec:conclusion} 节总结。附录给出逐 seed 结果、完整超参与复现命令。
+第~\ref{sec:related} 节回顾相关工作；第~\ref{sec:data} 节介绍数据与预处理协议。此后正文分为\textbf{三个部分}。\textbf{第一部分}处理判别式任务：第~\ref{sec:method} 节给出模型、训练方法与实验设置，第~\ref{sec:results} 节报告 GTZAN 与 FMA-small 的结果、消融，以及错误、鲁棒性与片段级分析。\textbf{第二部分}处理生成式任务：第~\ref{sec:phase2} 节把目标从流派标签换成离散 Token 序列，依次给出 Token 化协议、预测模型、预测结果、解码验证，以及预训练生成模型的前缀续写与轻量适配。\textbf{第三部分}是综合讨论：第~\ref{sec:discussion} 节汇总主要发现、解释性分析与局限，第~\ref{sec:conclusion} 节总结。附录给出逐 seed 结果、完整超参与复现命令。
 
 % ================= 2 相关工作 =================
 \section{相关工作}\label{sec:related}
@@ -273,7 +289,8 @@ FMA-small 的元数据包含艺术家字段。我们先用常规的按曲目分�
 \end{itemize}
 
 % ================= 4 方法 =================
-\section{方法}\label{sec:method}
+\projectpart{I\quad 判别式任务：音乐流派分类}
+\section{方法与实验设置}\label{sec:method}\label{sec:setup}
 
 \subsection{传统基线：SVM 与 MLP}
 SVM 使用 RBF 核（$C=10$，$\gamma=$scale），MLP 为两层全连接（256-128，ReLU，Adam，early stopping）。二者共享同一份 209 维特征，标准化器仅在训练集拟合。
@@ -344,7 +361,6 @@ CNN 前端（3 个卷积块，池化 $(2,2)/(2,2)/(2,1)$）将频率维压缩后
 
 实现上，所有音频特征与 Log-Mel 在每个数据集上只计算一次并缓存为 \texttt{.npz}，训练时直接读取，避免重复解码 MP3；DataLoader 使用 \texttt{num\_workers=0} 并配合页锁定内存，保证可复现优先于吞吐；深度模型开启 cuDNN 确定性（见第~\ref{sec:setup} 节）。在 8\,GB 显存下，batch size 32 足以训练全部自建模型，峰值显存远低于上限。
 
-\section{实验设置}\label{sec:setup}
 
 \subsection{软硬件环境}
 
@@ -417,7 +433,7 @@ FMA-small & AST（冻结主干 + 线性头） & 1 & -- & 64\\
   \item 独立校验员对结果文件与预测逐条复算，未发现数据泄漏或伪造。
 \end{itemize}
 
-\section{结果}\label{sec:results}
+\section{结果与分析}\label{sec:results}\label{sec:analysis}
 
 \subsection{GTZAN：最小可行 MVP}
 表~\ref{tab:gtzan} 与图~\ref{fig:gtzan-board} 给出六个模型在 GTZAN 测试集上的结果。从头训练的 CNN 取得最高的 Macro-F1（0.753），但只比 SVM 高约 4.7 个百分点，训练时间却是 SVM 的约 250 倍。轻量 Transformer 在 985 首数据上明显过拟合，三个种子的 Macro-F1 仅 0.541。冻结 AST 主干后，Macro-F1 达到 0.814，比 CNN 高 6.0 个百分点，说明预训练表示在中小规模数据上收益显著；代价是 346\,MB 权重与约 204\,ms/片段的推理延迟。
@@ -539,8 +555,6 @@ AST（冻结） & 86,194,954 & 346.45 & 204--231 & 23\,s + 提取\\
 \end{table}
 
 % ================= 7 分析 =================
-\section{分析与讨论}\label{sec:analysis}
-
 \subsection{错误分析}
 在 GTZAN 上，CNN 最常见的混淆对是 \texttt{reggae}$\rightarrow$\texttt{pop}、\texttt{blues}$\rightarrow$\texttt{reggae} 与 \texttt{hiphop}$\rightarrow$\texttt{pop}；\texttt{rock} 的逐类 F1 最低（0.429），\texttt{classical} 最高（0.933）。置信度并不等于正确率：Transformer 的 64 个错误中有 16 个置信度超过 0.9，而 CNN 只有 3/37。在 FMA 主实验上，CNN 的错误更分散（Pop$\rightarrow$Folk 52 首、Instrumental$\rightarrow$Folk 45 首、Pop$\rightarrow$Rock 33 首），CRNN 的高置信错误为 90/610，远高于 CNN 的 23/630。这说明模型在标签边界模糊的样本上会「自信地犯错」，现场演示时比单纯报准确率更有说服力。
 
@@ -577,6 +591,32 @@ AST（冻结） & 86,194,954 & 346.45 & 204--231 & 23\,s + 提取\\
   \caption{\texttt{rock.00072} 的滑动窗口预测时间轴（绿圈为各窗口 Top-1）。}
   \label{fig:timeline}
 \end{figure}
+
+\projectpart{II\quad 生成式任务：离散 Token 预测与音频续写}
+\input{phase2}
+\projectpart{III\quad 综合讨论与结论}
+\section{讨论}\label{sec:discussion}
+
+\subsection{主要发现}
+
+\begin{enumerate}
+  \item \textbf{预训练是单点收益最大的因素}。冻结 AST 主干 + 线性头在两个数据集上都取得最佳
+  Macro-F1（GTZAN 0.814、FMA 0.590），分别比最好的自建模型高 6.1 与 9.8 个百分点。但这份收益
+  属于「预训练数据 + 架构」的组合，不能简单归因于 Transformer 本身——从头训练的轻量
+  Transformer 反而最弱。
+  \item \textbf{深度模型不是免费的午餐}。在 GTZAN 上，CNN 比 SVM 高约 4.7 个百分点，
+  训练成本却高约 250 倍；在 FMA 上，CNN 甚至落后于 CRNN。数据规模、标签质量与正则化共同决定
+  排序，架构只是其中一环。
+  \item \textbf{数据泄漏能把结论整个翻转}。同一批特征、同一模型，仅把划分从艺术家分离换成
+  按曲目，CNN 的 Macro-F1 就从 0.470 变成 0.568。泄漏不是「多几个点」的小问题，而是会让
+  模型选择与论文结论失效。
+  \item \textbf{干净输入上的冠军在扰动下可能垫底}。CNN 在 GTZAN 上排名第一，但在 0\,dB 噪声
+  下是五个模型中最差的（0.122）；除增益外，每个扰动条件的绝对第一都是 SVM。
+  \item \textbf{把任务从分类推到预测，问题并没有变简单}。在离散 Token 层面，
+  小模型确实能从 \TokBigramFree{}（n-gram）学到 \TokTransformerFree{}（Transformer）的 Top-1，
+  但一旦让模型吃自己的预测，误差就会累积；解码成音频后，它与真实未来"像"但不同。
+  这提醒我们：判别式的高准确率不能外推为"理解了音乐的时间结构"。
+\end{enumerate}
 
 \subsection{预训练的收益与代价}
 AST 在两个数据集上都是最强的单模型，但其优势来自 AudioSet 预训练而非 Transformer 架构本身；同等轻量、从头训练的 Transformer 反而最弱。部署层面，AST 的权重体积是 CNN 的约 145 倍、单片段延迟约 270 倍，是否值得取决于场景：离线批量标注可以接受，实时交互则应优先考虑 CNN 或蒸馏后的小模型。
@@ -621,39 +661,6 @@ FMA-small & 8 & 5,596 / 1,199 & 0.470 & AST & 0.590\\
   0.169；而 SVM/MLP 的统计量在更长窗口上反而更稳（10\,s 提升约 5 个百分点）。
 \end{itemize}
 
-\subsection{对课程项目的启示}
-\begin{enumerate}
-  \item \textbf{协议比模型数量更重要}：同一划分、同一批片段、训练集拟合预处理，才能让「谁更强」这句话有意义；
-  \item \textbf{先排查泄漏再谈提升}：FMA 的曲目级划分让 81\% 的测试曲目与训练集共享艺术家，若不检查，任何「提升」都可能只是记住了乐队；
-  \item \textbf{鲁棒性与部署成本是模型选择的一部分}：干净输入上的冠军在噪声下可能垫底，346\,MB 的预训练模型也不适合实时场景；
-  \item \textbf{可视化与失败案例比单一准确率更有解释力}：混淆矩阵、置信度、时间轴让观众直观看到模型「什么时候会翻车」。
-\end{enumerate}
-
-\input{phase2}
-
-\section{讨论与局限}\label{sec:discussion}
-
-\subsection{主要发现}
-
-\begin{enumerate}
-  \item \textbf{预训练是单点收益最大的因素}。冻结 AST 主干 + 线性头在两个数据集上都取得最佳
-  Macro-F1（GTZAN 0.814、FMA 0.590），分别比最好的自建模型高 6.1 与 9.8 个百分点。但这份收益
-  属于「预训练数据 + 架构」的组合，不能简单归因于 Transformer 本身——从头训练的轻量
-  Transformer 反而最弱。
-  \item \textbf{深度模型不是免费的午餐}。在 GTZAN 上，CNN 比 SVM 高约 4.7 个百分点，
-  训练成本却高约 250 倍；在 FMA 上，CNN 甚至落后于 CRNN。数据规模、标签质量与正则化共同决定
-  排序，架构只是其中一环。
-  \item \textbf{数据泄漏能把结论整个翻转}。同一批特征、同一模型，仅把划分从艺术家分离换成
-  按曲目，CNN 的 Macro-F1 就从 0.470 变成 0.568。泄漏不是「多几个点」的小问题，而是会让
-  模型选择与论文结论失效。
-  \item \textbf{干净输入上的冠军在扰动下可能垫底}。CNN 在 GTZAN 上排名第一，但在 0\,dB 噪声
-  下是五个模型中最差的（0.122）；除增益外，每个扰动条件的绝对第一都是 SVM。
-  \item \textbf{把任务从分类推到预测，问题并没有变简单}。在离散 Token 层面，
-  小模型确实能从 \TokBigramFree{}（n-gram）学到 \TokTransformerFree{}（Transformer）的 Top-1，
-  但一旦让模型吃自己的预测，误差就会累积；解码成音频后，它与真实未来"像"但不同。
-  这提醒我们：判别式的高准确率不能外推为"理解了音乐的时间结构"。
-\end{enumerate}
-
 \subsection{威胁与局限}
 
 \paragraph{构念效度}
@@ -690,6 +697,14 @@ GTZAN 与 FMA 的音频版权归各权利人所有，本文只使用其进行研
 全部实验由命令行脚本驱动，随机源显式定种；划分、特征、预测与图表均可从仓库重新生成。
 自动化测试覆盖四条协议不变量；独立校验员对结果文件逐条复算，未发现泄漏或伪造。唯一
 不完全可复现的是 GPU 非确定性带来的细微数值差异，已在第~\ref{sec:setup} 节说明。
+
+\subsection{对课程项目的启示}
+\begin{enumerate}
+  \item \textbf{协议比模型数量更重要}：同一划分、同一批片段、训练集拟合预处理，才能让「谁更强」这句话有意义；
+  \item \textbf{先排查泄漏再谈提升}：FMA 的曲目级划分让 81\% 的测试曲目与训练集共享艺术家，若不检查，任何「提升」都可能只是记住了乐队；
+  \item \textbf{鲁棒性与部署成本是模型选择的一部分}：干净输入上的冠军在噪声下可能垫底，346\,MB 的预训练模型也不适合实时场景；
+  \item \textbf{可视化与失败案例比单一准确率更有解释力}：混淆矩阵、置信度、时间轴让观众直观看到模型「什么时候会翻车」。
+\end{enumerate}
 
 \section{结论与展望}\label{sec:conclusion}
 
