@@ -48,7 +48,7 @@
 \contentsline {subsection}{\numberline {7.6}数据规模与任务难度}{19}{subsection.7.6}%
 \contentsline {subsection}{\numberline {7.7}鲁棒性的进一步解读}{19}{subsection.7.7}%
 \contentsline {subsection}{\numberline {7.8}对课程项目的启示}{19}{subsection.7.8}%
-\contentsline {section}{\numberline {8}二期：离散 Token 预测与音乐生成}{20}{section.8}%
+\contentsline {section}{\numberline {8}生成式任务：离散 Token 预测与音频续写}{20}{section.8}%
 \contentsline {subsection}{\numberline {8.1}任务定义与动机}{20}{subsection.8.1}%
 \contentsline {subsection}{\numberline {8.2}离散音频 Token：EnCodec 32 kHz}{20}{subsection.8.2}%
 \contentsline {subsection}{\numberline {8.3}数据窗口与泄漏控制}{20}{subsection.8.3}%

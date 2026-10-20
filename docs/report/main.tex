@@ -41,7 +41,7 @@
 \noindent
 音乐流派分类是音乐信息检索的经典任务，也是检验不同建模范式的天然试验台。本文在\emph{同一套数据划分、同一批音频片段与同一套评估协议}下，系统比较了六类模型：基于人工特征的 SVM 与 MLP、端到端 CNN、CNN+BiGRU（CRNN）、轻量 Transformer，以及冻结 AudioSet 预训练主干的 Audio Spectrogram Transformer（AST）。实验覆盖两个数据集：清洗后的 GTZAN（985 首、10 流派，作为最小可行 MVP）与 FMA-small 主实验（8\,000 首、8 流派）。所有深度模型使用 3 个随机种子重复训练，测试集只在模型冻结后评估一次，并启用了 cuDNN 确定性以保证可复现。\input{numbers_abstract}
 本文进一步给出错误分析、七种扰动下的鲁棒性实验、片段级时间轴分析，以及面向 CNN/CRNN/Transformer 的 SpecAugment 与标签平滑优化消融。结果显示：预训练表示带来最大的单点收益，但在噪声与短片段下所有模型的可靠性都显著下降；深度模型赢在干净输入，传统模型在输入变脏时反而更稳。
-在此基础上，本文还把任务从判别式分类推进到\textbf{离散 Token 层面的预测与生成}：用 EnCodec 把音频量化成 50\,Hz、4 码本的 Token 序列，比较 LSTM 与小 Transformer 对下 1 秒 Token 的预测能力，并评估 MusicGen-small 的前缀续写与 LoRA 适配。该部分记录了一次\textbf{被修正的负结果}：初版 LoRA 适配因标签维度错误而完全无效（目标值停在均匀分布之上），修正后音频距离从 19.23 降到 17.91，且 8 首中 7 首改善——说明"训不动"未必是容量或数据不足，也可能只是目标对齐写错了。
+本文因此分为\textbf{判别式与生成式两个任务}：前者即上述流派分类，后者把预测目标从流派标签换成\textbf{离散 Token 序列}——用 EnCodec 把音频量化成 50\,Hz、4 码本的 Token，比较 LSTM 与小 Transformer 对下 1 秒 Token 的预测能力，并评估 MusicGen-small 的前缀续写与 LoRA 适配。该部分记录了一次\textbf{被修正的负结果}：初版 LoRA 适配因标签维度错误而完全无效（目标值停在均匀分布之上），修正后音频距离从 19.23 降到 17.91，且 8 首中 7 首改善——说明"训不动"未必是容量或数据不足，也可能只是目标对齐写错了。
 代码、权重生成脚本与全部结果文件均已开源。
 \vspace{0.3em}\\
 \textbf{关键词：}音乐流派分类；GTZAN；FMA-small；卷积神经网络；CRNN；Transformer；迁移学习；可复现实验
@@ -94,7 +94,7 @@
 
 \subsection{报告组织}
 
-第~\ref{sec:related} 节回顾相关工作；第~\ref{sec:data} 节介绍数据与协议；第~\ref{sec:method} 节描述模型与训练方法；第~\ref{sec:setup} 节给出实验设置与指标；第~\ref{sec:results} 节报告 GTZAN 与 FMA-small 的结果；第~\ref{sec:analysis} 节做错误、鲁棒性、时间轴与泄漏分析；第~\ref{sec:phase2} 节把任务从判别式分类扩展到离散 Token 预测与音乐生成；第~\ref{sec:discussion} 节讨论局限与启示；第~\ref{sec:conclusion} 节总结。附录给出逐 seed 结果、完整超参与复现命令。
+第~\ref{sec:related} 节回顾相关工作；第~\ref{sec:data} 节介绍数据与协议；第~\ref{sec:method} 节描述模型与训练方法；第~\ref{sec:setup} 节给出实验设置与指标；第~\ref{sec:results} 节报告 GTZAN 与 FMA-small 的结果；第~\ref{sec:analysis} 节做错误、鲁棒性、时间轴与泄漏分析；第~\ref{sec:phase2} 节转入生成式任务，把目标从流派标签换成离散 Token 序列，并比较 Token 预测与音频续写；第~\ref{sec:discussion} 节讨论局限与启示；第~\ref{sec:conclusion} 节总结。附录给出逐 seed 结果、完整超参与复现命令。
 
 % ================= 2 相关工作 =================
 \section{相关工作}\label{sec:related}
@@ -699,7 +699,7 @@ GTZAN 与 FMA 的音频版权归各权利人所有，本文只使用其进行研
 传统方法稳健；小数据上的轻量 Transformer 容易过拟合；数据划分中的艺术家泄漏足以让结论
 虚高近 10 个百分点。
 
-二期把这套协议搬到了生成式任务上：用同一套 EnCodec Token 与同一份按艺术家分离的划分，
+同一套思路也适用于生成式任务：用同一套 EnCodec Token 与同一份按艺术家分离的划分，
 先验证"预测真实未来"能否被度量，再验证"前缀续写"能否在 8\,GB 卡上跑通。
 结论是分层的：Token 级预测可复现、可比较，但受自回归误差累积限制；预训练生成模型的
 推理可以量化成本，而参数高效适配的收益必须与显存预算一起报告，不能把"跑通推理"
@@ -851,13 +851,13 @@ $PY scripts/ast_fma_fast.py --reuse-feats --half
 MUSIC_FEATURES=data/features/fma/features_tracklevel.npz \
   MUSIC_RESULTS=results/fma_leak MUSIC_CKPT=checkpoints/fma_leak \
   $PY -m src.train_cnn --model cnn --seeds 42 --epochs 30
-# 二期：Token 预测
+# 生成式任务：Token 预测
 bash scripts/run_token.sh 42 123 2024
 $PY -m src.forecasting.decode_tokens --model transformer --seed 42
 $PY -m src.forecasting.plot_tokens
-# 二期：MusicGen 前缀续写（约 5.8 GB 权重，一次性下载）
+# 生成式任务：MusicGen 前缀续写（约 5.8 GB 权重，一次性下载）
 $PY -m src.generation.run_musicgen --tag base --n 6 --seconds 5
-# 二期：LoRA 适配（可选，8 GB 显存先验证再跑）
+# 生成式任务：LoRA 适配（可选，8 GB 显存先验证再跑）
 $PY -m src.forecasting.prepare_tokens --prefix-s 5 --target-s 5 --subdir _ft \
     --windows-per-track 2 --shard-size 512 --encode-batch 16
 $PY -m src.generation.finetune_lora --steps 300
