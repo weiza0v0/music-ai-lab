@@ -9,14 +9,14 @@ export MUSIC_CKPT=checkpoints/generation
 export MUSIC_TOKENS=data/features/token_prediction
 
 echo "== 1/4 base model continuation (6 tracks, 5 s prompt -> 5 s) =="
-$PY -m src.generation.run_musicgen --tag base --n 6 --seconds 5
+$PY -m src.generation.run_musicgen --tag base --n 6 --seconds 3
 
 echo "== 2/4 LoRA adaptation (reuses phase-1 windows, 5 s prompt -> 1 s target) =="
 $PY -m src.generation.finetune_lora --steps 300 --max-minutes 40
 
 echo "== 3/4 continuation with the adapted model =="
 $PY -m src.generation.run_musicgen \
-    --model checkpoints/generation/musicgen-small-lora --tag ft --n 6 --seconds 5
+    --model checkpoints/generation/musicgen-small-lora --tag ft --n 6 --seconds 3
 
 echo "== 4/4 figures =="
 $PY -m src.generation.plot_generation

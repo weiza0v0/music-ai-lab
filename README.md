@@ -95,13 +95,13 @@ $PY scripts/ast_fma_fast.py --reuse-feats --half
 bash scripts/run_token.sh 42 123 2024
 
 # 8) 生成式任务：MusicGen-small 前缀续写（首次下载约 5.8 GB 权重）
-$PY -m src.generation.run_musicgen --tag base --n 6 --seconds 5
+$PY -m src.generation.run_musicgen --tag base --n 6 --seconds 3
 
 # 9) 生成式任务：LoRA 适配（可选；8 GB 显存先跑通推理再尝试）
 # 复用 Token 预测的 5 s 前缀 + 1 s 目标 Token 缓存，不重复编码
 $PY -m src.generation.finetune_lora --steps 300
 $PY -m src.generation.run_musicgen --model checkpoints/generation/musicgen-small-lora \
-    --tag ft --n 6 --seconds 5
+    --tag ft --n 6 --seconds 3
 
 # 10) 技术报告（LaTeX）
 cd docs/report && bash build.sh
@@ -113,6 +113,9 @@ $PY -m pytest -q tests
 $PY -m streamlit run app/demo.py
 ```
 
+> `--seconds` 为什么是 3 而不是 5：解码器直连路径超过约 150 帧会触发 CUDA 位置索引越界断言，
+> 因此全部续写统一截到 3 秒（见技术报告 §6.8 与 §7.9）。不要为了“看起来更长”改成 5。
+>
 > 生成式任务的依赖注意：下载 Hugging Face 权重前需 `export NO_PROXY=localhost,127.0.0.1`，
 > 否则 `no_proxy` 里的 `[::1]` 会让 `httpx` 抛 `Invalid port`。
 >
@@ -122,6 +125,16 @@ $PY -m streamlit run app/demo.py
 > 即可（例如 `NUMBA_CACHE_DIR=/tmp/numba_cache`），正常桌面环境下无需处理。
 
 一键脚本：`bash scripts/run_all.sh`（可用 `PYTHON=...` 覆盖解释器）。
+
+### 只做演示素材（不需要权重与数据）
+
+```bash
+$PY scripts/build_demo_bundle.py     # results/ 里的 wav → demo/audio/*.mp3（需 ffmpeg）
+$PY scripts/build_arena_table.py     # results/ 里的预测 → demo/arena_pk.md
+```
+
+两个脚本只读已提交的结果文件，不需要 GPU。演示方案见
+[`docs/handoff_demo.md`](docs/handoff_demo.md)。
 
 主实验与报告：
 
@@ -176,11 +189,22 @@ music-ai-lab/
 ├── results/                 # 结果，与 checkpoints 子目录一一对应
 │                            #   gtzan/、fma/、fma_leak/、fma_ablation/
 │                            #   每个含 metrics.csv、预测、图表、summary.md
-├── docs/                    # 环境报告、研究日志、数据卡、审计、验收清单、
-│                            #   错误分析、鲁棒性、时间轴
+├── demo/                    # 演示素材（已提交）
+│   ├── audio/               #   42 个 mp3：前缀/真实/原始/LoRA + A/B 串联版
+│   └── arena_pk.md          #   「擂台表」：五个模型意见最不一致的测试曲目
+├── docs/                    # 仓库概况、演示交接、环境报告、研究日志、数据卡、
+│                            #   审计、验收清单、错误分析、鲁棒性、时间轴
+│                            #   Music_AI_Lab_Technical_Report.pdf（42 页）
 ├── requirements.txt
 └── README.md
 ```
+
+**两份入口文档**（新人或协作方先读这两个）：
+
+| 文档 | 用途 |
+|---|---|
+| [`docs/repo_overview.md`](docs/repo_overview.md) | 仓库概况：做了什么、结果在哪、怎么跑、有哪些坑 |
+| [`docs/handoff_demo.md`](docs/handoff_demo.md) | 演示交接：14 页大纲、素材路径、讲法与红线 |
 
 `configs/` 统一管理超参数；`results/` 保存原始实验结果，`checkpoints/` 保存权重，
 两者都按实验分子目录（`gtzan/`、`fma/`、`fma_leak/`、`fma_ablation/`），

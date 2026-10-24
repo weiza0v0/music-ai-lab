@@ -1,0 +1,9 @@
+track_id,y_true,svm,svm_conf,mlp,mlp_conf,cnn,cnn_conf,crnn,crnn_conf,transformer,transformer_conf,n_correct,n_distinct
+reggae.00049,reggae,country,0.29681929337579,disco,0.7586762,rock,0.45800045,pop,0.37224302,country,0.24652243,0,4
+disco.00069,disco,rock,0.5267369229202593,rock,0.51334476,disco,0.57686704,blues,0.49747437,jazz,0.8909423,1,4
+hiphop.00055,hiphop,country,0.3166330784598286,disco,0.4144652,reggae,0.64233744,reggae,0.33241242,hiphop,0.92213047,1,4
+metal.00008,metal,hiphop,0.3425529044445208,hiphop,0.92726094,metal,0.85495,rock,0.56236964,disco,0.8643406,1,4
+rock.00014,rock,reggae,0.4998167777317736,reggae,0.98061025,hiphop,0.60378456,disco,0.3092807,rock,0.74470603,1,4
+classical.00099,classical,classical,0.8238480898835956,classical,0.99794084,rock,0.77356154,country,0.69679713,jazz,0.46428403,2,4
+disco.00065,disco,hiphop,0.2951029058420587,metal,0.31244814,disco,0.9898084,disco,0.7063017,reggae,0.78984517,2,4
+reggae.00097,reggae,jazz,0.3768150651931141,jazz,0.5311929,country,0.5333939,country,0.43575332,blues,0.95874333,0,3
