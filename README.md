@@ -190,7 +190,8 @@ music-ai-lab/
 ├── results/                 # 结果，与 checkpoints 子目录一一对应
 │                            #   gtzan/、fma/、fma_leak/、fma_ablation/
 │                            #   每个含 metrics.csv、预测、图表、summary.md
-├── demo/                    # 演示素材（已提交）
+├── demo/                    # 演示素材（已提交），用法见 demo/README.md
+│   ├── README.md            #   素材总说明：文件作用、播放顺序、无 GPU 方案
 │   ├── audio/               #   50 段 mp3：前缀/真实/原始/LoRA、A/B 串联、无缝盲听
 │   ├── classification/      #   8 段 5 秒 FMA 测试片段 + 五模型判断表（CPU 可跑）
 │   └── arena_pk.md          #   「擂台表」：五个模型意见最不一致的测试曲目

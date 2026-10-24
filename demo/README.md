@@ -1,0 +1,134 @@
+# demo/ —— 演示素材
+
+**这个文件夹是自包含的。** 拿到它（无论从仓库克隆，还是别人单独发给你），
+你不需要 GPU、不需要数据集、不需要跑任何训练，就能走完一场演示。
+
+一共 **64 个文件、5.6 MB**：58 段音频 + 4 份 README（含本文件）+ 1 份判断 JSON + 1 份擂台表 CSV。
+
+---
+
+## 0 三种拿法（内容完全一样，不是三套版本）
+
+| 拿法 | 你会得到 | 适合谁 |
+|---|---|---|
+| `git clone https://github.com/weiza0v0/music-ai-lab.git` | 整个仓库：代码 + 结果 + **最终模型权重** + `demo/` | 想现场跑分类（CPU 即可）的人 |
+| 只拿本文件夹（zip / 微信传） | `demo/` 里的 64 个文件 | 只做幻灯片与播放的人——**够用** |
+| 仓库 clone 后又收到一份 zip | 覆盖到仓库根的 `demo/` 即可，两者逐字节相同 | 无所谓，用哪个都行 |
+
+> 换句话说：**`demo/` 里没有"必须配合代码才能看懂"的东西**。
+> 每份 mp3 都配了说明，每张表都写清了数字出处。
+
+---
+
+## 1 目录与每个文件的作用
+
+```
+demo/
+├── README.md                    ← 本文件：先看这个
+├── audio/                       ← 生成式任务的音频（50 段）
+│   ├── README.md                ←   逐条说明 + 每条曲目的客观距离
+│   ├── 000010_Pop__prompt.mp3   ←   5 秒前缀（模型输入）
+│   ├── 000010_Pop__true.mp3     ←   真实后 3 秒（参考答案）
+│   ├── 000010_Pop__base.mp3     ←   MusicGen-small 原始续写
+│   ├── 000010_Pop__ft.mp3       ←   LoRA 适配后续写
+│   ├── AB__000995_Experimental.mp3      ← 四段串联（16 秒，含 0.6s 间隔）
+│   ├── REAL__000995_Experimental.mp3    ← 无缝：前缀 + 真实后 3 秒（8 秒）
+│   ├── GENbase__000995_Experimental.mp3 ← 无缝：前缀 + 原始续写
+│   ├── GENft__000995_Experimental.mp3   ← 无缝：前缀 + LoRA 续写
+│   └── TOK__000995_Experimental__pred.mp3 / __true.mp3  ← Token 预测的 1 秒
+├── classification/              ← 判别式任务的示例（8 段 × 5 秒）
+│   ├── README.md                ←   五模型判断表 + 授权署名 + 两种用法
+│   ├── verdicts.json            ←   同上的机器可读版本
+│   └── 073776_International.mp3 …       ← 8 段 FMA 测试集片段
+├── arena_pk.md                  ← GTZAN 擂台表（8 首分歧最大 + 4 首全对）
+└── arena_pk.csv                 ← 同上的 CSV
+```
+
+三类音频覆盖的任务不同，别混：
+
+| 子目录 | 任务 | 用途 |
+|---|---|---|
+| `classification/` | 判别式：这段音乐是什么流派 | 展示六个模型的判断与分歧 |
+| `audio/` | 生成式：这段音乐接下来会响什么 | 听"预测的"与"真实的"差别 |
+| `arena_pk.md` | 判别式，纯文本 | 幻灯片上直接贴的表格 |
+
+---
+
+## 2 按演示顺序的推荐用法
+
+| 幻灯片环节 | 打开什么 | 说一句什么 |
+|---|---|---|
+| 擂台：同一首歌五种判断 | `arena_pk.md`（取 3–4 行）或 `classification/README.md` 的表 | 同一段音频，五个模型能给出五种答案 |
+| 擂台：现场听一段 | `classification/073776_International.mp3` | 五个模型全错，各有各的错法 |
+| 生成：整条链路 | `audio/README.md` 顶部说明了四段式 | 音频 → Token → 预测 → 解码 |
+| 生成：现场听（重点） | `REAL__` / `GENbase__` / `GENft__` 改名成 A/B/C | 猜哪条是真实录音 |
+| 生成：主动放负例 | `AB__001482_Electronic.mp3` | 这一条适配后反而更差，我们照样放 |
+| 收尾 | `audio/README.md` 的逐曲距离表 | 指标只奖励"贴近原曲"，不等于好听 |
+
+**只用 5 分钟的话**：`classification/073776_International.mp3` → `REAL__/GENbase__/GENft__` 三条盲听
+→ 逐曲距离表。其余都可以口述。
+
+---
+
+## 3 文件命名规则（看名字就知道是什么）
+
+```
+<曲目号>_<流派>__<角色>.mp3      单段素材，角色 ∈ prompt / true / base / ft
+AB__<曲目号>_<流派>.mp3          四段串联：前缀 → 真实 → 原始 → 适配
+REAL__ / GENbase__ / GENft__ …   无缝两段：5 秒前缀 + 对应的后 3 秒
+TOK__<曲目号>_<流派>__pred.mp3   Token 预测出的 1 秒
+TOK__<曲目号>_<流派>__true.mp3   同一位置的 1 秒真实音频
+```
+
+- `prompt` = 模型看到的前 5 秒；`true` = 真实的后 3 秒；`base` = 原始 MusicGen；`ft` = LoRA 适配后
+- 曲目号是数据集里的原始 ID（FMA / GTZAN 各自的编号）
+
+---
+
+## 4 没有 GPU 也能走完（重要）
+
+| 环节 | 能不能现场跑 | 怎么做 |
+|---|---|---|
+| 分类（五个自建/传统模型） | ✅ CPU 就够，单段 0.1–0.3 秒 | 见 `classification/README.md` 方式 2 |
+| 分类（AST） | ❌ 346 MB、约 200 ms/段（GPU 口径） | 口述榜上成绩与成本对比 |
+| 生成（MusicGen 续写） | ❌ 300 M 参数自回归，CPU 上一段要数分钟 | 只放 `audio/` 里已生成好的 mp3 |
+
+所以最稳的现场方案是：**分类放 mp3 或 CPU 跑，生成只放录音。**
+两者都不需要网络、不需要权重、不需要数据集。
+
+---
+
+## 5 授权与红线
+
+- **FMA-small 片段**（`classification/`）：CC-BY 4.0，允许再分发，条件是按曲目署名——
+  艺术家与曲名已列在 `classification/README.md` 的表格里。**公开使用时请保留该表。**
+- **GTZAN 片段**：**不在本目录内**。GTZAN 音频版权归各权利人，项目不分发；
+  `arena_pk.md` 只是预测结果的表格，不含音频。
+- **生成音频**：由 MusicGen-small（CC-BY-NC 4.0）续写得到，课堂演示可用，
+  **不要公开发布**（详见技术报告 §7.10）。
+- 所有音频已做响度对齐（−18 LUFS），比较的是音色与结构，不是音量。
+
+---
+
+## 6 想重算这些素材（可选，需要文件齐全）
+
+```bash
+python3 scripts/build_arena_table.py          # → arena_pk.md/.csv（只需 results/）
+python3 scripts/build_demo_bundle.py          # → audio/*.mp3（需 results/generation/audio 的 wav + ffmpeg）
+python3 scripts/build_classification_demo.py  # → classification/*.mp3（需本地 data/fma + ffmpeg）
+```
+
+三个脚本都是确定性的：重跑得到的文件与仓库里的逐字节一致（已验证）。
+**演示前不需要跑它们**，仓库里已经是最新的。
+
+---
+
+## 7 还有问题看哪里
+
+| 想知道 | 看 |
+|---|---|
+| 每段音频到底是什么、客观距离多少 | `audio/README.md` |
+| 每段分类片段、五个模型各自说了什么 | `classification/README.md` |
+| 整个演示怎么排（14 页大纲、讲法、红线） | `docs/handoff_demo.md` |
+| 这个仓库是什么、结果从哪来 | `docs/repo_overview.md` |
+| 完整论证（42 页） | `docs/Music_AI_Lab_Technical_Report.pdf` |
