@@ -264,6 +264,9 @@ $0.002$（LSTM）与 $0.001$（Transformer）个 NLL——
 \end{tabular}
 \end{table}
 
+需要强调：8 秒与 12 秒的可生成性只在 000995 这一首上验证过。换一首（000182）同一命令在
+8 秒就报同一个断言，说明它与音频内容有关、不是可依赖的口径——这正是主表坚持 3 秒的原因。
+
 根因不在长度预算：decoder 的 \texttt{max\_position\_embeddings} 是 2048，按 50\,Hz 算够
 40 秒；真正的坑是 MusicGen 的 \texttt{pad}/\texttt{bos} token id $=2048$ 超出词表
 $0$--$2047$（transformers 加载时就会打印这条警告），序列越长越容易走到用该 id 去做位置
