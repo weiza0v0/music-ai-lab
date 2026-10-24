@@ -57,36 +57,36 @@
 \contentsline {subsection}{\numberline {6.8}MusicGen-small 的前缀续写}{28}{subsection.6.8}%
 \contentsline {paragraph}{长度限制（如实记录）}{29}{paragraph*.49}%
 \contentsline {subsection}{\numberline {6.9}LoRA 适配：方法与配置}{29}{subsection.6.9}%
-\contentsline {subsection}{\numberline {6.10}适配结果：一次被修正的负结果}{29}{subsection.6.10}%
+\contentsline {subsection}{\numberline {6.10}适配结果：一次被修正的负结果}{30}{subsection.6.10}%
 \contentsline {subsection}{\numberline {6.11}消融：三个旋钮都不如修好对齐重要}{30}{subsection.6.11}%
-\contentsline {subsection}{\numberline {6.12}小结与局限}{30}{subsection.6.12}%
-\contentsline {part}{III\hskip 1em\relax 综合讨论与结论}{31}{section*.51}%
-\contentsline {section}{\numberline {7}讨论}{32}{section.7}%
-\contentsline {subsection}{\numberline {7.1}主要发现}{32}{subsection.7.1}%
-\contentsline {subsection}{\numberline {7.2}判别式与生成式：同一种纪律，两种可度量性}{32}{subsection.7.2}%
-\contentsline {subsection}{\numberline {7.3}负结果是怎么被辨别出来的}{32}{subsection.7.3}%
-\contentsline {subsection}{\numberline {7.4}误差累积：3.36\% 为什么会掉到 2.19\%}{33}{subsection.7.4}%
-\contentsline {subsection}{\numberline {7.5}Token 指标与音频距离为何背离}{33}{subsection.7.5}%
-\contentsline {subsection}{\numberline {7.6}预训练、架构与成本}{33}{subsection.7.6}%
-\contentsline {subsection}{\numberline {7.7}数据规模与任务难度}{34}{subsection.7.7}%
-\contentsline {subsection}{\numberline {7.8}鲁棒性的进一步解读}{34}{subsection.7.8}%
-\contentsline {subsection}{\numberline {7.9}威胁与局限}{34}{subsection.7.9}%
-\contentsline {paragraph}{构念效度}{34}{paragraph*.54}%
-\contentsline {paragraph}{内部效度}{35}{paragraph*.55}%
-\contentsline {paragraph}{外部效度}{35}{paragraph*.56}%
-\contentsline {paragraph}{统计效度}{35}{paragraph*.57}%
-\contentsline {paragraph}{实现层面}{35}{paragraph*.58}%
-\contentsline {subsection}{\numberline {7.10}伦理与数据授权}{35}{subsection.7.10}%
-\contentsline {subsection}{\numberline {7.11}可复现性总结}{35}{subsection.7.11}%
-\contentsline {subsection}{\numberline {7.12}对课程项目的启示}{35}{subsection.7.12}%
-\contentsline {section}{\numberline {8}结论与展望}{36}{section.8}%
-\contentsline {section}{\numberline {A}附录：数据、超参与复现细节}{38}{appendix.A}%
-\contentsline {subsection}{\numberline {A.1}数据集统计}{38}{subsection.A.1}%
-\contentsline {subsection}{\numberline {A.2}逐 seed 结果}{38}{subsection.A.2}%
-\contentsline {subsection}{\numberline {A.3}完整超参数}{39}{subsection.A.3}%
-\contentsline {subsection}{\numberline {A.4}生成式任务的超参数与复现参数}{39}{subsection.A.4}%
-\contentsline {subsection}{\numberline {A.5}生成式任务的逐曲结果}{39}{subsection.A.5}%
-\contentsline {subsection}{\numberline {A.6}鲁棒性完整变化表}{40}{subsection.A.6}%
-\contentsline {subsection}{\numberline {A.7}AST 的 C 网格}{40}{subsection.A.7}%
-\contentsline {subsection}{\numberline {A.8}仓库结构与复现命令}{40}{subsection.A.8}%
-\contentsline {subsection}{\numberline {A.9}结果文件说明}{42}{subsection.A.9}%
+\contentsline {subsection}{\numberline {6.12}小结与局限}{31}{subsection.6.12}%
+\contentsline {part}{III\hskip 1em\relax 综合讨论与结论}{32}{section*.52}%
+\contentsline {section}{\numberline {7}讨论}{33}{section.7}%
+\contentsline {subsection}{\numberline {7.1}主要发现}{33}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}判别式与生成式：同一种纪律，两种可度量性}{33}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}负结果是怎么被辨别出来的}{33}{subsection.7.3}%
+\contentsline {subsection}{\numberline {7.4}误差累积：3.36\% 为什么会掉到 2.19\%}{34}{subsection.7.4}%
+\contentsline {subsection}{\numberline {7.5}Token 指标与音频距离为何背离}{34}{subsection.7.5}%
+\contentsline {subsection}{\numberline {7.6}预训练、架构与成本}{34}{subsection.7.6}%
+\contentsline {subsection}{\numberline {7.7}数据规模与任务难度}{35}{subsection.7.7}%
+\contentsline {subsection}{\numberline {7.8}鲁棒性的进一步解读}{35}{subsection.7.8}%
+\contentsline {subsection}{\numberline {7.9}威胁与局限}{35}{subsection.7.9}%
+\contentsline {paragraph}{构念效度}{35}{paragraph*.55}%
+\contentsline {paragraph}{内部效度}{36}{paragraph*.56}%
+\contentsline {paragraph}{外部效度}{36}{paragraph*.57}%
+\contentsline {paragraph}{统计效度}{36}{paragraph*.58}%
+\contentsline {paragraph}{实现层面}{36}{paragraph*.59}%
+\contentsline {subsection}{\numberline {7.10}伦理与数据授权}{36}{subsection.7.10}%
+\contentsline {subsection}{\numberline {7.11}可复现性总结}{36}{subsection.7.11}%
+\contentsline {subsection}{\numberline {7.12}对课程项目的启示}{36}{subsection.7.12}%
+\contentsline {section}{\numberline {8}结论与展望}{37}{section.8}%
+\contentsline {section}{\numberline {A}附录：数据、超参与复现细节}{39}{appendix.A}%
+\contentsline {subsection}{\numberline {A.1}数据集统计}{39}{subsection.A.1}%
+\contentsline {subsection}{\numberline {A.2}逐 seed 结果}{39}{subsection.A.2}%
+\contentsline {subsection}{\numberline {A.3}完整超参数}{40}{subsection.A.3}%
+\contentsline {subsection}{\numberline {A.4}生成式任务的超参数与复现参数}{40}{subsection.A.4}%
+\contentsline {subsection}{\numberline {A.5}生成式任务的逐曲结果}{40}{subsection.A.5}%
+\contentsline {subsection}{\numberline {A.6}鲁棒性完整变化表}{41}{subsection.A.6}%
+\contentsline {subsection}{\numberline {A.7}AST 的 C 网格}{41}{subsection.A.7}%
+\contentsline {subsection}{\numberline {A.8}仓库结构与复现命令}{41}{subsection.A.8}%
+\contentsline {subsection}{\numberline {A.9}结果文件说明}{43}{subsection.A.9}%

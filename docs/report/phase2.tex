@@ -241,10 +241,39 @@ $0.002$（LSTM）与 $0.001$（Transformer）个 NLL——
 \input{tables/generation.tex}
 
 \paragraph{长度限制（如实记录）}
-在"解码器直连"路径上，生成超过约 3 秒（$>150$ 帧）时会触发 CUDA 的位置索引越界断言，
-因此本文统一取 3 秒续写，并保证 base 与 LoRA 两组使用完全相同的长度与采样参数。更长的续写需要官方 \texttt{audiocraft}
-实现（其对本环境 PyTorch 版本有约束），这一点作为限制记录，不用"跑通 3 秒"冒充
-"完成 5 秒续写"。
+主表统一取 3 秒续写，这是 8 首测试曲都能\textbf{稳定跑完}的口径。起初我们把它记成
+「解码器直连路径的硬上限」，事后复核发现并非如此：同一段 5 秒前缀，4/6/8/12 秒都能生成，
+16 秒与 20 秒才稳定失败（表~\ref{tab:horizon}）。
+
+\begin{table}[H]
+\centering\small
+\caption{续写长度与代价（同一段 5 秒前缀，RTX 4060，base 模型；8 秒另测过 LoRA，耗时 20.9\,s）。
+「失败」均为同一个位置嵌入索引断言。}
+\label{tab:horizon}
+\begin{tabular}{llll}
+\toprule
+续写长度 & 生成耗时 & 峰值显存 & 结果\\
+\midrule
+3 秒 & 5.6\,s & 1.35\,GB & 8/8 曲目稳定，主表口径\\
+4 秒 & 6.4\,s & 1.36\,GB & 可生成\\
+6 秒 & 16.3\,s & 1.38\,GB & 可生成\\
+8 秒 & 18.3\,s & 1.42\,GB & 可生成（LoRA 20.9\,s）\\
+12 秒 & 35.4\,s & 1.51\,GB & 可生成\\
+16 / 20 秒 & --- & --- & 失败（位置嵌入索引断言）\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+根因不在长度预算：decoder 的 \texttt{max\_position\_embeddings} 是 2048，按 50\,Hz 算够
+40 秒；真正的坑是 MusicGen 的 \texttt{pad}/\texttt{bos} token id $=2048$ 超出词表
+$0$--$2047$（transformers 加载时就会打印这条警告），序列越长越容易走到用该 id 去做位置
+索引的路径，于是触发 \texttt{indexSelect} 的 CUDA 断言。我们试过补一行 embedding、把
+start token 换成合法 id，都没能彻底消掉它。
+
+因此 3 秒是「稳定可复现」的口径，不是能力上限。更长的续写需要换生成实现——官方
+\texttt{audiocraft} 支持 30 秒，但它要求 Python 3.10 与 \texttt{torch==2.1}，与本环境冲突。
+本文因此保留 3 秒作为主表口径，并在演示素材里额外给了 8 秒与 12 秒的样例，
+而不是用"跑通 3 秒"冒充"完成 5 秒续写"。
 
 \subsection{LoRA 适配：方法与配置}\label{sec:lora}
 

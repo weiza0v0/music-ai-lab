@@ -1,0 +1,24 @@
+{
+  "model": "facebook/musicgen-small",
+  "tag": "probe12",
+  "cfg": 1.0,
+  "seconds": 12.0,
+  "seed": 42,
+  "load_s": 4.4,
+  "items": [
+    {
+      "track_id": "000995",
+      "genre": "Experimental",
+      "tag": "probe12",
+      "latency_s": 35.4,
+      "enc_s": 0.77,
+      "peak_mem_mb": 1504.8,
+      "out_s": 12.0,
+      "logmel_rmse": 15.032,
+      "rms": 0.5518,
+      "prompt_wav": "audio/000995_Experimental_prompt.wav",
+      "out_wav": "audio/000995_Experimental_probe12.wav",
+      "true_wav": "audio/000995_Experimental_true.wav"
+    }
+  ]
+}

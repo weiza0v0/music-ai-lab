@@ -137,6 +137,50 @@ def main() -> None:
                          {"true": "真实后 3 秒", "base": "MusicGen 原始续写",
                           "ft": "LoRA 适配后续写"}[part]))
 
+    # ---------- 二·C、整曲 30 秒（原始素材）+ 更长的续写样例 ----------
+    # 「3 秒续写」是稳定口径；000995 这一条我们额外跑过 4/6/8/12 秒，
+    # 用它做「更长会怎样」的样例（注意：更长会触发位置嵌入断言，只有这条曲目稳定）
+    splits = ROOT / "data/splits/fma/splits.csv"
+    src_map = {}
+    if splits.exists():
+        import pandas as pd
+        d = pd.read_csv(splits)
+        d["track_id"] = d["track_id"].astype(str).str.zfill(6)
+        src_map = dict(zip(d["track_id"], d["path"]))
+
+    for tid in SHOWCASE:
+        stem = next((w.name.replace("_prompt.wav", "")
+                     for w in (GEN / "audio").glob(f"{tid}_*_prompt.wav")), None)
+        if not stem or tid not in src_map:
+            continue
+        src = ROOT / src_map[tid]
+        if src.exists():
+            dst = OUT / f"FULL30__{stem}.mp3"
+            subprocess.run(
+                [need("ffmpeg"), "-y", "-v", "error", "-i", str(src),
+                 "-t", "30", "-ac", "1", "-ar", "32000",
+                 "-af", "loudnorm=I=-18:TP=-2:LRA=11",
+                 "-codec:a", "libmp3lame", "-b:a", "160k", str(dst)], check=True)
+            made.append((dst.name, f"{stem} — 【整曲】原始 30 秒（人听的上下文）"))
+
+        # 更长的续写：前缀 5 秒 + 更长生成，拼成一条
+        prefix = GEN / "audio" / f"{stem}_prompt.wav"
+        for tag, secs in (("base8", 8), ("ft8", 8), ("probe8", 8), ("probe12", 12)):
+            tail = GEN / "audio" / f"{stem}_{tag}.wav"
+            if not (prefix.exists() and tail.exists()):
+                continue
+            label = "LoRA" if tag == "ft8" else "原始模型"
+            dst = OUT / f"LONG__{stem}__{label}{secs}s.mp3"
+            subprocess.run(
+                [need("ffmpeg"), "-y", "-v", "error", "-i", str(prefix), "-i", str(tail),
+                 "-filter_complex",
+                 "[0:a]loudnorm=I=-18:TP=-2:LRA=11[a0];"
+                 "[1:a]loudnorm=I=-18:TP=-2:LRA=11[a1];"
+                 "[a0][a1]concat=n=2:v=0:a=1[out]",
+                 "-map", "[out]", "-codec:a", "libmp3lame", "-b:a", "160k",
+                 "-ac", "1", str(dst)], check=True)
+            made.append((dst.name, f"{stem} — 【长样例】5 秒前缀 + {label} 续写 {secs} 秒"))
+
     # ---------- 三、Token 预测：1 秒预测 vs 真实 ----------
     dec = TOK / "decode.json"
     if dec.exists():
@@ -169,7 +213,7 @@ def main() -> None:
         "|---|---|",
     ]
     for name, desc in made:
-        if name.startswith(("AB__", "TOK__", "REAL__", "GENbase__", "GENft__")):
+        if name.startswith(("AB__", "TOK__", "REAL__", "GENbase__", "GENft__", "FULL30__", "LONG__")):
             continue
         lines.append(f"| `{name}` | {desc} |")
 
@@ -185,6 +229,15 @@ def main() -> None:
               "| 文件 | 内容 |", "|---|---|"]
     for name, desc in made:
         if name.startswith(("REAL__", "GENbase__", "GENft__")):
+            lines.append(f"| `{name}` | {desc} |")
+
+    lines += ["", "## 二·C、整曲与更长的续写样例", "",
+              "主结果统一用 3 秒续写（这是 8 首测试曲都能稳定跑完的口径）。",
+              "下面这几条是**给人听**的补充：整曲 30 秒让你听到音乐本身，",
+              "`LONG__` 是我们在 000995 这一条上额外跑的长样例（4/6/8/12 秒都试过）。", "",
+              "| 文件 | 内容 |", "|---|---|"]
+    for name, desc in made:
+        if name.startswith(("FULL30__", "LONG__")):
             lines.append(f"| `{name}` | {desc} |")
 
     lines += ["", "## 三、Token 预测（1 秒）", "",

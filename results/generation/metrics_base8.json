@@ -1,0 +1,24 @@
+{
+  "model": "facebook/musicgen-small",
+  "tag": "base8",
+  "cfg": 1.0,
+  "seconds": 8.0,
+  "seed": 42,
+  "load_s": 6.7,
+  "items": [
+    {
+      "track_id": "000995",
+      "genre": "Experimental",
+      "tag": "base8",
+      "latency_s": 21.72,
+      "enc_s": 1.22,
+      "peak_mem_mb": 1411.4,
+      "out_s": 8.0,
+      "logmel_rmse": 16.529,
+      "rms": 0.5716,
+      "prompt_wav": "audio/000995_Experimental_prompt.wav",
+      "out_wav": "audio/000995_Experimental_base8.wav",
+      "true_wav": "audio/000995_Experimental_true.wav"
+    }
+  ]
+}

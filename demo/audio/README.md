@@ -68,6 +68,22 @@
 | `GENbase__001482_Electronic.mp3` | 001482_Electronic — 【无缝】5 秒前缀 + MusicGen 原始续写 |
 | `GENft__001482_Electronic.mp3` | 001482_Electronic — 【无缝】5 秒前缀 + LoRA 适配后续写 |
 
+## 二·C、整曲与更长的续写样例
+
+主结果统一用 3 秒续写（这是 8 首测试曲都能稳定跑完的口径）。
+下面这几条是**给人听**的补充：整曲 30 秒让你听到音乐本身，
+`LONG__` 是我们在 000995 这一条上额外跑的长样例（4/6/8/12 秒都试过）。
+
+| 文件 | 内容 |
+|---|---|
+| `FULL30__000010_Pop.mp3` | 000010_Pop — 【整曲】原始 30 秒（人听的上下文） |
+| `FULL30__000995_Experimental.mp3` | 000995_Experimental — 【整曲】原始 30 秒（人听的上下文） |
+| `LONG__000995_Experimental__原始模型8s.mp3` | 000995_Experimental — 【长样例】5 秒前缀 + 原始模型 续写 8 秒 |
+| `LONG__000995_Experimental__LoRA8s.mp3` | 000995_Experimental — 【长样例】5 秒前缀 + LoRA 续写 8 秒 |
+| `LONG__000995_Experimental__原始模型8s.mp3` | 000995_Experimental — 【长样例】5 秒前缀 + 原始模型 续写 8 秒 |
+| `LONG__000995_Experimental__原始模型12s.mp3` | 000995_Experimental — 【长样例】5 秒前缀 + 原始模型 续写 12 秒 |
+| `FULL30__001482_Electronic.mp3` | 001482_Electronic — 【整曲】原始 30 秒（人听的上下文） |
+
 ## 三、Token 预测（1 秒）
 
 | 文件 | 内容 |

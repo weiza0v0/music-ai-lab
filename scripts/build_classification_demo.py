@@ -37,10 +37,10 @@ def ffmpeg() -> str:
     return p
 
 
-def cut(src: Path, dst: Path, duration: float) -> None:
-    start = max(0.0, duration / 2 - CLIP_S / 2)
+def cut(src: Path, dst: Path, duration: float, seconds: float = CLIP_S) -> None:
+    start = max(0.0, duration / 2 - seconds / 2)
     subprocess.run(
-        [ffmpeg(), "-y", "-v", "error", "-ss", f"{start:.3f}", "-t", f"{CLIP_S}",
+        [ffmpeg(), "-y", "-v", "error", "-ss", f"{start:.3f}", "-t", f"{seconds}",
          "-i", str(src), "-ac", "1", "-ar", str(SR),
          "-af", "loudnorm=I=-18:TP=-2:LRA=11",
          "-codec:a", "libmp3lame", "-b:a", "160k", str(dst)],
@@ -95,6 +95,8 @@ def main() -> None:
             continue
         dst = OUT / f"{tid}_{m['genre']}.mp3"
         cut(src, dst, float(m["duration"]))
+        # 额外一份 15 秒：给人听的上下文；模型实际只看中心 5 秒
+        cut(src, OUT / f"{tid}_{m['genre']}_context15.mp3", float(m["duration"]), 15.0)
         made.append(dst.name)
         rows.append({
             "track_id": tid, "genre": m["genre"], "artist": m["artist"],
@@ -112,7 +114,9 @@ def main() -> None:
          "允许再分发，条件是署名。逐曲的曲名与艺术家见下表。GTZAN 音频不随仓库分发",
          "（版权归各权利人），所以这批示例用 FMA。", "",
          "所有片段统一裁成**中心 5 秒**、22 050 Hz 单声道、响度对齐 −18 LUFS —— ",
-         "与模型评估时的输入口径一致，因此下面表格里的判断就是模型对这段音频的真实输出。", ""]
+         "与模型评估时的输入口径一致，因此下面表格里的判断就是模型对这段音频的真实输出。", "",
+         "另有一份 `<曲目>_context15.mp3`：同一首曲目的**中心 15 秒**，只给人耳听上下文用。",
+         "模型不消费它——评估与上表判断用的始终是中心 5 秒。", ""]
 
     for grp, title, blurb in (
         ("分歧", "一、五个模型意见不一致（擂台用）",

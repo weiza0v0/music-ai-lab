@@ -1,0 +1,24 @@
+{
+  "model": "checkpoints/generation/musicgen-small-lora-v2",
+  "tag": "probeLoRA8",
+  "cfg": 1.0,
+  "seconds": 8.0,
+  "seed": 42,
+  "load_s": 11.7,
+  "items": [
+    {
+      "track_id": "000995",
+      "genre": "Experimental",
+      "tag": "probeLoRA8",
+      "latency_s": 20.92,
+      "enc_s": 0.8,
+      "peak_mem_mb": 1423.6,
+      "out_s": 8.0,
+      "logmel_rmse": 16.909,
+      "rms": 0.4697,
+      "prompt_wav": "audio/000995_Experimental_prompt.wav",
+      "out_wav": "audio/000995_Experimental_probeLoRA8.wav",
+      "true_wav": "audio/000995_Experimental_true.wav"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "model": "facebook/musicgen-small",
+  "tag": "probe4",
+  "cfg": 1.0,
+  "seconds": 4.0,
+  "seed": 42,
+  "load_s": 9.7,
+  "items": [
+    {
+      "track_id": "000995",
+      "genre": "Experimental",
+      "tag": "probe4",
+      "latency_s": 6.39,
+      "enc_s": 1.34,
+      "peak_mem_mb": 1355.7,
+      "out_s": 4.0,
+      "logmel_rmse": 19.244,
+      "rms": 0.5751,
+      "prompt_wav": "audio/000995_Experimental_prompt.wav",
+      "out_wav": "audio/000995_Experimental_probe4.wav",
+      "true_wav": "audio/000995_Experimental_true.wav"
+    }
+  ]
+}
