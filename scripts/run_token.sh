@@ -2,7 +2,7 @@
 # Phase 1 (token forecasting) end-to-end. Usage: bash scripts/run_token.sh [seeds...]
 set -euo pipefail
 cd "$(dirname "$0")/.."
-PY=${PYTHON:-/home/weizai0v0/.apps/anaconda3/envs/DataAnalysis/bin/python}
+PY=${PYTHON:-python3}
 export NO_PROXY=localhost,127.0.0.1 no_proxy=localhost,127.0.0.1
 export MUSIC_TOKENS=data/features/token_prediction
 export MUSIC_CKPT=checkpoints/token_prediction

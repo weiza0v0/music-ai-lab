@@ -95,8 +95,8 @@ CNN 数据取 `results/gtzan/metrics.csv` 中 3 个 seed 的均值±标准差；
 ## 复现命令
 
 ```bash
-cd /mnt/d/Desktop/MUSIC_AI
-PY=/home/weizai0v0/.apps/anaconda3/envs/DataAnalysis/bin/python
+cd ~/MUSIC_AI
+PY=$CONDA_PREFIX/bin/python
 
 # 首次运行会下载约 346 MB 权重到默认 HF 缓存；之后直接复用
 $PY -m src.train_ast

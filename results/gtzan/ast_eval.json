@@ -1289,7 +1289,7 @@
     "batch_size": 16,
     "device": "cuda",
     "cache_reused": false,
-    "backbone_path": "/home/weizai0v0/.cache/huggingface/hub/models--MIT--ast-finetuned-audioset-10-10-0.4593/snapshots/f826b80d28226b62986cc218e5cec390b1096902/model.safetensors"
+    "backbone_path": "<HF_HOME>/hub/models--MIT--ast-finetuned-audioset-10-10-0.4593/snapshots/f826b80d28226b62986cc218e5cec390b1096902/model.safetensors"
   },
   "versions": {
     "python": "3.12.13",

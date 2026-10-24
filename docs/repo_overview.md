@@ -74,12 +74,13 @@ MusicGen-small 前缀续写（5 秒前缀 → 3 秒，8 首测试曲，Log-Mel R
 | `scripts/` | 一键脚本与专项脚本：`run_all.sh`、`run_fma.sh`、`run_token.sh`、`run_generation.sh`、`overnight_queue.sh`、`build_demo_bundle.py`、`build_arena_table.py` 等 | ✅ |
 | `configs/` | `dataset.yaml`、`baseline.yaml`、`experiments.yaml` | ✅ |
 | `data/` | `raw/`（原始音频）、`features/`（缓存）、`splits/`（划分 CSV，唯一入库的部分） | ❌ 只入库 `splits/` |
-| `checkpoints/` | 各实验权重：`gtzan/`、`fma/`、`generation/`（MusicGen + 5 个 LoRA 变体，5.5 GB） | ❌ 不入库 |
+| `checkpoints/` | **最终模型入库**：`gtzan/`（22 MB）、`fma/`（46 MB）、`token_prediction_long/`（119 MB）；`generation/` 的 MusicGen LoRA（5.5 GB）不入库，见 `checkpoints/README.md` | ✅ 仅最终模型 |
 | `results/` | **全部结果**：`metrics.csv`、逐样本预测、混淆矩阵、图、`token_prediction/`、`generation/` | ✅（290 个文件） |
-| `demo/` | 演示素材：`audio/`（42 个 mp3）、`arena_pk.md`（擂台表） | ✅ |
+| `demo/` | 演示素材：`audio/`（41 个 mp3 + 说明）、`arena_pk.md`（擂台表） | ✅ |
 | `docs/` | 技术报告（`report/` 源码 + PDF）、`research_log.md`（逐次实验日志）、`experiment_log.md`、数据卡、审计报告、`handoff_demo.md` | ✅ |
 
-体积：仓库 `.git` 45 MB；`data/` 23 GB、`checkpoints/` 5.9 GB **均不入库**（见下）。
+体积：仓库 `.git` 约 250 MB（含 187 MB 最终权重）；`data/` 23 GB 与 MusicGen 的 5.5 GB 合并权重**不入库**，
+复现方式见 `checkpoints/README.md`。
 
 ---
 
@@ -88,7 +89,7 @@ MusicGen-small 前缀续写（5 秒前缀 → 3 秒，8 首测试曲，Log-Mel R
 | 项 | 值 |
 |---|---|
 | 系统 | WSL2 Ubuntu 22.04 |
-| Python | `/home/weizai0v0/.apps/anaconda3/envs/DataAnalysis/bin/python`（3.12.13） |
+| Python | `$CONDA_PREFIX/bin/python`（3.12.13） |
 | 框架 | torch 2.12.1+cu130、torchaudio 2.11.0、transformers 5.16.1、librosa 1.0.0 |
 | GPU | RTX 4060 Laptop 8 GB |
 | LaTeX | xelatex + ctexart |
@@ -108,12 +109,16 @@ export HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1   # 权重已在本地缓存时�
 ### 只看结果 / 做演示（不需要权重与数据）
 
 ```bash
-git clone <repo> && cd MUSIC_AI
-python scripts/build_demo_bundle.py     # 重新生成 demo/audio/*.mp3（需 ffmpeg）
-python scripts/build_arena_table.py     # 重新生成 demo/arena_pk.md
+git clone https://github.com/weiza0v0/music-ai-lab.git
+cd music-ai-lab          # 克隆下来约 66 MB，只要 demo/ 与 results/ 就够做演示
+
+# 可选：重算演示素材（已提交，一般不用重跑）
+python3 scripts/build_arena_table.py     # 结果 → demo/arena_pk.md（需 pandas）
+python3 scripts/build_demo_bundle.py     # wav → demo/audio/*.mp3（需 ffmpeg）
 ```
 
-这两个脚本只读 `results/` 里已入库的文件，**不需要 GPU、不需要 5.9 GB 权重**。
+这两个脚本只读 `results/` 里已入库的文件，**不需要 GPU、不需要 5.9 GB 权重**；
+用系统 `python3`（实测 3.13 + pandas 2.3）就能跑，输出与仓库里的版本逐字节一致。
 
 ### 看技术报告
 
@@ -133,10 +138,11 @@ MusicGen → LoRA → 报告）。单次全流程在本机约 2–3 天，其中
 ### 现场 Demo
 
 ```bash
-$PY -m streamlit run app/demo.py
+python3 -m streamlit run app/demo.py
 ```
 
-需要 `checkpoints/` 存在（未入库）。没有权重时会提示「还没有 checkpoint」。
+判别式与 Token 预测的**最终权重已在仓库里**，上传一段音频即可现场出结果；
+只有生成式续写需要先重训 LoRA（见 `checkpoints/README.md`）。
 
 ---
 
@@ -150,7 +156,7 @@ $PY -m streamlit run app/demo.py
   LoRA 适配与三个旋钮消融、逐曲配对检验。
 - 技术报告 42 页（总—分—总三部分），28 条参考文献，图表 31 个，
   0 编译错误、0 未定义引用、0 悬空图表。
-- 演示素材：42 个 mp3（前缀/真实/原始/适配 + 串联版）、擂台表、全部图。
+- 演示素材：41 个 mp3（前缀/真实/原始/适配 + 串联版）、擂台表、全部图。
 
 未做（如被问到，如实说）：
 

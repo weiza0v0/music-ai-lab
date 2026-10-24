@@ -70,7 +70,7 @@ ONLY=token_long bash scripts/overnight_queue.sh   # 只跑某一项
 ## 验收时看什么
 
 ```bash
-cd /mnt/d/Desktop/MUSIC_AI
+cd ~/MUSIC_AI
 cat results/logs/overnight/status.tsv          # 每项 OK/FAIL
 cat results/logs/overnight/summary.md          # 汇总（队列结束时生成）
 nvidia-smi --query-gpu=utilization.gpu,memory.used --format=csv,noheader

@@ -68,7 +68,7 @@
 
 ```bash
 cd MUSIC_AI
-PY=/home/weizai0v0/.apps/anaconda3/envs/DataAnalysis/bin/python
+PY=$CONDA_PREFIX/bin/python
 
 # 1) 数据（首次需下载约 1.2 GB；已有 data/raw/gtzan 可跳过 --download --extract）
 $PY -m src.data.prepare_dataset --download --extract --audit --split
@@ -184,13 +184,13 @@ music-ai-lab/
 │                            #   run_robustness.py, integrate_ast.py
 ├── app/demo.py              # Streamlit 音乐 AI 鉴定所
 ├── tests/                   # 协议测试
-├── checkpoints/             # 权重（不提交），按实验分子目录
-│                            #   gtzan/、fma/、fma_leak/、fma_ablation/
+├── checkpoints/             # 最终模型入库（gtzan/ fma/ token_prediction_long/），
+│                            #   中间实验与 MusicGen LoRA 不入库，见 checkpoints/README.md
 ├── results/                 # 结果，与 checkpoints 子目录一一对应
 │                            #   gtzan/、fma/、fma_leak/、fma_ablation/
 │                            #   每个含 metrics.csv、预测、图表、summary.md
 ├── demo/                    # 演示素材（已提交）
-│   ├── audio/               #   42 个 mp3：前缀/真实/原始/LoRA + A/B 串联版
+│   ├── audio/               #   41 个 mp3：前缀/真实/原始/LoRA + A/B 串联版
 │   └── arena_pk.md          #   「擂台表」：五个模型意见最不一致的测试曲目
 ├── docs/                    # 仓库概况、演示交接、环境报告、研究日志、数据卡、
 │                            #   审计、验收清单、错误分析、鲁棒性、时间轴

@@ -62,8 +62,8 @@
 ## 三、复现命令
 
 ```bash
-cd /mnt/d/Desktop/MUSIC_AI
-PY=/home/weizai0v0/.apps/anaconda3/envs/DataAnalysis/bin/python
+cd ~/MUSIC_AI
+PY=$CONDA_PREFIX/bin/python
 
 # 全量实验：147 首 × 7 条件 × 5 模型
 $PY -m src.robustness --workers 12

@@ -8,8 +8,16 @@ data/raw/
 data/fma/
 # 特征缓存（可由 split + 音频重建）
 data/features/
-# 模型权重（每个实验一个子目录：gtzan/ fma/ fma_leak/ fma_ablation/）
-checkpoints/
+# 模型权重：只入库「最终模型」，中间实验与生成式基座不入库
+# 入库：checkpoints/gtzan（22 MB）、checkpoints/fma（46 MB）、
+#       checkpoints/token_prediction_long（119 MB）——单文件均 < 25 MB
+# 不入库：MusicGen 的 LoRA 合并权重（每个变体 1.18 GB），用重训命令复现，见 checkpoints/README.md
+checkpoints/generation/
+checkpoints/gtzan_long/
+checkpoints/fma_long/
+checkpoints/fma_leak/
+checkpoints/fma_ablation/
+checkpoints/token_prediction/
 # LaTeX 中间产物
 docs/report/*.aux
 docs/report/*.log

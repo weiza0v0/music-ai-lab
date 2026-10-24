@@ -2,7 +2,7 @@
 # Validation-only optimisation study (seed 42). Test split is never evaluated here.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-PY=${PYTHON:-/home/weizai0v0/.apps/anaconda3/envs/DataAnalysis/bin/python}
+PY=${PYTHON:-python3}
 export MUSIC_FEATURES=data/features/fma/features.npz
 mkdir -p checkpoints/fma_ablation results/fma_ablation
 

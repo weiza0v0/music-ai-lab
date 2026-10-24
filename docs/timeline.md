@@ -17,7 +17,7 @@
 - 输出：每个窗口的 Top-1 与 10 类概率；热力图 + 逐窗表格。
 
 ```bash
-PY=/home/weizai0v0/.apps/anaconda3/envs/DataAnalysis/bin/python
+PY=$CONDA_PREFIX/bin/python
 $PY -m src.timeline data/raw/gtzan/genres/rock/rock.00072.wav --model cnn
 ```
 

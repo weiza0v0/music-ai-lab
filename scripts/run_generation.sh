@@ -2,7 +2,7 @@
 # Phase 2 (MusicGen continuation + optional LoRA). Run AFTER phase 1 tokens exist.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-PY=${PYTHON:-/home/weizai0v0/.apps/anaconda3/envs/DataAnalysis/bin/python}
+PY=${PYTHON:-python3}
 export NO_PROXY=localhost,127.0.0.1 no_proxy=localhost,127.0.0.1
 export MUSIC_RESULTS=results/generation
 export MUSIC_CKPT=checkpoints/generation

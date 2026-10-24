@@ -1286,7 +1286,7 @@ MUSIC_AI/
 
 {\setmonofont{WenQuanYi Micro Hei Mono}%
 \begin{verbatim}
-PY=/home/weizai0v0/.apps/anaconda3/envs/DataAnalysis/bin/python
+PY=$CONDA_PREFIX/bin/python
 # GTZAN MVP
 $PY -m src.data.prepare_dataset --download --extract --audit --split
 $PY scripts/extract_features.py --workers 8

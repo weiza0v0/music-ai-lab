@@ -2,7 +2,7 @@
 
 - 生成时间：2026-10-19T12:10:16+08:00
 - 操作系统：Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.35
-- Python：3.12.13（/home/weizai0v0/.apps/anaconda3/envs/DataAnalysis/bin/python）
+- Python：3.12.13（$CONDA_PREFIX/bin/python）
 - CPU：x86_64 / 16 逻辑核
 - 内存：Mem:           7.8Gi       3.4Gi       1.1Gi       4.0Mi       3.2Gi       4.1Gi
 - 磁盘：

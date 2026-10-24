@@ -26,7 +26,7 @@
 ### 1.1 压缩包完整性校验（先校验再解压）
 
 ```bash
-PY=/home/weizai0v0/.apps/anaconda3/envs/DataAnalysis/bin/python
+PY=$CONDA_PREFIX/bin/python
 $PY -c "import zipfile; z=zipfile.ZipFile('data/fma/raw/fma_small.zip'); print(len(z.namelist()), z.testzip())"
 ```
 
@@ -282,8 +282,8 @@ $PY scripts/extract_features.py \
 ## 7. 复现命令（完整顺序）
 
 ```bash
-cd /mnt/d/Desktop/MUSIC_AI
-PY=/home/weizai0v0/.apps/anaconda3/envs/DataAnalysis/bin/python
+cd ~/MUSIC_AI
+PY=$CONDA_PREFIX/bin/python
 
 # 0) 下载（已下载可跳过，脚本自带 -C - 续传与 skip 已存在文件）
 bash scripts/download_fma.sh          # 末尾打印 DOWNLOAD_DONE

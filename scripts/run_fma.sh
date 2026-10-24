@@ -2,7 +2,7 @@
 # Main experiment on FMA-small. Usage: bash scripts/run_fma.sh [seeds...]
 set -euo pipefail
 cd "$(dirname "$0")/.."
-PY=${PYTHON:-/home/weizai0v0/.apps/anaconda3/envs/DataAnalysis/bin/python}
+PY=${PYTHON:-python3}
 export MUSIC_FEATURES=data/features/fma/features.npz
 export MUSIC_CKPT=checkpoints/fma
 export MUSIC_RESULTS=results/fma

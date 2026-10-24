@@ -3,7 +3,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 # Reuses the existing CUDA-enabled conda env (torch 2.12.1+cu130).
-PY=${PYTHON:-/home/weizai0v0/.apps/anaconda3/envs/DataAnalysis/bin/python}
+PY=${PYTHON:-python3}
 
 echo "== 1/6 dataset =="
 $PY -m src.data.prepare_dataset --download --extract --audit --split

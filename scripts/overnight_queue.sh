@@ -19,7 +19,7 @@
 set -uo pipefail
 cd "$(dirname "$0")/.."
 
-PY=${PYTHON:-/home/weizai0v0/.apps/anaconda3/envs/DataAnalysis/bin/python}
+PY=${PYTHON:-python3}
 export NO_PROXY=localhost,127.0.0.1 no_proxy=localhost,127.0.0.1
 export HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1
 export NUMBA_CACHE_DIR=${NUMBA_CACHE_DIR:-/tmp/numba_cache}

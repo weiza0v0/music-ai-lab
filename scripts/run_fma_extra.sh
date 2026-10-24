@@ -2,7 +2,7 @@
 # Leakage comparison (track-level split) + AST transfer on FMA-small.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-PY=${PYTHON:-/home/weizai0v0/.apps/anaconda3/envs/DataAnalysis/bin/python}
+PY=${PYTHON:-python3}
 
 echo "== leakage comparison: CNN on track-level split =="
 MUSIC_FEATURES=data/features/fma/features_tracklevel.npz \

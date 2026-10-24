@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")"
-PY=${PYTHON:-/home/weizai0v0/.apps/anaconda3/envs/DataAnalysis/bin/python}
+PY=${PYTHON:-python3}
 $PY gen_tables.py || true
 for i in 1 2; do
   if ! xelatex -interaction=nonstopmode main.tex > build.log 2>&1; then

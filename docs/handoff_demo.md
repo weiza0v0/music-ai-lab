@@ -8,6 +8,30 @@
 仓库概况（这是什么项目、有哪些结果）另见 `docs/repo_overview.md`。
 完整论证见 `docs/Music_AI_Lab_Technical_Report.pdf`（42 页）。
 
+**第一步先把仓库拉下来**（公开仓库，无需权限）：
+
+```bash
+git clone https://github.com/weiza0v0/music-ai-lab.git
+cd music-ai-lab
+```
+
+克隆下来约 **66 MB**，你要的东西都在里面，**不需要装环境、不需要 GPU**：
+
+| 你要的 | 位置 |
+|---|---|
+| 全部图（可直接插幻灯片） | `results/*/figures/*.png` |
+| 现成音频（41 段 mp3） | `demo/audio/`，说明见 `demo/audio/README.md` |
+| 擂台表（现成预测结果） | `demo/arena_pk.md` |
+| 技术报告（42 页 PDF） | `docs/Music_AI_Lab_Technical_Report.pdf` |
+| 全部数字（CSV） | `results/gtzan/metrics.csv`、`results/fma/metrics.csv`、`results/token_prediction_long/metrics.csv`、`results/generation/metrics_*.json` |
+
+**权重**：判别式与 Token 预测的最终模型已入库（`checkpoints/gtzan`、`fma`、`token_prediction_long`，
+共 187 MB），所以 **`streamlit run app/demo.py` 上传一段音频就能现场 PK**，不需要数据集。
+
+**仓库里没有**：`data/`（23 GB 音频）与 MusicGen 的 LoRA 合并权重（5.5 GB）。
+后者重训约 40 分钟，命令见 `checkpoints/README.md`；但**演示不需要它**——
+`demo/audio/` 里已有当时跑出来的全部音频。
+
 ---
 
 ## 1 演示总纲（来自炜仔0v0 的想法，已落成可执行方案）
@@ -147,7 +171,7 @@
 - 客观数字：这条曲目 Log-Mel RMSE 20.85 → 17.19（**−3.65**，8 首里改善最大的一首）
 - 讲法：先问"哪一段是真实的"，再公布答案；**不要指望观众听出适配前后**，
   只说"客观距离上它更接近真实"。
-- 素材：`demo/audio/` 全部 42 个文件，逐条说明见 `demo/audio/README.md`
+- 素材：`demo/audio/` 全部 41 段 mp3，逐条说明见 `demo/audio/README.md`
 
 ### P13 负结果的负结果（生成式侧最有价值的一页）
 - **主动放 `demo/audio/AB__001482_Electronic.mp3`：这一条适配后反而更差（+0.33）**，
@@ -187,7 +211,7 @@
 生成式流程与判别式流程两张示意图在报告 PDF 第 9 页（图 1、图 2），可直接截图为 PNG；
 若想重画，源在 `docs/report/main.tex` 的 TikZ 段。
 
-### 4.2 音频（42 个，3.3 MB）
+### 4.2 音频（41 段，3.3 MB）
 
 命名规则与全部说明见 **`demo/audio/README.md`**。要点：
 
@@ -210,18 +234,20 @@
 
 ## 5 现场方案（两种，按条件选）
 
-### 方案 A：让炜仔0v0 那边跑（推荐，最像"擂台"）
+### 方案 A：自己跑 Streamlit（权重已在仓库里，推荐）
 
 `app/demo.py` 是一个 Streamlit 页面「Music AI 鉴定所」：上传一段音频 → 勾选参赛模型 →
 各模型各自的 Top-5 与频谱 → 底部「多模型对比」标签页，还会提示
 "**模型意见不一致：xxx — 这正是可以讲的故事**"。
 
 ```bash
-# 在不入库的 checkpoints/ 与 data/ 都齐的机器上（也就是炜那边）
+git clone https://github.com/weiza0v0/music-ai-lab.git && cd music-ai-lab
+pip install -r requirements.txt          # 已有 torch / streamlit 环境可跳过
 export NO_PROXY=localhost,127.0.0.1 no_proxy=localhost,127.0.0.1
-PY=/home/weizai0v0/.apps/anaconda3/envs/DataAnalysis/bin/python
-$PY -m streamlit run app/demo.py
+python3 -m streamlit run app/demo.py     # 上传任意一段音乐，五个模型现场出判断
 ```
+
+不需要数据集：页面走的是"上传音频"路径。只有"用测试集曲目"的提示语会指向 `data/`。
 
 - **建议预录一段 60–90 秒的屏幕录像**（选曲 → 开跑 → 五个模型各自判断 → 不一致提示），
   现场直接播放。直播有网络与显存风险，录屏没有。
@@ -306,14 +332,18 @@ $PY -m streamlit run app/demo.py
 只需要跑演示素材的话，**不需要权重**：
 
 ```bash
-git clone <仓库地址> && cd MUSIC_AI
-python scripts/build_demo_bundle.py     # 若有 ffmpeg；否则直接用已提交的 demo/audio/
-python scripts/build_arena_table.py     # 重新生成擂台表
+git clone https://github.com/weiza0v0/music-ai-lab.git
+cd music-ai-lab
+python3 scripts/build_arena_table.py     # 重新生成擂台表（需 pandas）
+python3 scripts/build_demo_bundle.py     # 重新生成 mp3（需 ffmpeg；不跑也行，仓库里已有）
 ```
 
-需要真正推理（比如想自己换一段音频现场跑）时才要权重与数据，而这两者**不在仓库里**
-（`data/` 23 GB、`checkpoints/` 5.9 GB，均被 `.gitignore`）。此时让炜那边跑，或按
-`README.md` §2 从第 1 步重训（约 2–3 天）。
+判别式与 Token 预测的**最终权重已在仓库里**（`checkpoints/`，187 MB），所以
+`streamlit run app/demo.py` 上传一段音频就能跑通，只需要 `pip install -r requirements.txt`。
+
+真正缺的只有两样：`data/`（23 GB 音频，按 `README.md` §2 自备，GTZAN 需从官方渠道获取）
+与 MusicGen 的 LoRA 合并权重（5.5 GB，重训约 40 分钟，命令见 `checkpoints/README.md`）。
+**这些都不影响演示**——`demo/audio/` 里已经有当时跑出来的全部音频。
 
 环境三条必需品（详见 `docs/repo_overview.md` §4）：
 `NO_PROXY` + `no_proxy` 都要设、`NUMBA_CACHE_DIR`、`HF_HUB_OFFLINE=1`。
