@@ -941,3 +941,15 @@ Houlsby adapter 三条文献（25 → 28）。
 
 顺带修的：`--seconds 5` 在 README 与 `run_generation.sh` 里残留，照抄会撞 CUDA 位置索引断言，
 统一改 3 并写明原因。
+
+### 补：无显卡演示包（当日）
+
+演示机大概率没有 GPU，于是按「分类能跑、生成只能放录音」重组素材：
+
+- **分类**：`scripts/build_classification_demo.py` 从 FMA-small 测试集裁 8 段 5 秒片段
+  （6 段五模型分歧 + 2 段全对），判断与置信度直接取自 `results/fma/predictions/*.csv`，
+  现场不需要任何推理。选 FMA 而非 GTZAN 是因为前者 CC-BY 4.0 可再分发。
+- **实测 CPU 推理**：CNN 196 ms、CRNN 60 ms、TF 80 ms、MLP 70 ms（SVM 首次 2.6 s 含特征提取），
+  所以五模型现场 PK 不需要显卡；AST 与 MusicGen 续写不具备 CPU 现场条件。
+- **生成**：`build_demo_bundle.py` 新增无缝拼接组 `REAL__ / GENbase__ / GENft__`（各 8 秒，
+  同一段前缀接不同后 3 秒），适合改名 A/B/C 做盲听；`demo/audio` 共 50 段。

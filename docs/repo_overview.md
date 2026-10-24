@@ -76,7 +76,7 @@ MusicGen-small 前缀续写（5 秒前缀 → 3 秒，8 首测试曲，Log-Mel R
 | `data/` | `raw/`（原始音频）、`features/`（缓存）、`splits/`（划分 CSV，唯一入库的部分） | ❌ 只入库 `splits/` |
 | `checkpoints/` | **最终模型入库**：`gtzan/`（22 MB）、`fma/`（46 MB）、`token_prediction_long/`（119 MB）；`generation/` 的 MusicGen LoRA（5.5 GB）不入库，见 `checkpoints/README.md` | ✅ 仅最终模型 |
 | `results/` | **全部结果**：`metrics.csv`、逐样本预测、混淆矩阵、图、`token_prediction/`、`generation/` | ✅（290 个文件） |
-| `demo/` | 演示素材：`audio/`（41 个 mp3 + 说明）、`arena_pk.md`（擂台表） | ✅ |
+| `demo/` | 演示素材：`audio/`（50 段 mp3）、`classification/`（8 段 5 秒片段 + 五模型判断表）、`arena_pk.md`（擂台表） | ✅ |
 | `docs/` | 技术报告（`report/` 源码 + PDF）、`research_log.md`（逐次实验日志）、`experiment_log.md`、数据卡、审计报告、`handoff_demo.md` | ✅ |
 
 体积：仓库 `.git` 约 250 MB（含 187 MB 最终权重）；`data/` 23 GB 与 MusicGen 的 5.5 GB 合并权重**不入库**，
@@ -115,6 +115,7 @@ cd music-ai-lab          # 克隆下来约 66 MB，只要 demo/ 与 results/ 就
 # 可选：重算演示素材（已提交，一般不用重跑）
 python3 scripts/build_arena_table.py     # 结果 → demo/arena_pk.md（需 pandas）
 python3 scripts/build_demo_bundle.py     # wav → demo/audio/*.mp3（需 ffmpeg）
+python3 scripts/build_classification_demo.py   # FMA 测试片段 → demo/classification/（需 ffmpeg + 本地 data/）
 ```
 
 这两个脚本只读 `results/` 里已入库的文件，**不需要 GPU、不需要 5.9 GB 权重**；
@@ -156,7 +157,8 @@ python3 -m streamlit run app/demo.py
   LoRA 适配与三个旋钮消融、逐曲配对检验。
 - 技术报告 42 页（总—分—总三部分），28 条参考文献，图表 31 个，
   0 编译错误、0 未定义引用、0 悬空图表。
-- 演示素材：41 个 mp3（前缀/真实/原始/适配 + 串联版）、擂台表、全部图。
+- 演示素材：`demo/audio/` 50 段（前缀/真实/原始/适配、A/B 串联、无缝盲听）、
+  `demo/classification/` 8 段 + 判断表、擂台表、全部图。**分类 CPU 可现场跑，生成只能放录音。**
 
 未做（如被问到，如实说）：
 

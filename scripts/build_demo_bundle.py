@@ -108,6 +108,35 @@ def main() -> None:
                      f"{stem} — 【串联】前缀 → 真实后 3 秒 → 原始续写 → LoRA 续写"
                      f"（每段间隔 {GUARD_SECONDS}s）"))
 
+    # ---------- 二·B、无缝拼接：同一段前缀之后接不同的 3 秒 ----------
+    # A/B 串联文件每段之间有静音，适合"逐段讲解"；这一组不加静音，
+    # 让听众直接对比"接真实"与"接模型生成的"在衔接处的差别。
+    for tid in SHOWCASE:
+        stem = next((w.name.replace("_prompt.wav", "")
+                     for w in (GEN / "audio").glob(f"{tid}_*_prompt.wav")), None)
+        if stem is None:
+            continue
+        prefix = GEN / "audio" / f"{stem}_prompt.wav"
+        for part, label in (("true", "REAL"), ("base", "GENbase"), ("ft", "GENft")):
+            tail = GEN / "audio" / f"{stem}_{part}.wav"
+            if not (prefix.exists() and tail.exists()):
+                continue
+            ff = need("ffmpeg")
+            dst = OUT / f"{label}__{stem}.mp3"
+            subprocess.run(
+                [ff, "-y", "-v", "error", "-i", str(prefix), "-i", str(tail),
+                 "-filter_complex",
+                 "[0:a]loudnorm=I=-18:TP=-2:LRA=11[a0];"
+                 "[1:a]loudnorm=I=-18:TP=-2:LRA=11[a1];"
+                 "[a0][a1]concat=n=2:v=0:a=1[out]",
+                 "-map", "[out]", "-codec:a", "libmp3lame", "-b:a", "160k",
+                 "-ac", "1", str(dst)],
+                check=True)
+            made.append((dst.name,
+                         f"{stem} — 【无缝】5 秒前缀 + " +
+                         {"true": "真实后 3 秒", "base": "MusicGen 原始续写",
+                          "ft": "LoRA 适配后续写"}[part]))
+
     # ---------- 三、Token 预测：1 秒预测 vs 真实 ----------
     dec = TOK / "decode.json"
     if dec.exists():
@@ -140,7 +169,7 @@ def main() -> None:
         "|---|---|",
     ]
     for name, desc in made:
-        if name.startswith(("AB__", "TOK__")):
+        if name.startswith(("AB__", "TOK__", "REAL__", "GENbase__", "GENft__")):
             continue
         lines.append(f"| `{name}` | {desc} |")
 
@@ -148,6 +177,14 @@ def main() -> None:
               "| 文件 | 内容 |", "|---|---|"]
     for name, desc in made:
         if name.startswith("AB__"):
+            lines.append(f"| `{name}` | {desc} |")
+
+    lines += ["", "## 二·B、无缝拼接（前缀 + 3 秒，无静音间隔）", "",
+              "同一段 5 秒前缀，分别接上「真实后 3 秒」「MusicGen 原始续写」「LoRA 续写」。",
+              "**最适合做 A/B 盲听**：三条都以同一段音乐开头，只有后半段不同。", "",
+              "| 文件 | 内容 |", "|---|---|"]
+    for name, desc in made:
+        if name.startswith(("REAL__", "GENbase__", "GENft__")):
             lines.append(f"| `{name}` | {desc} |")
 
     lines += ["", "## 三、Token 预测（1 秒）", "",
@@ -181,7 +218,9 @@ def main() -> None:
         "   四段的差别，这是全场最有说服力的一条。",
         "2. 再放 `AB__001482_Electronic.mp3`：**这一条适配后更差**。主动放它，然后解释为什么",
         "   （8 首样本、配对检验、指标只奖励贴近原曲），比只放好消息可信得多。",
-        "3. 若时间紧，只放这两条就够。",
+        "3. **盲听玩法**：连放 `REAL__` / `GENbase__` / `GENft__` 三条（各 8 秒、同前缀），",
+        "   让观众猜哪条是真实录音。三条文件名已暴露答案，现场可改名成 A/B/C 再放。",
+        "4. 若时间紧，只放 `AB__000995` 一条就够。",
         "",
         "## 六、注意",
         "",

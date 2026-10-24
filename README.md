@@ -131,6 +131,7 @@ $PY -m streamlit run app/demo.py
 ```bash
 $PY scripts/build_demo_bundle.py     # results/ 里的 wav → demo/audio/*.mp3（需 ffmpeg）
 $PY scripts/build_arena_table.py     # results/ 里的预测 → demo/arena_pk.md
+$PY scripts/build_classification_demo.py  # 裁 FMA 测试片段 + 判断表（需本地 data/）
 ```
 
 两个脚本只读已提交的结果文件，不需要 GPU。演示方案见
@@ -190,7 +191,8 @@ music-ai-lab/
 │                            #   gtzan/、fma/、fma_leak/、fma_ablation/
 │                            #   每个含 metrics.csv、预测、图表、summary.md
 ├── demo/                    # 演示素材（已提交）
-│   ├── audio/               #   41 个 mp3：前缀/真实/原始/LoRA + A/B 串联版
+│   ├── audio/               #   50 段 mp3：前缀/真实/原始/LoRA、A/B 串联、无缝盲听
+│   ├── classification/      #   8 段 5 秒 FMA 测试片段 + 五模型判断表（CPU 可跑）
 │   └── arena_pk.md          #   「擂台表」：五个模型意见最不一致的测试曲目
 ├── docs/                    # 仓库概况、演示交接、环境报告、研究日志、数据卡、
 │                            #   审计、验收清单、错误分析、鲁棒性、时间轴

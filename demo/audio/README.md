@@ -51,6 +51,23 @@
 | `AB__000995_Experimental.mp3` | 000995_Experimental — 【串联】前缀 → 真实后 3 秒 → 原始续写 → LoRA 续写（每段间隔 0.6s） |
 | `AB__001482_Electronic.mp3` | 001482_Electronic — 【串联】前缀 → 真实后 3 秒 → 原始续写 → LoRA 续写（每段间隔 0.6s） |
 
+## 二·B、无缝拼接（前缀 + 3 秒，无静音间隔）
+
+同一段 5 秒前缀，分别接上「真实后 3 秒」「MusicGen 原始续写」「LoRA 续写」。
+**最适合做 A/B 盲听**：三条都以同一段音乐开头，只有后半段不同。
+
+| 文件 | 内容 |
+|---|---|
+| `REAL__000010_Pop.mp3` | 000010_Pop — 【无缝】5 秒前缀 + 真实后 3 秒 |
+| `GENbase__000010_Pop.mp3` | 000010_Pop — 【无缝】5 秒前缀 + MusicGen 原始续写 |
+| `GENft__000010_Pop.mp3` | 000010_Pop — 【无缝】5 秒前缀 + LoRA 适配后续写 |
+| `REAL__000995_Experimental.mp3` | 000995_Experimental — 【无缝】5 秒前缀 + 真实后 3 秒 |
+| `GENbase__000995_Experimental.mp3` | 000995_Experimental — 【无缝】5 秒前缀 + MusicGen 原始续写 |
+| `GENft__000995_Experimental.mp3` | 000995_Experimental — 【无缝】5 秒前缀 + LoRA 适配后续写 |
+| `REAL__001482_Electronic.mp3` | 001482_Electronic — 【无缝】5 秒前缀 + 真实后 3 秒 |
+| `GENbase__001482_Electronic.mp3` | 001482_Electronic — 【无缝】5 秒前缀 + MusicGen 原始续写 |
+| `GENft__001482_Electronic.mp3` | 001482_Electronic — 【无缝】5 秒前缀 + LoRA 适配后续写 |
+
 ## 三、Token 预测（1 秒）
 
 | 文件 | 内容 |
@@ -79,7 +96,9 @@
    四段的差别，这是全场最有说服力的一条。
 2. 再放 `AB__001482_Electronic.mp3`：**这一条适配后更差**。主动放它，然后解释为什么
    （8 首样本、配对检验、指标只奖励贴近原曲），比只放好消息可信得多。
-3. 若时间紧，只放这两条就够。
+3. **盲听玩法**：连放 `REAL__` / `GENbase__` / `GENft__` 三条（各 8 秒、同前缀），
+   让观众猜哪条是真实录音。三条文件名已暴露答案，现场可改名成 A/B/C 再放。
+4. 若时间紧，只放 `AB__000995` 一条就够。
 
 ## 六、注意
 

@@ -1,0 +1,250 @@
+[
+  {
+    "track_id": "073776",
+    "genre": "International",
+    "artist": "StrangeZero",
+    "title": "Different Feelings",
+    "group": "分歧",
+    "verdicts": {
+      "svm": [
+        "Instrumental",
+        0.2326685893353168
+      ],
+      "mlp": [
+        "Folk",
+        0.34685653
+      ],
+      "cnn": [
+        "Experimental",
+        0.4271004
+      ],
+      "crnn": [
+        "Electronic",
+        0.90947723
+      ],
+      "transformer": [
+        "Pop",
+        0.2928253
+      ]
+    },
+    "n_correct": 0,
+    "file": "073776_International.mp3"
+  },
+  {
+    "track_id": "014576",
+    "genre": "Instrumental",
+    "artist": "Ergo Phizmiz",
+    "title": "Funeral March For A Marionette",
+    "group": "分歧",
+    "verdicts": {
+      "svm": [
+        "Experimental",
+        0.2636731119274521
+      ],
+      "mlp": [
+        "Instrumental",
+        0.33398932
+      ],
+      "cnn": [
+        "Folk",
+        0.52949435
+      ],
+      "crnn": [
+        "Pop",
+        0.30192283
+      ],
+      "transformer": [
+        "International",
+        0.3743113
+      ]
+    },
+    "n_correct": 1,
+    "file": "014576_Instrumental.mp3"
+  },
+  {
+    "track_id": "047835",
+    "genre": "Pop",
+    "artist": "Révolution Musicale",
+    "title": "He Wears Clogs For All Time",
+    "group": "分歧",
+    "verdicts": {
+      "svm": [
+        "Pop",
+        0.2722913998321073
+      ],
+      "mlp": [
+        "International",
+        0.26985624
+      ],
+      "cnn": [
+        "Folk",
+        0.54817367
+      ],
+      "crnn": [
+        "Instrumental",
+        0.51675045
+      ],
+      "transformer": [
+        "Experimental",
+        0.26008072
+      ]
+    },
+    "n_correct": 1,
+    "file": "047835_Pop.mp3"
+  },
+  {
+    "track_id": "117944",
+    "genre": "International",
+    "artist": "mildtape",
+    "title": "Whispers remix",
+    "group": "分歧",
+    "verdicts": {
+      "svm": [
+        "Electronic",
+        0.3055294840482108
+      ],
+      "mlp": [
+        "Pop",
+        0.3542082
+      ],
+      "cnn": [
+        "Folk",
+        0.34606433
+      ],
+      "crnn": [
+        "International",
+        0.73274964
+      ],
+      "transformer": [
+        "Hip-Hop",
+        0.30364177
+      ]
+    },
+    "n_correct": 1,
+    "file": "117944_International.mp3"
+  },
+  {
+    "track_id": "122201",
+    "genre": "Experimental",
+    "artist": "Alas de Mosca",
+    "title": "Film noir",
+    "group": "分歧",
+    "verdicts": {
+      "svm": [
+        "Instrumental",
+        0.2235080000685615
+      ],
+      "mlp": [
+        "Hip-Hop",
+        0.25350237
+      ],
+      "cnn": [
+        "Pop",
+        0.34517506
+      ],
+      "crnn": [
+        "Rock",
+        0.28095442
+      ],
+      "transformer": [
+        "Experimental",
+        0.3972103
+      ]
+    },
+    "n_correct": 1,
+    "file": "122201_Experimental.mp3"
+  },
+  {
+    "track_id": "000182",
+    "genre": "Rock",
+    "artist": "Ariel Pink's Haunted Graffiti",
+    "title": "Jules Lost His Jewels",
+    "group": "分歧",
+    "verdicts": {
+      "svm": [
+        "International",
+        0.1900735224129652
+      ],
+      "mlp": [
+        "Hip-Hop",
+        0.26280886
+      ],
+      "cnn": [
+        "Pop",
+        0.24012417
+      ],
+      "crnn": [
+        "Hip-Hop",
+        0.33543462
+      ],
+      "transformer": [
+        "Experimental",
+        0.2398923
+      ]
+    },
+    "n_correct": 0,
+    "file": "000182_Rock.mp3"
+  },
+  {
+    "track_id": "000814",
+    "genre": "Folk",
+    "artist": "Hall Of Fame",
+    "title": "Motion Passings",
+    "group": "一致",
+    "verdicts": {
+      "svm": [
+        "Folk",
+        0.7376339030913488
+      ],
+      "mlp": [
+        "Folk",
+        0.9938903
+      ],
+      "cnn": [
+        "Folk",
+        0.95707244
+      ],
+      "crnn": [
+        "Folk",
+        0.8524217
+      ],
+      "transformer": [
+        "Folk",
+        0.5777301
+      ]
+    },
+    "n_correct": 5,
+    "file": "000814_Folk.mp3"
+  },
+  {
+    "track_id": "000995",
+    "genre": "Experimental",
+    "artist": "Kevin Shields",
+    "title": "No Good Deed Goes Unpunished",
+    "group": "一致",
+    "verdicts": {
+      "svm": [
+        "Experimental",
+        0.7074514340812175
+      ],
+      "mlp": [
+        "Experimental",
+        0.5664333
+      ],
+      "cnn": [
+        "Experimental",
+        0.9706762
+      ],
+      "crnn": [
+        "Experimental",
+        0.9805268
+      ],
+      "transformer": [
+        "Experimental",
+        0.71408945
+      ]
+    },
+    "n_correct": 5,
+    "file": "000995_Experimental.mp3"
+  }
+]
