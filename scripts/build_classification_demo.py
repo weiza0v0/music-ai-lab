@@ -42,7 +42,7 @@ def cut(src: Path, dst: Path, duration: float, seconds: float = CLIP_S) -> None:
     subprocess.run(
         [ffmpeg(), "-y", "-v", "error", "-ss", f"{start:.3f}", "-t", f"{seconds}",
          "-i", str(src), "-ac", "1", "-ar", str(SR),
-         "-af", "loudnorm=I=-18:TP=-2:LRA=11",
+         "-af", "volume=-1dB",
          "-codec:a", "libmp3lame", "-b:a", "160k", str(dst)],
         check=True,
     )
@@ -113,7 +113,7 @@ def main() -> None:
          "**授权**：FMA-small 音频为 CC-BY 4.0（Defferrard et al., ISMIR 2017），",
          "允许再分发，条件是署名。逐曲的曲名与艺术家见下表。GTZAN 音频不随仓库分发",
          "（版权归各权利人），所以这批示例用 FMA。", "",
-         "所有片段统一裁成**中心 5 秒**、22 050 Hz 单声道、响度对齐 −18 LUFS —— ",
+         "所有片段统一裁成**中心 5 秒**、22 050 Hz 单声道、只留 1 dB 余量（不做响度归一）—— ",
          "与模型评估时的输入口径一致，因此下面表格里的判断就是模型对这段音频的真实输出。", "",
          "另有一份 `<曲目>_context15.mp3`：同一首曲目的**中心 15 秒**，只给人耳听上下文用。",
          "模型不消费它——评估与上表判断用的始终是中心 5 秒。", ""]

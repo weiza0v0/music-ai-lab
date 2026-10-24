@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Music AI Lab · 一个项目，两个任务，五个负结果</title>
+<style>
+:root{
+  --bg:#FAF7F2;
+  --bg-alt:#F3EEE6;
+  --surface:#FFFFFF;
+  --ink:#1C1A17;
+  --muted:#8A817A;
+  --rule:rgba(28,26,23,.13);
+  --rule-soft:rgba(28,26,23,.07);
+  --accent:#C0512F;
+  --accent-2:#2F5B4F;
+  --flag:#B08442;
+  --font-display:'Noto Serif SC','Source Han Serif SC','Songti SC','SimSun',Georgia,serif;
+  --font-sans:'Noto Sans SC','Source Han Sans SC','Microsoft YaHei','PingFang SC',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono','Cascadia Mono',Consolas,'Courier New',monospace;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
+  font-family:var(--font-sans);-webkit-font-smoothing:antialiased;overflow:hidden}
+body{display:flex;align-items:center;justify-content:center}
+.stage{position:relative;width:1600px;height:900px;transform-origin:center center;
+  transform:translate(-50%,-50%) scale(1);top:50%;left:50%;position:absolute}
+.slide{position:absolute;inset:0;padding:64px 88px 56px;display:flex;flex-direction:column;
+  justify-content:center;background:var(--bg);opacity:0;pointer-events:none;
+  transform:translateX(18px);transition:opacity .38s ease,transform .38s ease}
+.slide.alt{background:var(--bg-alt)}
+.slide .notes{display:none}
+.slide.on{opacity:1;pointer-events:auto;transform:none}
+.slide.prev{transform:translateX(-18px)}
+.hd{position:absolute;top:36px;left:88px;font-size:13px;letter-spacing:.14em;
+  color:var(--muted);font-family:var(--font-mono)}
+.ft{position:absolute;left:88px;right:88px;bottom:30px;display:flex;
+  justify-content:space-between;align-items:baseline;font-size:13px;color:var(--muted)}
+.src{font-family:var(--font-mono);letter-spacing:.01em;max-width:1120px}
+.pg{font-family:var(--font-mono);letter-spacing:.08em}
+.kicker{font-size:14px;letter-spacing:.18em;color:var(--muted);margin:0 0 26px;
+  font-family:var(--font-sans)}
+h1{font-family:var(--font-display);font-weight:900;font-size:84px;line-height:1.14;
+  letter-spacing:-.02em;margin:0 0 26px;max-width:1220px}
+h2{font-family:var(--font-display);font-weight:700;font-size:56px;line-height:1.18;
+  letter-spacing:-.015em;margin:0 0 30px}
+h2.sm{font-size:48px;margin-bottom:30px}
+.sub{font-size:30px;line-height:1.5;color:var(--muted);margin:0 0 34px;font-weight:300}
+.meta{font-family:var(--font-mono);font-size:18px;letter-spacing:.02em;color:var(--muted)}
+.rule{height:1px;background:var(--rule);margin:30px 0}
+.num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.ok{color:var(--accent-2)}
+.bad{color:var(--accent)}
+.gold{color:var(--flag)}
+.dim{color:var(--muted)}
+.big{font-family:var(--font-display);font-weight:900;font-size:96px;line-height:1.1;
+  letter-spacing:-.02em;margin:0 0 30px;max-width:1300px}
+.big2{font-size:76px}
+.one{font-size:22px;line-height:1.6;color:var(--muted);max-width:1150px}
+
+/* tables */
+table.t{width:100%;border-collapse:collapse;font-size:22px}
+table.t th{text-align:left;font-weight:600;color:var(--muted);font-size:16px;
+  letter-spacing:.04em;padding:0 16px 12px;border-bottom:1px solid var(--rule)}
+table.t td{padding:16px 16px;border-bottom:1px solid var(--rule-soft);vertical-align:middle}
+table.t tr:last-child td{border-bottom:1px solid var(--rule)}
+table.t td.n,table.t th.n{text-align:right;font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+table.t .h{font-weight:600}
+table.t .mono{font-family:var(--font-mono);font-size:19px}
+table.t tr.em td{background:var(--bg-alt)}
+
+/* captions & plates */
+.plate{background:var(--surface);border:1px solid var(--rule);padding:18px 22px;margin:0}
+.plate img{display:block;width:100%;height:auto}
+.plate figcaption{font-family:var(--font-mono);font-size:14px;color:var(--muted);
+  margin-top:12px;letter-spacing:.02em}
+.cap{font-size:18px;color:var(--muted);margin-top:14px;line-height:1.6}
+
+/* two column */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:56px}
+.g2u{display:grid;grid-template-columns:1.15fr .85fr;gap:52px;align-items:start}
+.left{min-width:0}
+
+/* formula blocks */
+.formula{font-family:var(--font-mono);font-size:26px;letter-spacing:-.01em;margin:0 0 10px}
+.formula small{display:block;font-family:var(--font-sans);font-size:15px;
+  color:var(--muted);letter-spacing:0;margin-top:12px;line-height:1.55}
+
+/* numbers row */
+.nrow{display:flex;gap:64px;align-items:flex-end;flex-wrap:wrap}
+.nblock .v{font-family:var(--font-mono);font-size:58px;line-height:1.1;letter-spacing:-.02em}
+.nblock .k{font-size:15px;color:var(--muted);margin-top:8px;max-width:260px;line-height:1.5}
+.nblock .v.xl{font-size:80px}
+
+/* hero delta */
+.delta{display:flex;align-items:center;gap:44px;margin:6px 0 42px}
+.delta .a{font-family:var(--font-mono);font-size:150px;color:var(--muted);letter-spacing:-.03em;line-height:1}
+.delta .arw{font-size:56px;color:var(--muted)}
+.delta .b{font-family:var(--font-mono);font-size:150px;color:var(--accent-2);letter-spacing:-.03em;line-height:1}
+
+/* rules list */
+.rules{display:flex;flex-direction:column;gap:26px;max-width:1180px}
+.rules .r{display:grid;grid-template-columns:72px 1fr;gap:22px;align-items:baseline;
+  border-bottom:1px solid var(--rule-soft);padding-bottom:22px}
+.rules .r .i{font-family:var(--font-mono);font-size:20px;color:var(--muted)}
+.rules .r .b{font-size:31px;font-weight:600;margin-bottom:8px}
+.rules .r .s{font-size:19px;color:var(--muted);line-height:1.55}
+
+/* audio */
+.audiobar{display:flex;align-items:center;gap:26px;margin-top:34px}
+.play{position:relative;width:76px;height:76px;flex:0 0 76px;border:0;padding:0;
+  background:none;cursor:pointer;border-radius:50%;color:var(--accent)}
+.play:focus-visible{outline:2px solid var(--accent);outline-offset:6px}
+.play svg{width:76px;height:76px;display:block;transform:rotate(-90deg)}
+.play .tk{fill:none;stroke:var(--rule);stroke-width:1.5}
+.play .pr{fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;
+  stroke-dasharray:226;stroke-dashoffset:226;transition:stroke-dashoffset .18s linear}
+.play .tri{fill:var(--ink);stroke:none}
+.play.playing .tri{opacity:.25}
+.play.sm{width:52px;height:52px;flex-basis:52px}
+.play.sm svg{width:52px;height:52px}
+.tc{font-family:var(--font-mono);font-size:17px;color:var(--muted);letter-spacing:.04em}
+.audiolabel{font-size:17px;color:var(--muted);line-height:1.5}
+.trio{display:flex;gap:70px;justify-content:center;margin-top:26px}
+.trio .item{text-align:center}
+.trio .item .lb{font-family:var(--font-mono);font-size:22px;margin-top:14px;letter-spacing:.06em}
+.trio .item .tc{margin-top:6px}
+
+/* tags */
+.tags{display:flex;gap:34px;margin:0 0 26px}
+.tags .tg{border-top:1px solid var(--rule);padding-top:12px;flex:1}
+.tags .tg .n{font-family:var(--font-mono);font-size:15px;color:var(--muted);letter-spacing:.1em}
+.tags .tg .t{font-size:25px;font-weight:600;margin-top:8px}
+.tags .tg .d{font-size:16px;color:var(--muted);margin-top:6px;line-height:1.5}
+
+/* flow */
+.flow{display:flex;align-items:center;gap:20px;margin:0 0 14px}
+.flow .bx{border:1px solid var(--rule);padding:20px 26px;font-family:var(--font-mono);
+  font-size:21px;background:var(--surface)}
+.flow .ar{color:var(--muted);font-size:22px}
+.flow .tag{font-size:16px;color:var(--muted);margin-left:8px}
+
+/* rvq */
+.rvq{display:flex;flex-direction:column;gap:18px;margin:0 0 10px}
+.rvq .row{display:grid;grid-template-columns:104px 1fr;align-items:center;gap:18px}
+.rvq .lb{font-family:var(--font-mono);font-size:15px;color:var(--muted);letter-spacing:.06em}
+.rvq .bar{height:28px;border:1px solid var(--rule)}
+.rvq .b1{width:100%;background:color-mix(in srgb,var(--ink) 84%,var(--surface))}
+.rvq .b2{width:72%;background:color-mix(in srgb,var(--ink) 54%,var(--surface))}
+.rvq .b3{width:46%;background:color-mix(in srgb,var(--ink) 28%,var(--surface))}
+.rvq .b4{width:24%;background:color-mix(in srgb,var(--ink) 12%,var(--surface))}
+
+/* spec rows */
+.spec{display:flex;flex-direction:column;gap:0}
+.spec .sp{display:flex;justify-content:space-between;align-items:baseline;
+  padding:16px 0;border-bottom:1px solid var(--rule-soft)}
+.spec .sp .k{font-size:19px;color:var(--muted)}
+.spec .sp .v{font-family:var(--font-mono);font-size:21px}
+
+/* final */
+.lede-list{display:flex;flex-direction:column;gap:22px;max-width:1280px}
+.lede-list .l{display:flex;gap:20px;align-items:baseline}
+.lede-list .l .d{width:9px;height:9px;flex:0 0 9px;background:var(--ink);transform:rotate(45deg);
+  margin-top:10px}
+.lede-list .l .x{font-size:36px;line-height:1.4;font-weight:500}
+.lede-list .l .x.sm2{font-size:26px;color:var(--muted);font-weight:400}
+
+/* reveal */
+.reveal-btn{font-family:var(--font-sans);font-size:17px;color:var(--ink);
+  background:transparent;border:1px solid var(--rule);padding:14px 34px;cursor:pointer;
+  letter-spacing:.04em}
+.reveal-btn:hover{border-color:var(--ink)}
+.reveal-txt{font-family:var(--font-mono);font-size:19px;letter-spacing:.03em;margin:0;
+  color:var(--accent-2)}
+
+/* progress + help */
+#bar{position:fixed;left:0;bottom:0;height:2px;background:var(--accent);width:0;z-index:40;
+  transition:width .3s ease}
+#notes{position:fixed;left:0;right:0;bottom:0;max-height:38vh;overflow:auto;z-index:50;
+  background:var(--surface);border-top:1px solid var(--rule);padding:26px 40px;
+  font-size:16px;line-height:1.7;display:none}
+#notes.on{display:block}
+#notes b{display:block;font-family:var(--font-mono);font-size:12px;letter-spacing:.14em;
+  color:var(--muted);margin-bottom:10px}
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+
+<!-- 01 -->
+<section class="slide light" data-screen-label="01 Cover">
+  <div class="hd">MUSIC AI LAB</div>
+  <p class="kicker">课程项目 · 音乐 AI · 2026</p>
+  <h1>一个项目，两个任务，<br>五个负结果</h1>
+  <p class="sub">音乐流派分类 × 音频 Token 预测</p>
+  <div class="meta">GTZAN 985 · FMA-small 7,994 · 6 模型 · 3 种子 · 42 页报告</div>
+  <div class="rule" style="max-width:760px;margin-left:0"></div>
+  <div class="meta">组员　梁煜炜 · 贾智涵 · 王薪羽 · 陈泽玉</div>
+  <div class="ft"><span class="src">2026.10</span><span class="pg"></span></div>
+</section>
+
+<!-- 02 -->
+<section class="slide light" data-screen-label="02 Two tasks">
+  <div class="hd">MUSIC AI LAB</div>
+  <p class="big big2">同一批音乐，模型能听懂多少？</p>
+  <div class="g2" style="margin-top:10px">
+    <div class="left">
+      <p class="formula">p(流派 | 音频)</p>
+      <small style="display:block;font-size:15px;color:var(--muted);line-height:1.6">
+        判别式　答对几成　Macro-F1
+      </small>
+    </div>
+    <div class="left">
+      <p class="formula">p(下一个 Token | 前 5 秒)</p>
+      <small style="display:block;font-size:15px;color:var(--muted);line-height:1.6">
+        生成式　离真相多远　Top-1 / Log-Mel RMSE
+      </small>
+    </div>
+  </div>
+  <div class="rule"></div>
+  <p class="one">同一份数据划分 · 同一批测试曲目 · 指标不可比</p>
+  <div class="ft"><span class="src"></span><span class="pg"></span></div>
+</section>
+
+<!-- 03 -->
+<section class="slide light" data-screen-label="03 Data">
+  <div class="hd">MUSIC AI LAB</div>
+  <h2 class="sm">数据从哪来：985 首，和 7,994 首</h2>
+  <table class="t">
+    <thead><tr><th style="width:30%"></th><th class="n">GTZAN</th><th class="n">FMA-small</th></tr></thead>
+    <tbody>
+      <tr><td class="h">曲目</td><td class="n">985</td><td class="n">7,994</td></tr>
+      <tr><td class="h">类别</td><td class="n">10</td><td class="n">8</td></tr>
+      <tr><td class="h">训练 / 验证 / 测试</td><td class="n">690 / 147 / 147</td><td class="n">5,596 / 1,199 / 1,199</td></tr>
+      <tr><td class="h">模型输入</td><td class="n">中心 5 秒</td><td class="n">中心 5 秒</td></tr>
+      <tr><td class="h">采样率</td><td class="n">22.05 kHz</td><td class="n">22.05 kHz</td></tr>
+    </tbody>
+  </table>
+  <p class="cap">素材本身是 30 秒，但模型全程只听中心 5 秒。</p>
+  <div class="ft"><span class="src">来源：docs/repo_overview.md §2 · 报告 §3.4</span><span class="pg"></span></div>
+</section>
+
+<!-- 04 -->
+<section class="slide light alt" data-screen-label="04 Leakage">
+  <div class="hd">MUSIC AI LAB</div>
+  <h2 class="sm">一个很容易做错的划分</h2>
+  <div class="delta">
+    <span class="a">0.470</span>
+    <span class="arw">→</span>
+    <span class="b">0.568</span>
+  </div>
+  <table class="t" style="max-width:1000px">
+    <tbody>
+      <tr><td style="width:34%">同一批特征</td><td class="dim">209 维人工特征，一个都没换</td></tr>
+      <tr><td>同一个 CNN</td><td class="dim">同一份权重、同一个种子</td></tr>
+      <tr><td>换的只是划分</td><td class="dim">「按艺术家划分」→「按曲目划分」</td></tr>
+    </tbody>
+  </table>
+  <p class="cap bad" style="margin-top:26px;font-size:19px">81.0% 的测试曲与训练集共享艺术家</p>
+  <div class="ft"><span class="src">来源：报告 §3.4 表 4</span><span class="pg"></span></div>
+</section>
+
+<!-- 05 -->
+<section class="slide light" data-screen-label="05 Rules">
+  <div class="hd">MUSIC AI LAB</div>
+  <h2 class="sm">三条比赛规则</h2>
+  <div class="rules">
+    <div class="r"><span class="i">01</span><div><div class="b">三个种子，报均值</div>
+      <div class="s">42 / 123 / 2024，不挑最好的那一次</div></div></div>
+    <div class="r"><span class="i">02</span><div><div class="b">验证集选型，测试集只评一次</div>
+      <div class="s">评完不许回头改参数</div></div></div>
+    <div class="r" style="border-bottom:0"><span class="i">03</span><div><div class="b">按艺术家划分</div>
+      <div class="s">同一个人只出现在训练或测试一边</div></div></div>
+  </div>
+  <div class="ft"><span class="src">来源：data/splits/*/splits.csv（全模型共用）</span><span class="pg"></span></div>
+</section>
+
+<!-- 06 -->
+<section class="slide light" data-screen-label="06 Six models">
+  <div class="hd">MUSIC AI LAB</div>
+  <h2 class="sm">六位选手</h2>
+  <table class="t">
+    <thead><tr><th>选手</th><th>输入</th><th class="n">参数量</th><th class="n">体积</th><th>定位</th></tr></thead>
+    <tbody>
+      <tr><td class="h">SVM</td><td class="mono">209 维人工特征</td><td class="n">—</td><td class="n">1.2 MB</td><td class="dim">老派，抗造</td></tr>
+      <tr><td class="h">MLP</td><td class="mono">209 维人工特征</td><td class="n">8.8 万</td><td class="n">1.1 MB</td><td class="dim">略弱于 SVM</td></tr>
+      <tr><td class="h">CNN</td><td class="mono">64×216 log-Mel</td><td class="n">59 万</td><td class="n">2.4 MB</td><td class="dim">自建冠军（GTZAN）</td></tr>
+      <tr><td class="h">CRNN</td><td class="mono">同上 + BiGRU</td><td class="n">42 万</td><td class="n">1.7 MB</td><td class="dim">数据够了才反超</td></tr>
+      <tr><td class="h">轻量 Transformer</td><td class="mono">同上 + 位置编码</td><td class="n">65 万</td><td class="n">1.2 MB</td><td class="dim">千首级过拟合</td></tr>
+      <tr><td class="h">AST</td><td class="mono">128×1024 log-Mel</td><td class="n">8,600 万（冻结）</td><td class="n">346 MB</td><td class="dim">预训练，两榜第一</td></tr>
+    </tbody>
+  </table>
+  <p class="cap">AST 为冻结主干 + 线性头（7,690 参数），不是微调。</p>
+  <div class="ft"><span class="src">来源：results/gtzan/metrics.csv · 报告 §5.1</span><span class="pg"></span></div>
+</section>
+
+<!-- 07 -->
+<section class="slide light" data-screen-label="07 Scoreboard">
+  <div class="hd">MUSIC AI LAB</div>
+  <h2 class="sm">六位选手的成绩单</h2>
+  <div class="g2" style="gap:26px">
+    <figure class="plate">
+      <img src="assets/figures/fig_gtzan_f1.png" alt="GTZAN Macro-F1">
+      <figcaption>GTZAN · 985 首 · 10 类</figcaption>
+    </figure>
+    <figure class="plate">
+      <img src="assets/figures/fig_fma_f1.png" alt="FMA Macro-F1">
+      <figcaption>FMA-small · 7,994 首 · 8 类</figcaption>
+    </figure>
+  </div>
+  <div class="nrow" style="margin-top:34px;gap:120px">
+    <div class="nblock"><div class="v ok" style="font-size:52px">.814</div><div class="k">AST · GTZAN</div></div>
+    <div class="nblock"><div class="v ok" style="font-size:52px">.590</div><div class="k">AST · FMA-small</div></div>
+    <div class="nblock"><div class="v bad" style="font-size:52px">.542</div><div class="k">轻量 Transformer · 两榜垫底</div></div>
+  </div>
+  <div class="ft"><span class="src">来源：results/gtzan/metrics.csv · results/fma/metrics.csv（3 种子均值，重绘）</span><span class="pg"></span></div>
+</section>
+
+<!-- 08 -->
+<section class="slide light alt" data-screen-label="08 Cost">
+  <div class="hd">MUSIC AI LAB</div>
+  <h2 class="sm">冠军的代价</h2>
+  <figure class="plate" style="max-width:1120px">
+    <img src="assets/figures/fig_cost.png" alt="cost scatter">
+    <figcaption>延迟与体积，双对数坐标（GTZAN 测试集实测）</figcaption>
+  </figure>
+  <div class="nrow" style="margin-top:30px;gap:96px">
+    <div class="nblock"><div class="v bad" style="font-size:50px">270×</div><div class="k">延迟：0.76 → 204 ms</div></div>
+    <div class="nblock"><div class="v bad" style="font-size:50px">145×</div><div class="k">体积：2.4 → 346 MB</div></div>
+    <div class="nblock"><div class="v" style="font-size:26px;line-height:1.4;color:var(--muted)">离线批处理可接受<br>实时交互不可用</div></div>
+  </div>
+  <div class="ft"><span class="src">来源：报告 §5.4 · results/gtzan/metrics.csv（重绘）</span><span class="pg"></span></div>
+</section>
+
+<!-- 09 -->
+<section class="slide light" data-screen-label="09 Arena PK">
+  <div class="hd">MUSIC AI LAB</div>
+  <h2 class="sm">同一首歌，六种判断</h2>
+  <p class="one" style="margin:-14px 0 26px">六个模型、同一批曲目、各自投票——内部管这个设定叫「PVP 擂台」</p>
+  <table class="t" style="font-size:20px">
+    <thead><tr><th>曲目</th><th>真值</th><th>SVM</th><th>MLP</th><th>CNN</th><th>CRNN</th><th>TF</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="mono">073776</td><td class="dim">International</td>
+        <td>Instrumental <span class="bad">✗</span> 23%</td>
+        <td>Folk <span class="bad">✗</span> 35%</td>
+        <td>Experimental <span class="bad">✗</span> 43%</td>
+        <td>Electronic <span class="bad">✗</span> 91%</td>
+        <td>Pop <span class="bad">✗</span> 29%</td>
+      </tr>
+      <tr>
+        <td class="mono">classical.00099</td><td class="dim">classical</td>
+        <td>classical <span class="ok">✓</span> 82%</td>
+        <td>classical <span class="ok">✓</span> 100%</td>
+        <td>rock <span class="bad">✗</span> 77%</td>
+        <td>country <span class="bad">✗</span> 70%</td>
+        <td>jazz <span class="bad">✗</span> 46%</td>
+      </tr>
+      <tr>
+        <td class="mono">blues.00012</td><td class="dim">blues</td>
+        <td>blues <span class="ok">✓</span> 65%</td>
+        <td>blues <span class="ok">✓</span> 98%</td>
+        <td>blues <span class="ok">✓</span> 85%</td>
+        <td>blues <span class="ok">✓</span> 97%</td>
+        <td>blues <span class="ok">✓</span> 97%</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="audiobar">
+    <button class="play" data-a="a1" aria-label="播放五秒片段">
+      <svg viewBox="0 0 76 76" aria-hidden="true">
+        <circle class="tk" cx="38" cy="38" r="36"></circle>
+        <circle class="pr" cx="38" cy="38" r="36" data-ring></circle>
+        <path class="tri" d="M31 25 L55 38 L31 51 Z"></path>
+      </svg>
+    </button>
+    <div>
+      <div class="tc" data-tc>0:00 / 0:05</div>
+      <div class="audiolabel">5 秒 · FMA 测试集 · 模型没见过</div>
+    </div>
+  </div>
+  <div class="ft"><span class="src">来源：results/fma/predictions/*_seed42_test.csv</span><span class="pg"></span></div>
+  <div class="notes"><b>操作</b>按空格或点圆环播放 073776_International.mp3（5.1 s）。放完再公布答案。</div>
+</section>
+
+<!-- 10 -->
+<section class="slide light" data-screen-label="10 Inductive bias">
+  <div class="hd">MUSIC AI LAB</div>
+  <h2 class="sm">模型不是白纸</h2>
+  <table class="t">
+    <thead><tr><th>模型</th><th>生来就信的假设</th><th>数据少时</th><th>数据多时</th></tr></thead>
+    <tbody>
+      <tr><td class="h">SVM / MLP</td><td>自己没有先验，但输入的人工特征里全是</td><td class="dim">稳，天花板低</td><td class="dim">天花板低</td></tr>
+      <tr class="em"><td class="h">CNN</td><td class="h">局部性 + 平移等变</td><td>强</td><td>强</td></tr>
+      <tr class="em"><td class="h">CRNN</td><td>局部性 + <span class="h">循环层的记忆</span></td><td>稍弱</td><td>更强</td></tr>
+      <tr><td class="h">轻量 Transformer</td><td>只有位置编码，<span class="h">几乎没有结构先验</span></td><td class="bad">严重过拟合</td><td class="dim">待观察</td></tr>
+      <tr><td class="h">AST</td><td>架构同上，<span class="h">预训练把先验灌进权重</span></td><td class="ok">最强</td><td class="ok">最强</td></tr>
+    </tbody>
+  </table>
+  <p class="cap">先验越少，样本效率越低；先验越少，天花板越高。这是一枚硬币的两面。</p>
+  <div class="ft"><span class="src">来源：报告 §7.6</span><span class="pg"></span></div>
+</section>
+
+<!-- 11 -->
+<section class="slide light" data-screen-label="11 Three evidences">
+  <div class="hd">MUSIC AI LAB</div>
+  <h2 class="sm">先验越少，越吃数据</h2>
+  <table class="t" style="font-size:23px">
+    <tbody>
+      <tr>
+        <td class="mono" style="font-size:26px;white-space:nowrap;width:31%;padding-top:26px;padding-bottom:26px">0.753 &gt; 0.723 ≫ 0.542</td>
+        <td class="dim" style="padding-top:26px;padding-bottom:26px">GTZAN 985 首：CNN 赢，轻量 TF 差 21 个点</td>
+      </tr>
+      <tr>
+        <td class="mono" style="font-size:26px;white-space:nowrap;padding-top:26px;padding-bottom:26px">0.492 &gt; 0.470</td>
+        <td class="dim" style="padding-top:26px;padding-bottom:26px">FMA 8 倍数据：CRNN 反超 CNN</td>
+      </tr>
+      <tr>
+        <td class="mono" style="font-size:26px;white-space:nowrap;padding-top:26px;padding-bottom:26px">0.814 / 0.590</td>
+        <td class="dim" style="padding-top:26px;padding-bottom:26px">同一个 Transformer 架构，预训练后两榜第一</td>
+      </tr>
+    </tbody>
+  </table>
+  <p class="cap gold" style="font-size:26px;margin-top:52px;font-family:var(--font-display);font-weight:700">问题不在架构，在数据与先验。</p>
+  <div class="ft"><span class="src">来源：results/gtzan/metrics.csv · results/fma/metrics.csv</span><span class="pg"></span></div>
+</section>
+
+<!-- 12 -->
+<section class="slide light" data-screen-label="12 Overfit curve">
+  <div class="hd">MUSIC AI LAB</div>
+  <h2 class="sm">那条过分自信的曲线</h2>
+  <figure class="plate">
+    <img src="assets/figures/fig_curves.png" alt="training curves">
+    <figcaption>GTZAN 训练 / 验证损失（细线为三个种子，粗线为均值）</figcaption>
+  </figure>
+  <p class="cap" style="font-size:19px;margin-top:20px">30 轮加到 60 轮：GTZAN +0.75 / +1.36，FMA −0.5 左右 —— 再训也这样。</p>
+  <div class="ft"><span class="src">来源：results/logs/overnight/*.log（重绘）· 报告 §5.3 表 13</span><span class="pg"></span></div>
+</section>
+
+<!-- 13 -->
+<section class="slide light alt" data-screen-label="13 Robustness">
+  <div class="hd">MUSIC AI LAB</div>
+  <h2 class="sm">换个听法就翻车</h2>
+  <figure class="plate">
+    <img src="assets/figures/fig_robust.png" alt="robustness">
+    <figcaption>七种扰动下的准确率（n=147，不重新训练；seed 42 权重）</figcaption>
+  </figure>
+  <div class="nrow" style="margin-top:26px">
+    <div class="nblock"><div class="v bad">0.748 → 0.122</div><div class="k">0 dB 噪声下 CNN，掉 62.6 个点</div></div>
+    <div class="nblock"><div class="v">−53.1</div><div class="k">5 秒剪成 3 秒，CRNN 掉点</div></div>
+    <div class="nblock"><div class="v ok">−12.9</div><div class="k">同条件下 SVM 只掉这么多</div></div>
+  </div>
+  <div class="ft"><span class="src">来源：results/gtzan/robustness.csv（35 行）</span><span class="pg"></span></div>
+</section>
+
+<!-- 14 -->
+<section class="slide light" data-screen-label="14 Knobs">
+  <div class="hd">MUSIC AI LAB</div>
+  <h2 class="sm">能拧的旋钮，都拧过了</h2>
+  <table class="t">
+    <thead><tr><th>试过什么</th><th>结果</th></tr></thead>
+    <tbody>
+      <tr><td class="h">SpecAugment + 标签平滑</td><td class="dim">FMA 上最大 +0.7 个点，落在种子波动内</td></tr>
+      <tr><td class="h">30 轮 → 60 轮</td><td class="dim">两个数据集互有胜负</td></tr>
+      <tr><td class="h">学习率 / 批大小扫描</td><td class="dim">无稳定收益</td></tr>
+    </tbody>
+  </table>
+  <p class="cap bad" style="font-size:22px;margin-top:34px">剩下的差距，不是调参能补的。</p>
+  <div class="ft"><span class="src">来源：报告 §5.3 表 13</span><span class="pg"></span></div>
+</section>
+
+<!-- 15 -->
+<section class="slide light" data-screen-label="15 Turn">
+  <div class="hd">MUSIC AI LAB</div>
+  <p class="big" style="margin-bottom:6px">它知道这是什么。</p>
+  <p class="big" style="color:var(--muted);text-decoration:line-through;
+     text-decoration-thickness:1.5px;text-decoration-color:var(--rule)">它不知道接下来会响什么。</p>
+  <div class="rule" style="max-width:820px;margin-left:0"></div>
+  <p class="meta" style="font-size:20px">p(流派 | 音频)　　→　　p(下一个 Token | 前 5 秒)</p>
+  <div class="ft"><span class="src"></span><span class="pg"></span></div>
+</section>
+
+<!-- 16 -->
+<section class="slide light" data-screen-label="16 EnCodec">
+  <div class="hd">MUSIC AI LAB</div>
+  <h2 class="sm">把声音拆成符号</h2>
+  <div class="g2">
+    <div class="left">
+      <div class="spec">
+        <div class="sp"><span class="k">采样率</span><span class="v">32 kHz</span></div>
+        <div class="sp"><span class="k">帧率</span><span class="v">50 Hz（每帧 20 ms）</span></div>
+        <div class="sp"><span class="k">码本</span><span class="v">4 个</span></div>
+        <div class="sp"><span class="k">每帧符号</span><span class="v">4 个 Token</span></div>
+      </div>
+    </div>
+    <div class="left">
+      <div class="rvq">
+        <div class="row"><span class="lb">码本 0</span><span class="bar b1"></span></div>
+        <div class="row"><span class="lb">码本 1</span><span class="bar b2"></span></div>
+        <div class="row"><span class="lb">码本 2</span><span class="bar b3"></span></div>
+        <div class="row"><span class="lb">码本 3</span><span class="bar b4"></span></div>
+      </div>
+      <p class="cap">残差矢量量化：第 1 个码本画轮廓，后 3 个逐级补细节 → 串成整数序列</p>
+    </div>
+  </div>
+  <p class="cap" style="margin-top:30px;font-size:19px">「预测音频」变成「预测下一个符号」——交叉熵直接能用。</p>
+  <div class="ft"><span class="src">来源：报告 §6.2</span><span class="pg"></span></div>
+</section>
+
+<!-- 17 -->
+<section class="slide light alt" data-screen-label="17 Two pipelines">
+  <div class="hd">MUSIC AI LAB</div>
+  <h2 class="sm">两条流水线</h2>
+  <div class="flow">
+    <span class="bx">5 秒前缀</span><span class="ar">→</span>
+    <span class="bx">4×250 Token</span><span class="ar">→</span>
+    <span class="bx">1 秒 · 4×50 Token</span>
+    <span class="tag">① 自己训的小模型</span>
+  </div>
+  <div class="flow" style="margin-top:26px">
+    <span class="bx">5 秒前缀（波形）</span><span class="ar">→</span>
+    <span class="bx">3 秒波形</span>
+    <span class="tag">② MusicGen-small + 我们的 LoRA</span>
+  </div>
+  <div class="rule" style="margin:40px 0 26px"></div>
+  <table class="t">
+    <tbody>
+      <tr><td style="width:44%">① 指标</td><td class="dim">下一个符号猜对没有（Top-1）</td></tr>
+      <tr><td>② 指标</td><td class="dim">频谱离真实多远（Log-Mel RMSE）</td></tr>
+    </tbody>
+  </table>
+  <p class="cap bad" style="font-size:19px;margin-top:30px">这两个数不能互相比，也不能跟分类的 0.814 比。</p>
+  <div class="ft"><span class="src">来源：报告 §3.6 · §6.2</span><span class="pg"></span></div>
+</section>
+
+<!-- 18 -->
+<section class="slide light" data-screen-label="18 Baselines">
+  <div class="hd">MUSIC AI LAB</div>
+  <h2 class="sm">先立四个「笨」基线</h2>
+  <table class="t">
+    <thead><tr><th>基线</th><th>做法</th><th class="n">Top-1</th></tr></thead>
+    <tbody>
+      <tr><td class="h">均匀分布</td><td class="dim">词表内等概率瞎猜</td><td class="n">0.049%</td></tr>
+      <tr><td class="h">频率先验</td><td class="dim">永远猜训练集最高频符号</td><td class="n">1.16%</td></tr>
+      <tr><td class="h">Persistence</td><td class="dim">把上一帧原封不动重复一遍</td><td class="n">1.62%</td></tr>
+      <tr><td class="h">Bigram</td><td class="dim">数相邻符号谁跟着谁</td><td class="n">1.71%</td></tr>
+      <tr class="em"><td class="h">我们的模型</td><td>Transformer / LSTM</td><td class="n h">2.19% / 2.08%</td></tr>
+    </tbody>
+  </table>
+  <p class="cap bad" style="font-size:19px;margin-top:30px">打不过 Persistence，就说明它在假装学习。</p>
+  <div class="ft"><span class="src">来源：results/token_prediction_long/metrics.csv</span><span class="pg"></span></div>
+</section>
+
+<!-- 19 -->
+<section class="slide light" data-screen-label="19 Token score">
+  <div class="hd">MUSIC AI LAB</div>
+  <h2 class="sm">学会了，但只学会一点点</h2>
+  <div class="g2u">
+    <div class="left">
+      <figure class="plate">
+        <img src="assets/figures/fig_token_top1.png" alt="token top1">
+        <figcaption>free-running Top-1（FMA 测试集，3 种子均值）</figcaption>
+      </figure>
+    </div>
+    <div class="left">
+      <div class="nrow" style="flex-direction:column;gap:26px;align-items:flex-start">
+        <div class="nblock"><div class="v">3.36%</div><div class="k">看着答案考试（teacher-forced）</div></div>
+        <div class="nblock"><div class="v xl gold">2.19%</div><div class="k">自己往下接（free-running）</div></div>
+        <div class="nblock"><div class="v bad">−35%</div><div class="k">一步之差</div></div>
+      </div>
+    </div>
+  </div>
+  <p class="cap" style="font-size:19px;margin-top:22px">2.19% 是瞎猜的 45 倍，也是一百个符号里猜对两个。</p>
+  <div class="ft"><span class="src">来源：results/token_prediction_long/metrics.csv（3 种子均值）</span><span class="pg"></span></div>
+</section>
+
+<!-- 20 -->
+<section class="slide light" data-screen-label="20 Codebook">
+  <div class="hd">MUSIC AI LAB</div>
+  <h2 class="sm">码本也有难易之分</h2>
+  <figure class="plate">
+    <img src="assets/figures/fig_codebook.png" alt="per codebook">
+    <figcaption>四个码本各自的 free-running Top-1</figcaption>
+  </figure>
+  <table class="t" style="margin-top:22px">
+    <tbody>
+      <tr><td style="width:26%">码本 0 → 码本 3</td><td class="dim">2.8% → 1.5%，由粗到细逐级下降</td></tr>
+      <tr><td class="h">这说明</td><td class="dim">结构对得上 RVQ；如果是在瞎猜，四个码本应该一样烂</td></tr>
+    </tbody>
+  </table>
+  <div class="ft"><span class="src">来源：results/token_prediction/figures/token_per_codebook.png</span><span class="pg"></span></div>
+</section>
+
+<!-- 21 -->
+<section class="slide light" data-screen-label="21 Listen four segments">
+  <div class="hd">MUSIC AI LAB</div>
+  <h2 class="sm">请听四段</h2>
+  <div class="tags" style="gap:34px">
+    <div class="tg"><div class="n">01</div><div class="t">前缀</div><div class="d">模型看到的 5 秒</div></div>
+    <div class="tg"><div class="n">02</div><div class="t">真实</div><div class="d">唱片里原本的后 3 秒</div></div>
+    <div class="tg"><div class="n">03</div><div class="t">原始续写</div><div class="d">MusicGen-small</div></div>
+    <div class="tg"><div class="n">04</div><div class="t">适配后续写</div><div class="d">+ LoRA r=8</div></div>
+  </div>
+  <div class="audiobar" style="margin-top:56px;gap:34px">
+    <button class="play" data-a="a2" aria-label="播放四段串联">
+      <svg viewBox="0 0 76 76" aria-hidden="true">
+        <circle class="tk" cx="38" cy="38" r="36"></circle>
+        <circle class="pr" cx="38" cy="38" r="36" data-ring></circle>
+        <path class="tri" d="M31 25 L55 38 L31 51 Z"></path>
+      </svg>
+    </button>
+    <div>
+      <div class="tc" data-tc style="font-size:22px">0:00 / 0:16</div>
+      <div class="audiolabel" style="margin-top:8px">段间隔 0.6 秒 · 000995 Experimental</div>
+    </div>
+    <div class="nblock" style="margin-left:auto;text-align:right">
+      <div class="v num" style="font-size:44px">20.85 → 17.19</div>
+      <div class="k" style="font-size:17px">Log-Mel RMSE · 八首里改善最大（−3.65）</div>
+    </div>
+  </div>
+  <div class="ft"><span class="src">来源：demo/audio/README.md §4 · 报告 §6.9</span><span class="pg"></span></div>
+  <div class="notes"><b>操作</b>按空格播放 AB__000995_Experimental.mp3（16.4 s），一口气放完再说话。结尾 0.6 s 的缝不是卡带。</div>
+</section>
+
+<!-- 22 -->
+<section class="slide light alt" data-screen-label="22 Blind test">
+  <div class="hd">MUSIC AI LAB</div>
+  <h2 class="sm">三条里只有一条是真的</h2>
+  <p class="one" style="margin:-16px 0 34px">同一段 5 秒前缀，只有后半段不同</p>
+  <div class="trio" style="gap:110px">
+    <div class="item">
+      <button class="play" data-a="a3" aria-label="播放 A">
+        <svg viewBox="0 0 76 76" aria-hidden="true">
+          <circle class="tk" cx="38" cy="38" r="36"></circle>
+          <circle class="pr" cx="38" cy="38" r="36" data-ring></circle>
+          <path class="tri" d="M31 25 L55 38 L31 51 Z"></path>
+        </svg>
+      </button>
+      <div class="lb" style="font-size:30px">A</div><div class="tc" data-tc>0:00 / 0:08</div>
+    </div>
+    <div class="item">
+      <button class="play" data-a="a4" aria-label="播放 B">
+        <svg viewBox="0 0 76 76" aria-hidden="true">
+          <circle class="tk" cx="38" cy="38" r="36"></circle>
+          <circle class="pr" cx="38" cy="38" r="36" data-ring></circle>
+          <path class="tri" d="M31 25 L55 38 L31 51 Z"></path>
+        </svg>
+      </button>
+      <div class="lb" style="font-size:30px">B</div><div class="tc" data-tc>0:00 / 0:08</div>
+    </div>
+    <div class="item">
+      <button class="play" data-a="a5" aria-label="播放 C">
+        <svg viewBox="0 0 76 76" aria-hidden="true">
+          <circle class="tk" cx="38" cy="38" r="36"></circle>
+          <circle class="pr" cx="38" cy="38" r="36" data-ring></circle>
+          <path class="tri" d="M31 25 L55 38 L31 51 Z"></path>
+        </svg>
+      </button>
+      <div class="lb" style="font-size:30px">C</div><div class="tc" data-tc>0:00 / 0:08</div>
+    </div>
+  </div>
+  <div id="reveal" style="margin-top:48px;text-align:center">
+    <button id="revealBtn" class="reveal-btn">揭晓答案</button>
+    <p id="revealTxt" class="reveal-txt">A = 真人录音　　B = 原始模型　　C = LoRA 适配后</p>
+  </div>
+  <div class="ft"><span class="src">三个文件已重命名，页面不显示原始文件名</span><span class="pg"></span></div>
+  <div class="notes"><b>答案</b>A = REAL__000995_Experimental（真人录音）｜B = GENbase__000995（原始模型）｜C = GENft__000995（LoRA）。点「揭晓答案」或按 R 展开。</div>
+</section>
+
+<!-- 23 -->
+<section class="slide light" data-screen-label="23 Counterexample">
+  <div class="hd">MUSIC AI LAB</div>
+  <h2 class="sm">这一条，改完反而更差</h2>
+  <div class="audiobar" style="margin-top:8px">
+    <button class="play" data-a="a6" aria-label="播放反例">
+      <svg viewBox="0 0 76 76" aria-hidden="true">
+        <circle class="tk" cx="38" cy="38" r="36"></circle>
+        <circle class="pr" cx="38" cy="38" r="36" data-ring></circle>
+        <path class="tri" d="M31 25 L55 38 L31 51 Z"></path>
+      </svg>
+    </button>
+    <div>
+      <div class="tc" data-tc>0:00 / 0:16</div>
+      <div class="audiolabel">同样四段：前缀 → 真实 → 原始 → 适配</div>
+    </div>
+  </div>
+  <div style="margin-top:56px">
+    <div class="num bad" style="font-size:76px;line-height:1.1">27.13 → 27.46</div>
+    <p class="cap" style="font-size:21px;margin-top:12px">8 首测试曲里唯一退步的一首（+0.33）</p>
+  </div>
+  <div class="ft"><span class="src">来源：demo/audio/README.md §4</span><span class="pg"></span></div>
+  <div class="notes"><b>操作</b>按空格播放 AB__001482_Electronic.mp3（16.4 s）。放完立刻说"这一条更差"。</div>
+</section>
+
+<!-- 24 -->
+<section class="slide light" data-screen-label="24 Label layout">
+  <div class="hd">MUSIC AI LAB</div>
+  <h2 class="sm">最贵的一课：标签写错了</h2>
+  <table class="t">
+    <thead><tr><th class="n" style="width:22%">loss</th><th>是什么情况</th></tr></thead>
+    <tbody>
+      <tr><td class="n bad" style="font-size:34px">11.08</td><td class="h">错误布局：比均匀分布还差</td></tr>
+      <tr><td class="n ok" style="font-size:34px">5.46</td><td class="h">正确布局</td></tr>
+      <tr><td class="n dim" style="font-size:34px">7.62</td><td class="dim">均匀分布（乱猜的上界）</td></tr>
+    </tbody>
+  </table>
+  <div class="rule"></div>
+  <table class="t">
+    <tbody>
+      <tr><td style="width:30%">症状</td><td class="dim">不报错，loss 只停在偏高的值上，看起来像「还没训够」</td></tr>
+      <tr><td class="h">改对之后</td><td class="dim">19.23 → 17.91，7/8 首改善，t = −3.36</td></tr>
+    </tbody>
+  </table>
+  <div class="ft"><span class="src">来源：报告 §6.10</span><span class="pg"></span></div>
+</section>
+
+<!-- 25 -->
+<section class="slide light alt" data-screen-label="25 Three knobs">
+  <div class="hd">MUSIC AI LAB</div>
+  <h2 class="sm">三个旋钮，全都不灵</h2>
+  <table class="t">
+    <thead><tr><th>配置</th><th class="n">RMSE</th><th class="n">相对原始</th><th>配对检验</th></tr></thead>
+    <tbody>
+      <tr><td>原始模型</td><td class="n">19.23</td><td class="n">—</td><td class="dim">—</td></tr>
+      <tr class="em"><td class="h">LoRA r=8，1200 步</td><td class="n h">17.91</td><td class="n h ok">−1.32</td><td class="h ok">t = −3.36，显著</td></tr>
+      <tr><td>LoRA 3600 步</td><td class="n">17.71</td><td class="n">−1.52</td><td class="dim">t = −0.47，不显著</td></tr>
+      <tr><td>LoRA 全窗口</td><td class="n">17.64</td><td class="n">−1.59</td><td class="dim">t = −0.33，不显著</td></tr>
+      <tr><td>LoRA r=16</td><td class="n">18.59</td><td class="n">−0.64</td><td class="dim">t = −1.06，不显著</td></tr>
+    </tbody>
+  </table>
+  <p class="cap bad" style="font-size:19px;margin-top:28px">NLL 一直在降，音频距离没跟着降。</p>
+  <div class="ft"><span class="src">来源：报告 §6.9 / §6.11</span><span class="pg"></span></div>
+</section>
+
+<!-- 26 -->
+<section class="slide light" data-screen-label="26 Three seconds">
+  <div class="hd">MUSIC AI LAB</div>
+  <h2 class="sm">为什么只有 3 秒</h2>
+  <table class="t">
+    <thead><tr><th>续写长度</th><th class="n">耗时（RTX 4060）</th><th>情况</th></tr></thead>
+    <tbody>
+      <tr class="em"><td class="h">3 秒</td><td class="n">5.6 s</td><td>8/8 曲目稳定，主结果口径</td></tr>
+      <tr><td>6 秒</td><td class="n">16.3 s</td><td class="dim">可生成</td></tr>
+      <tr><td>8 秒</td><td class="n">18.3 s</td><td class="dim">可生成</td></tr>
+      <tr><td>12 秒</td><td class="n">35.4 s</td><td class="dim">可生成</td></tr>
+      <tr><td class="bad">16 / 20 秒</td><td class="n">—</td><td class="bad">崩：位置索引越界</td></tr>
+    </tbody>
+  </table>
+  <p class="cap" style="font-size:19px;margin-top:30px">崩的原因不在长度：pad/bos 的 id 是 2048，而词表只到 2047。</p>
+  <p class="cap" style="font-size:19px;margin-top:8px">3 秒是「八首都能稳定跑完」的口径，不是能力上限。</p>
+  <div class="ft"><span class="src">来源：demo/README.md §3.5</span><span class="pg"></span></div>
+</section>
+
+<!-- 27 -->
+<section class="slide light" data-screen-label="27 Metric trap">
+  <div class="hd">MUSIC AI LAB</div>
+  <h2 class="sm">指标不等于好听</h2>
+  <figure class="plate">
+    <img src="assets/figures/generation_spec.png" alt="generation spectrogram">
+    <figcaption>前缀　|　真实　|　原始续写　|　适配后续写（Log-Mel）</figcaption>
+  </figure>
+  <div class="g2" style="margin-top:22px;gap:40px">
+    <p class="cap" style="font-size:18px;margin:0">指标：Log-Mel RMSE——离原曲多近</p>
+    <p class="cap" style="font-size:18px;margin:0">没做：规模化主观听感评分</p>
+  </div>
+  <p class="cap bad" style="font-size:19px;margin-top:20px">所以我们只说「客观距离变近了」，不说「变好听了」。</p>
+  <div class="ft"><span class="src">来源：报告 §6.7 / §7.9</span><span class="pg"></span></div>
+</section>
+
+<!-- 28 -->
+<section class="slide light" data-screen-label="28 Closing">
+  <div class="hd">MUSIC AI LAB</div>
+  <h2 class="sm" style="margin-bottom:34px">结案</h2>
+  <div class="lede-list">
+    <div class="l"><span class="d"></span><span class="x">判别式：最大的单点收益是预训练，不是架构</span></div>
+    <div class="l"><span class="d"></span><span class="x">模型排序会随数据规模翻转：985 首 CNN 赢，7,994 首 CRNN 反超</span></div>
+    <div class="l"><span class="d"></span><span class="x">泄漏能让结论虚高十个点：0.470 → 0.568</span></div>
+    <div class="l"><span class="d"></span><span class="x sm2">生成式：能预测，学得很少，修好对齐后有可测改善，三个旋钮无效</span></div>
+  </div>
+  <div class="rule" style="margin:36px 0 24px"></div>
+  <p class="one" style="font-size:18px">五个负结果都留在报告里：正则化无效 · 轻量 TF 小数据崩 · 噪声下 CNN 垫底 · LoRA 初版失效 · 三旋钮无效</p>
+  <p style="font-size:26px;margin:26px 0 0;font-family:var(--font-display);font-weight:700">我们没把「跑通」当成「做好」。</p>
+  <div class="ft"><span class="src">梁煜炜 · 贾智涵 · 王薪羽 · 陈泽玉　｜　谢谢</span><span class="pg"></span></div>
+</section>
+
+</div>
+
+<div id="bar"></div>
+<div id="notes"><b>NOTES</b><div id="notesBody"></div></div>
+
+<audio id="a1" src="audio/073776_International.mp3" preload="metadata"></audio>
+<audio id="a2" src="audio/AB__000995_Experimental.mp3" preload="metadata"></audio>
+<audio id="a3" src="audio/REAL__000995_Experimental.mp3" preload="metadata"></audio>
+<audio id="a4" src="audio/GENbase__000995_Experimental.mp3" preload="metadata"></audio>
+<audio id="a5" src="audio/GENft__000995_Experimental.mp3" preload="metadata"></audio>
+<audio id="a6" src="audio/AB__001482_Electronic.mp3" preload="metadata"></audio>
+
+<script>
+(function(){
+  var stage=document.getElementById('stage');
+  var slides=[].slice.call(document.querySelectorAll('.slide'));
+  var bar=document.getElementById('bar');
+  var notes=document.getElementById('notes');
+  var notesBody=document.getElementById('notesBody');
+  var i=0, C=226;
+
+  function fit(){
+    var s=Math.min(window.innerWidth/1600, window.innerHeight/900);
+    stage.style.transform='translate(-50%,-50%) scale('+s+')';
+  }
+  window.addEventListener('resize',fit); fit();
+
+  slides.forEach(function(sl,n){
+    var pg=sl.querySelector('.pg');
+    if(pg) pg.textContent=('0'+(n+1)).slice(-2)+' / '+('0'+slides.length).slice(-2);
+  });
+
+  function stopAll(){
+    [].slice.call(document.querySelectorAll('audio')).forEach(function(a){
+      a.pause(); a.currentTime=0;
+    });
+    [].slice.call(document.querySelectorAll('.play')).forEach(function(b){
+      b.classList.remove('playing');
+      var r=b.querySelector('[data-ring]'); if(r) r.style.strokeDashoffset=C;
+      var tc=b.parentNode.querySelector('[data-tc]'); if(tc) tc.textContent='0:00 / '+(b.getAttribute('data-len')||'0:00');
+    });
+  }
+
+  function go(n){
+    if(n<0||n>=slides.length) return;
+    stopAll();
+    slides[i].classList.remove('on'); slides[i].classList.add('prev');
+    i=n;
+    slides[i].classList.remove('prev'); slides[i].classList.add('on');
+    bar.style.width=((i+1)/slides.length*100)+'%';
+    if(notes.classList.contains('on')) showNotes();
+    if(location.hash!=='#/'+(i+1)) history.replaceState(null,'','#/'+(i+1));
+  }
+
+  function showNotes(){
+    var sl=slides[i], nt=sl.querySelector('.notes');
+    notesBody.innerHTML=nt?nt.innerHTML:'<span style="color:var(--muted)">（本页无备注）</span>';
+  }
+
+  // audio
+  [].slice.call(document.querySelectorAll('.play')).forEach(function(btn){
+    var a=document.getElementById(btn.getAttribute('data-a'));
+    var ring=btn.querySelector('[data-ring]');
+    var holder=btn.parentNode;
+    var tc=holder.querySelector('[data-tc]');
+    function fmt(t){var m=Math.floor(t/60),s=Math.floor(t%60);return m+':'+('0'+s).slice(-2);}
+    function upd(){
+      var d=a.duration||0;
+      if(d){
+        btn.setAttribute('data-len',fmt(d));
+        ring.style.strokeDashoffset=C-(C*(a.currentTime/d));
+        if(tc) tc.textContent=fmt(a.currentTime)+' / '+fmt(d);
+      }
+      if(!a.paused) requestAnimationFrame(upd);
+    }
+    btn.addEventListener('click',function(){
+      var playing=!a.paused;
+      stopAll();
+      if(!playing){ a.play(); btn.classList.add('playing'); requestAnimationFrame(upd); }
+    });
+    a.addEventListener('ended',function(){
+      btn.classList.remove('playing'); ring.style.strokeDashoffset=C;
+      if(tc) tc.textContent='0:00 / '+(btn.getAttribute('data-len')||'0:00');
+    });
+  });
+
+  // reveal
+  var rb=document.getElementById('revealBtn'), rt=document.getElementById('revealTxt');
+  if(rb){
+    rt.style.visibility='hidden';
+    rb.addEventListener('click',function(){
+      rt.style.visibility='visible'; rb.style.display='none';
+    });
+  }
+
+  document.addEventListener('keydown',function(e){
+    var k=e.key;
+    if(k==='ArrowRight'||k==='PageDown'||k===' '){ }
+    if(k==='ArrowRight'||k==='PageDown'){ e.preventDefault(); go(i+1); }
+    else if(k==='ArrowLeft'||k==='PageUp'){ e.preventDefault(); go(i-1); }
+    else if(k==='Home'){ go(0); }
+    else if(k==='End'){ go(slides.length-1); }
+    else if(k==='f'||k==='F'){
+      if(!document.fullscreenElement) document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();
+      else document.exitFullscreen&&document.exitFullscreen();
+    }
+    else if(k==='n'||k==='N'){
+      notes.classList.toggle('on'); if(notes.classList.contains('on')) showNotes();
+    }
+    else if(k==='r'||k==='R'){
+      if(rb&&rt){ rt.style.visibility='visible'; rb.style.display='none'; }
+    }
+    else if(k==='Escape'){ notes.classList.remove('on'); }
+    else if(k===' '){
+      e.preventDefault();
+      var b=slides[i].querySelector('.play');
+      if(b) b.click();
+    }
+  });
+
+  var start=/[?&]p=(\d+)/.exec(location.search);
+  var hash=/#\/(\d+)/.exec(location.hash||'');
+  var init=start?parseInt(start[1],10)-1:(hash?parseInt(hash[1],10)-1:0);
+  slides[init].classList.add('on');
+  i=init;
+  bar.style.width=((i+1)/slides.length*100)+'%';
+})();
+</script>
+</body>
+</html>

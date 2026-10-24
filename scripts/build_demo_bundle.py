@@ -32,10 +32,16 @@ def need(cmd: str) -> str:
     return p
 
 
-def to_mp3(src: Path, dst: Path, loudnorm: bool = True) -> Path:
+def to_mp3(src: Path, dst: Path, loudnorm: bool = False) -> Path:
+    """WAV → MP3。
+
+    注意：**不要**在这里用 loudnorm。它按「整体响度 = -18 LUFS」压低增益，
+    对 5 秒的短片段会压掉 11 dB（实测：源 -7.8 dB → 成片 -19.3 dB），
+    听感就是"前 5 秒几乎没声音"。我们只留 1 dB 余量、保留片段之间的相对音量。
+    """
     ff = need("ffmpeg")
     dst.parent.mkdir(parents=True, exist_ok=True)
-    af = "loudnorm=I=-18:TP=-2:LRA=11" if loudnorm else "anull"
+    af = "loudnorm=I=-18:TP=-2:LRA=11" if loudnorm else "volume=-1dB"
     subprocess.run(
         [ff, "-y", "-v", "error", "-i", str(src), "-af", af,
          "-codec:a", "libmp3lame", "-b:a", "160k", "-ac", "1", str(dst)],
@@ -97,7 +103,7 @@ def main() -> None:
             cmd += ["-i", str(p)]
         # 每段后接 GUARD_SECONDS 静音，四段顺序：前缀 → 真实 → 原始 → 适配
         filt = "".join(
-            f"[{i}:a]loudnorm=I=-18:TP=-2:LRA=11,apad=pad_dur={GUARD_SECONDS}[a{i}];"
+            f"[{i}:a]volume=-1dB,apad=pad_dur={GUARD_SECONDS}[a{i}];"
             for i in range(len(parts))
         ) + "".join(f"[a{i}]" for i in range(len(parts))) + \
             f"concat=n={len(parts)}:v=0:a=1[out]"
@@ -126,8 +132,7 @@ def main() -> None:
             subprocess.run(
                 [ff, "-y", "-v", "error", "-i", str(prefix), "-i", str(tail),
                  "-filter_complex",
-                 "[0:a]loudnorm=I=-18:TP=-2:LRA=11[a0];"
-                 "[1:a]loudnorm=I=-18:TP=-2:LRA=11[a1];"
+                 "[0:a]volume=-1dB[a0];[1:a]volume=-1dB[a1];"
                  "[a0][a1]concat=n=2:v=0:a=1[out]",
                  "-map", "[out]", "-codec:a", "libmp3lame", "-b:a", "160k",
                  "-ac", "1", str(dst)],
@@ -148,7 +153,8 @@ def main() -> None:
         d["track_id"] = d["track_id"].astype(str).str.zfill(6)
         src_map = dict(zip(d["track_id"], d["path"]))
 
-    for tid in SHOWCASE:
+    all_tids = sorted({w.name.split("_")[0] for w in (GEN / "audio").glob("*_prompt.wav")})
+    for tid in all_tids:
         stem = next((w.name.replace("_prompt.wav", "")
                      for w in (GEN / "audio").glob(f"{tid}_*_prompt.wav")), None)
         if not stem or tid not in src_map:
@@ -159,7 +165,7 @@ def main() -> None:
             subprocess.run(
                 [need("ffmpeg"), "-y", "-v", "error", "-i", str(src),
                  "-t", "30", "-ac", "1", "-ar", "32000",
-                 "-af", "loudnorm=I=-18:TP=-2:LRA=11",
+                 "-af", "volume=-1dB",
                  "-codec:a", "libmp3lame", "-b:a", "160k", str(dst)], check=True)
             made.append((dst.name, f"{stem} — 【整曲】原始 30 秒（人听的上下文）"))
 
@@ -174,8 +180,7 @@ def main() -> None:
             subprocess.run(
                 [need("ffmpeg"), "-y", "-v", "error", "-i", str(prefix), "-i", str(tail),
                  "-filter_complex",
-                 "[0:a]loudnorm=I=-18:TP=-2:LRA=11[a0];"
-                 "[1:a]loudnorm=I=-18:TP=-2:LRA=11[a1];"
+                 "[0:a]volume=-1dB[a0];[1:a]volume=-1dB[a1];"
                  "[a0][a1]concat=n=2:v=0:a=1[out]",
                  "-map", "[out]", "-codec:a", "libmp3lame", "-b:a", "160k",
                  "-ac", "1", str(dst)], check=True)
@@ -204,8 +209,9 @@ def main() -> None:
         "由 `scripts/build_demo_bundle.py` 从 `results/generation/audio/` 与",
         "`results/token_prediction/audio/` 生成，**不是重新合成的**——每个文件都对应报告里的一次实测。",
         "",
-        "所有片段已做响度对齐（`loudnorm I=-18 LUFS`），目的是让听众比较**音色与结构**，",
-        "而不是被音量差异带偏；这也会削掉原始文件之间本来就有的电平差。",
+        "所有片段只留 1\\,dB 余量（`volume=-1dB`），**不做响度归一**。早期版本用过",
+        "`loudnorm I=-18 LUFS`，它把 5 秒的短片段压低约 11\\,dB，听感就是「前 5 秒几乎没声音」。",
+        "保留相对音量是有意的：真实录音的前缀本来就比续写段落安静一些。",
         "",
         "## 一、前缀续写（3 秒）",
         "",

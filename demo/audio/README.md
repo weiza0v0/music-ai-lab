@@ -3,8 +3,9 @@
 由 `scripts/build_demo_bundle.py` 从 `results/generation/audio/` 与
 `results/token_prediction/audio/` 生成，**不是重新合成的**——每个文件都对应报告里的一次实测。
 
-所有片段已做响度对齐（`loudnorm I=-18 LUFS`），目的是让听众比较**音色与结构**，
-而不是被音量差异带偏；这也会削掉原始文件之间本来就有的电平差。
+所有片段只留 1\,dB 余量（`volume=-1dB`），**不做响度归一**。早期版本用过
+`loudnorm I=-18 LUFS`，它把 5 秒的短片段压低约 11\,dB，听感就是「前 5 秒几乎没声音」。
+保留相对音量是有意的：真实录音的前缀本来就比续写段落安静一些。
 
 ## 一、前缀续写（3 秒）
 
@@ -77,12 +78,17 @@
 | 文件 | 内容 |
 |---|---|
 | `FULL30__000010_Pop.mp3` | 000010_Pop — 【整曲】原始 30 秒（人听的上下文） |
+| `FULL30__000182_Rock.mp3` | 000182_Rock — 【整曲】原始 30 秒（人听的上下文） |
+| `FULL30__000704_International.mp3` | 000704_International — 【整曲】原始 30 秒（人听的上下文） |
+| `FULL30__000814_Folk.mp3` | 000814_Folk — 【整曲】原始 30 秒（人听的上下文） |
 | `FULL30__000995_Experimental.mp3` | 000995_Experimental — 【整曲】原始 30 秒（人听的上下文） |
 | `LONG__000995_Experimental__原始模型8s.mp3` | 000995_Experimental — 【长样例】5 秒前缀 + 原始模型 续写 8 秒 |
 | `LONG__000995_Experimental__LoRA8s.mp3` | 000995_Experimental — 【长样例】5 秒前缀 + LoRA 续写 8 秒 |
 | `LONG__000995_Experimental__原始模型8s.mp3` | 000995_Experimental — 【长样例】5 秒前缀 + 原始模型 续写 8 秒 |
 | `LONG__000995_Experimental__原始模型12s.mp3` | 000995_Experimental — 【长样例】5 秒前缀 + 原始模型 续写 12 秒 |
 | `FULL30__001482_Electronic.mp3` | 001482_Electronic — 【整曲】原始 30 秒（人听的上下文） |
+| `FULL30__007481_Hip-Hop.mp3` | 007481_Hip-Hop — 【整曲】原始 30 秒（人听的上下文） |
+| `FULL30__014568_Instrumental.mp3` | 014568_Instrumental — 【整曲】原始 30 秒（人听的上下文） |
 
 ## 三、Token 预测（1 秒）
 
