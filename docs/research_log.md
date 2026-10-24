@@ -920,3 +920,24 @@ Houlsby adapter 三条文献（25 → 28）。
 参考文献 28 条；图表 31 个，悬空 0 个。§4/§5 合计 13 节 vs §6 12 节。
 新量规留在 `docs/report/structure_audit_rubric.md`，skill 留在
 `~/.dsh/skills/academic-research-skills/`，后续可复用。
+
+---
+
+## 仓库公开化与最终模型交付（2026-10-24）
+
+演示由队友（晴天的太阳）负责，需要能直接 `git clone` 就用。做了三件事：
+
+1. **隐私清理**：19 个文件里的 `/home/<user>/...` 与 `/mnt/d/...` 绝对路径全部改为
+   `python3` / `$CONDA_PREFIX/bin/python` / `~/MUSIC_AI`；`results/gtzan/ast_eval.json`
+   里的 HF 缓存路径脱敏为 `<HF_HOME>/hub/...`。复查 `git grep` 无命中。
+2. **最终模型入库**：`checkpoints/gtzan`（22 MB）、`fma`（46 MB）、
+   `token_prediction_long`（119 MB），单文件最大 21 MB。克隆后
+   `streamlit run app/demo.py` 上传任意音频即可现场 PK，不需要数据集。
+   实测新克隆：`available()` 返回 `['cnn','crnn','mlp','svm','transformer']`。
+3. **大权重不入库**：`checkpoints/generation/` 的 5 个 LoRA 变体各 1.18 GB
+   （都是 merged 进 Meta 基座后的整模型，5.5 GB），超过 GitHub 单文件 100 MB 上限，
+   且其中 99% 是别人的非商用权重。改为 `checkpoints/README.md` 里的重训命令
+   （r=8、1200 步、掩前缀，约 40 分钟）。数据集同样不入库（23 GB，GTZAN 另有版权问题）。
+
+顺带修的：`--seconds 5` 在 README 与 `run_generation.sh` 里残留，照抄会撞 CUDA 位置索引断言，
+统一改 3 并写明原因。
