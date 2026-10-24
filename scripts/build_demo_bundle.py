@@ -175,7 +175,7 @@ def main() -> None:
             tail = GEN / "audio" / f"{stem}_{tag}.wav"
             if not (prefix.exists() and tail.exists()):
                 continue
-            label = "LoRA" if tag == "ft8" else "原始模型"
+            label = "lora" if tag == "ft8" else "base"
             dst = OUT / f"LONG__{stem}__{label}{secs}s.mp3"
             subprocess.run(
                 [need("ffmpeg"), "-y", "-v", "error", "-i", str(prefix), "-i", str(tail),
@@ -184,7 +184,10 @@ def main() -> None:
                  "[a0][a1]concat=n=2:v=0:a=1[out]",
                  "-map", "[out]", "-codec:a", "libmp3lame", "-b:a", "160k",
                  "-ac", "1", str(dst)], check=True)
-            made.append((dst.name, f"{stem} — 【长样例】5 秒前缀 + {label} 续写 {secs} 秒"))
+            if not any(n == dst.name for n, _ in made):
+                made.append((dst.name,
+                             f"{stem} — 【长样例】5 秒前缀 + "
+                             f"{'LoRA' if label == 'lora' else '原始模型'} 续写 {secs} 秒"))
 
     # ---------- 三、Token 预测：1 秒预测 vs 真实 ----------
     dec = TOK / "decode.json"

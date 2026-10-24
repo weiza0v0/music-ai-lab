@@ -26,7 +26,7 @@ SPLITS = ROOT / "data/splits/fma/splits.csv"
 # 有长样例的三条：前两条是「改善最大」与「反而变差」，第三条是典型样本
 SHOWCASE = ("000995", "001482", "000010")
 LONG_TAILS = {  # 000995 上额外跑过的更长续写
-    "000995": (("原始模型", "probe12", 12), ("LoRA", "ft8", 8)),
+    "000995": (("BASE", "probe12", 12), ("LORA", "ft8", 8)),
 }
 
 
@@ -87,22 +87,22 @@ def main() -> None:
 
         # 1) 整曲 30 秒（原曲）
         if src.exists():
-            cut(src, OUT / f"1_{base_lbl}_原曲30秒.mp3", None)
+            cut(src, OUT / f"1_{base_lbl}_ORIGINAL_30s.mp3", None)
 
         # 2) 前缀 + 真实后 3 秒
         parts2 = [GEN / "audio" / f"{stem}_prompt.wav", GEN / "audio" / f"{stem}_true.wav"]
         if all(p.exists() for p in parts2):
-            join(parts2, OUT / f"2_{base_lbl}_前缀5秒+真实3秒.mp3")
+            join(parts2, OUT / f"2_{base_lbl}_PREFIX5_TRUE3.mp3")
 
         # 3) 前缀 + 原始模型续写 3 秒
         parts3 = [GEN / "audio" / f"{stem}_prompt.wav", GEN / "audio" / f"{stem}_base.wav"]
         if all(p.exists() for p in parts3):
-            join(parts3, OUT / f"3_{base_lbl}_前缀5秒+原始模型续写3秒.mp3")
+            join(parts3, OUT / f"3_{base_lbl}_PREFIX5_BASE3.mp3")
 
         # 4) 前缀 + LoRA 续写 3 秒
         parts4 = [GEN / "audio" / f"{stem}_prompt.wav", GEN / "audio" / f"{stem}_ft.wav"]
         if all(p.exists() for p in parts4):
-            join(parts4, OUT / f"4_{base_lbl}_前缀5秒+LoRA续写3秒.mp3")
+            join(parts4, OUT / f"4_{base_lbl}_PREFIX5_LORA3.mp3")
 
         # 5) 更长续写（仅 000995）
         n = 5
@@ -110,14 +110,14 @@ def main() -> None:
             tail = GEN / "audio" / f"{stem}_{tag}.wav"
             if tail.exists():
                 join([GEN / "audio" / f"{stem}_prompt.wav", tail],
-                     OUT / f"{n}_{base_lbl}_前缀5秒+{label}续写{secs}秒.mp3")
+                     OUT / f"{n}_{base_lbl}_PREFIX5_{label}{secs}.mp3")
                 n += 1
 
         # 6) 四段串联（前缀 → 真实 → 原始 → LoRA）
         ab = GEN / "audio"
         seq = [ab / f"{stem}_{t}.wav" for t in ("prompt", "true", "base", "ft")]
         if all(p.exists() for p in seq):
-            join(seq, OUT / f"{n}_{base_lbl}_四段串联_前缀-真实-原始-LoRA.mp3")
+            join(seq, OUT / f"{n}_{base_lbl}_AB_PREFIX-TRUE-BASE-LORA.mp3")
 
         b, f = rmse("base", tid), rmse("ft", tid)
         rows.append({
@@ -127,7 +127,14 @@ def main() -> None:
 
     # ---------- 索引 ----------
     L = ["# 原曲 / 生成曲 对照包", "",
-         "每个文件的名字就是说明：开头数字表示播放顺序，后面是「曲目号_流派」与这一段是什么。", "",
+         "文件名为纯 ASCII，避免 Windows 解开 zip 时中文变乱码。含义如下：", "",
+         "| 文件名里的标记 | 含义 |", "|---|---|",
+         "| `ORIGINAL_30s` | 原曲整段 30 秒 |",
+         "| `PREFIX5_TRUE3` | 5 秒前缀 + 真实后 3 秒 |",
+         "| `PREFIX5_BASE3` | 5 秒前缀 + MusicGen 原始续写 3 秒 |",
+         "| `PREFIX5_LORA3` | 5 秒前缀 + LoRA 适配后续写 3 秒 |",
+         "| `PREFIX5_BASE12` / `PREFIX5_LORA8` | 更长的续写样例（仅 000995） |",
+         "| `AB_PREFIX-TRUE-BASE-LORA` | 四段串联，一条听完 |", "",
          "**播放顺序**：1 听原曲 → 2 听真实后续 → 3 听原始模型续写 → 4 听 LoRA 续写。",
          "2/3/4 三条的**前 5 秒完全相同**（同一段前缀），只有后面的 3 秒不同。", "",
          "| 曲目 | 流派 | 艺术家 — 曲名 | 原始模型 RMSE | LoRA RMSE | 差值 |",

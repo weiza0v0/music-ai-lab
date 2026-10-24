@@ -33,18 +33,18 @@ demo/
 │   ├── 000010_Pop__ft.mp3       ←   LoRA 适配后续写
 │   ├── AB__000995_Experimental.mp3      ← 四段串联（16 秒，含 0.6s 间隔）
 │   ├── FULL30__<曲目>.mp3               ← 整曲 30 秒原始素材，8 首都有
-│   ├── LONG__000995_Experimental__原始模型12s.mp3  ← 长样例：前缀 5 秒 + 12 秒续写
+│   ├── LONG__000995_Experimental__base12s.mp3  ← 长样例：前缀 5 秒 + 12 秒续写
 │   ├── REAL__000995_Experimental.mp3    ← 无缝：前缀 + 真实后 3 秒（8 秒）
 │   ├── GENbase__000995_Experimental.mp3 ← 无缝：前缀 + 原始续写
 │   ├── GENft__000995_Experimental.mp3   ← 无缝：前缀 + LoRA 续写
 │   └── TOK__000995_Experimental__pred.mp3 / __true.mp3  ← Token 预测的 1 秒
 ├── pairs/                       ← 原曲 / 生成曲 对照包（42 个，文件名自解释）
 │   ├── README.md                ←   逐曲 RMSE 表 + 播放顺序
-│   ├── 1_000995_Experimental_原曲30秒.mp3
-│   ├── 2_000995_Experimental_前缀5秒+真实3秒.mp3
-│   ├── 3_000995_Experimental_前缀5秒+原始模型续写3秒.mp3
-│   ├── 4_000995_Experimental_前缀5秒+LoRA续写3秒.mp3
-│   └── 5_000995_Experimental_前缀5秒+原始模型续写12秒.mp3
+│   ├── 1_000995_Experimental_ORIGINAL_30s.mp3
+│   ├── 2_000995_Experimental_PREFIX5_TRUE3.mp3
+│   ├── 3_000995_Experimental_PREFIX5_BASE3.mp3
+│   ├── 4_000995_Experimental_PREFIX5_LORA3.mp3
+│   └── 5_000995_Experimental_PREFIX5_BASE12.mp3
 ├── classification/              ← 判别式任务的示例（8 段 × 5 秒）
 │   ├── README.md                ←   五模型判断表 + 授权署名 + 两种用法
 │   ├── verdicts.json            ←   同上的机器可读版本
@@ -82,6 +82,15 @@ demo/
 
 ---
 
+## 2.5 找不到文件？先看 `index.csv`
+
+`demo/index.csv` 是整个包的清单（126 行，UTF-8 BOM，Excel 双击直接能开）：
+类别 / 文件路径 / **中文说明** / 时长。
+
+**为什么文件名长得像 `PREFIX5_LORA3` 而不是中文**：zip 里的 UTF-8 中文名在 Windows 资源管理器
+里会变成乱码（`鍨粎` 那种），所以文件名一律用纯 ASCII；中文含义集中在
+`index.csv` 与本文件里。按"文件"列排序能找回原来的顺序。
+
 ## 3 文件命名规则（看名字就知道是什么）
 
 ```
@@ -93,6 +102,8 @@ TOK__<曲目号>_<流派>__true.mp3   同一位置的 1 秒真实音频
 ```
 
 - `prompt` = 模型看到的前 5 秒；`true` = 真实的后 3 秒；`base` = 原始 MusicGen；`ft` = LoRA 适配后
+- `pairs/` 里：`ORIGINAL_30s` 原曲整段、`PREFIX5_TRUE3` 前缀+真实、`PREFIX5_BASE3` 前缀+原始模型、
+  `PREFIX5_LORA3` 前缀+LoRA、`PREFIX5_BASE12` / `PREFIX5_LORA8` 长样例、`AB_PREFIX-TRUE-BASE-LORA` 四段串联
 - 曲目号是数据集里的原始 ID（FMA / GTZAN 各自的编号）
 
 ---

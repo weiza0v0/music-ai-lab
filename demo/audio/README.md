@@ -82,10 +82,9 @@
 | `FULL30__000704_International.mp3` | 000704_International — 【整曲】原始 30 秒（人听的上下文） |
 | `FULL30__000814_Folk.mp3` | 000814_Folk — 【整曲】原始 30 秒（人听的上下文） |
 | `FULL30__000995_Experimental.mp3` | 000995_Experimental — 【整曲】原始 30 秒（人听的上下文） |
-| `LONG__000995_Experimental__原始模型8s.mp3` | 000995_Experimental — 【长样例】5 秒前缀 + 原始模型 续写 8 秒 |
-| `LONG__000995_Experimental__LoRA8s.mp3` | 000995_Experimental — 【长样例】5 秒前缀 + LoRA 续写 8 秒 |
-| `LONG__000995_Experimental__原始模型8s.mp3` | 000995_Experimental — 【长样例】5 秒前缀 + 原始模型 续写 8 秒 |
-| `LONG__000995_Experimental__原始模型12s.mp3` | 000995_Experimental — 【长样例】5 秒前缀 + 原始模型 续写 12 秒 |
+| `LONG__000995_Experimental__base8s.mp3` | 000995_Experimental — 【长样例】5 秒前缀 + 原始模型 续写 8 秒 |
+| `LONG__000995_Experimental__lora8s.mp3` | 000995_Experimental — 【长样例】5 秒前缀 + LoRA 续写 8 秒 |
+| `LONG__000995_Experimental__base12s.mp3` | 000995_Experimental — 【长样例】5 秒前缀 + 原始模型 续写 12 秒 |
 | `FULL30__001482_Electronic.mp3` | 001482_Electronic — 【整曲】原始 30 秒（人听的上下文） |
 | `FULL30__007481_Hip-Hop.mp3` | 007481_Hip-Hop — 【整曲】原始 30 秒（人听的上下文） |
 | `FULL30__014568_Instrumental.mp3` | 014568_Instrumental — 【整曲】原始 30 秒（人听的上下文） |

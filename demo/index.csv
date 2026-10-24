@@ -1,0 +1,127 @@
+﻿类别,文件,中文说明,时长(秒)
+原曲/生成曲对照,pairs/1_000010_Pop_ORIGINAL_30s.mp3,原曲整段 30 秒（人听上下文）,30.0
+原曲/生成曲对照,pairs/1_000182_Rock_ORIGINAL_30s.mp3,原曲整段 30 秒（人听上下文）,30.1
+原曲/生成曲对照,pairs/1_000704_International_ORIGINAL_30s.mp3,原曲整段 30 秒（人听上下文）,30.0
+原曲/生成曲对照,pairs/1_000814_Folk_ORIGINAL_30s.mp3,原曲整段 30 秒（人听上下文）,30.0
+原曲/生成曲对照,pairs/1_000995_Experimental_ORIGINAL_30s.mp3,原曲整段 30 秒（人听上下文）,30.1
+原曲/生成曲对照,pairs/1_001482_Electronic_ORIGINAL_30s.mp3,原曲整段 30 秒（人听上下文）,30.0
+原曲/生成曲对照,pairs/1_007481_Hip-Hop_ORIGINAL_30s.mp3,原曲整段 30 秒（人听上下文）,30.0
+原曲/生成曲对照,pairs/1_014568_Instrumental_ORIGINAL_30s.mp3,原曲整段 30 秒（人听上下文）,30.0
+原曲/生成曲对照,pairs/2_000010_Pop_PREFIX5_TRUE3.mp3,5 秒前缀 + 真实后 3 秒（参考答案）,8.1
+原曲/生成曲对照,pairs/2_000182_Rock_PREFIX5_TRUE3.mp3,5 秒前缀 + 真实后 3 秒（参考答案）,8.1
+原曲/生成曲对照,pairs/2_000704_International_PREFIX5_TRUE3.mp3,5 秒前缀 + 真实后 3 秒（参考答案）,8.1
+原曲/生成曲对照,pairs/2_000814_Folk_PREFIX5_TRUE3.mp3,5 秒前缀 + 真实后 3 秒（参考答案）,8.1
+原曲/生成曲对照,pairs/2_000995_Experimental_PREFIX5_TRUE3.mp3,5 秒前缀 + 真实后 3 秒（参考答案）,8.1
+原曲/生成曲对照,pairs/2_001482_Electronic_PREFIX5_TRUE3.mp3,5 秒前缀 + 真实后 3 秒（参考答案）,8.1
+原曲/生成曲对照,pairs/2_007481_Hip-Hop_PREFIX5_TRUE3.mp3,5 秒前缀 + 真实后 3 秒（参考答案）,8.1
+原曲/生成曲对照,pairs/2_014568_Instrumental_PREFIX5_TRUE3.mp3,5 秒前缀 + 真实后 3 秒（参考答案）,8.1
+原曲/生成曲对照,pairs/3_000010_Pop_PREFIX5_BASE3.mp3,5 秒前缀 + MusicGen 原始续写 3 秒,8.1
+原曲/生成曲对照,pairs/3_000182_Rock_PREFIX5_BASE3.mp3,5 秒前缀 + MusicGen 原始续写 3 秒,8.1
+原曲/生成曲对照,pairs/3_000704_International_PREFIX5_BASE3.mp3,5 秒前缀 + MusicGen 原始续写 3 秒,8.1
+原曲/生成曲对照,pairs/3_000814_Folk_PREFIX5_BASE3.mp3,5 秒前缀 + MusicGen 原始续写 3 秒,8.1
+原曲/生成曲对照,pairs/3_000995_Experimental_PREFIX5_BASE3.mp3,5 秒前缀 + MusicGen 原始续写 3 秒,8.1
+原曲/生成曲对照,pairs/3_001482_Electronic_PREFIX5_BASE3.mp3,5 秒前缀 + MusicGen 原始续写 3 秒,8.1
+原曲/生成曲对照,pairs/3_007481_Hip-Hop_PREFIX5_BASE3.mp3,5 秒前缀 + MusicGen 原始续写 3 秒,8.1
+原曲/生成曲对照,pairs/3_014568_Instrumental_PREFIX5_BASE3.mp3,5 秒前缀 + MusicGen 原始续写 3 秒,8.1
+原曲/生成曲对照,pairs/4_000010_Pop_PREFIX5_LORA3.mp3,5 秒前缀 + LoRA 适配后续写 3 秒,8.1
+原曲/生成曲对照,pairs/4_000182_Rock_PREFIX5_LORA3.mp3,5 秒前缀 + LoRA 适配后续写 3 秒,8.1
+原曲/生成曲对照,pairs/4_000704_International_PREFIX5_LORA3.mp3,5 秒前缀 + LoRA 适配后续写 3 秒,8.1
+原曲/生成曲对照,pairs/4_000814_Folk_PREFIX5_LORA3.mp3,5 秒前缀 + LoRA 适配后续写 3 秒,8.1
+原曲/生成曲对照,pairs/4_000995_Experimental_PREFIX5_LORA3.mp3,5 秒前缀 + LoRA 适配后续写 3 秒,8.1
+原曲/生成曲对照,pairs/4_001482_Electronic_PREFIX5_LORA3.mp3,5 秒前缀 + LoRA 适配后续写 3 秒,8.1
+原曲/生成曲对照,pairs/4_007481_Hip-Hop_PREFIX5_LORA3.mp3,5 秒前缀 + LoRA 适配后续写 3 秒,8.1
+原曲/生成曲对照,pairs/4_014568_Instrumental_PREFIX5_LORA3.mp3,5 秒前缀 + LoRA 适配后续写 3 秒,8.1
+原曲/生成曲对照,pairs/5_000010_Pop_AB_PREFIX-TRUE-BASE-LORA.mp3,四段串联：前缀 → 真实 → 原始 → LoRA,14.0
+原曲/生成曲对照,pairs/5_000182_Rock_AB_PREFIX-TRUE-BASE-LORA.mp3,四段串联：前缀 → 真实 → 原始 → LoRA,14.0
+原曲/生成曲对照,pairs/5_000704_International_AB_PREFIX-TRUE-BASE-LORA.mp3,四段串联：前缀 → 真实 → 原始 → LoRA,14.0
+原曲/生成曲对照,pairs/5_000814_Folk_AB_PREFIX-TRUE-BASE-LORA.mp3,四段串联：前缀 → 真实 → 原始 → LoRA,14.0
+原曲/生成曲对照,pairs/5_000995_Experimental_PREFIX5_BASE12.mp3,5 秒前缀 + 原始模型续写 12 秒（长样例，仅 000995）,17.1
+原曲/生成曲对照,pairs/5_001482_Electronic_AB_PREFIX-TRUE-BASE-LORA.mp3,四段串联：前缀 → 真实 → 原始 → LoRA,14.0
+原曲/生成曲对照,pairs/5_007481_Hip-Hop_AB_PREFIX-TRUE-BASE-LORA.mp3,四段串联：前缀 → 真实 → 原始 → LoRA,14.0
+原曲/生成曲对照,pairs/5_014568_Instrumental_AB_PREFIX-TRUE-BASE-LORA.mp3,四段串联：前缀 → 真实 → 原始 → LoRA,14.0
+原曲/生成曲对照,pairs/6_000995_Experimental_PREFIX5_LORA8.mp3,5 秒前缀 + LoRA 续写 8 秒（长样例，仅 000995）,13.1
+原曲/生成曲对照,pairs/7_000995_Experimental_AB_PREFIX-TRUE-BASE-LORA.mp3,四段串联：前缀 → 真实 → 原始 → LoRA,14.0
+生成式音频,audio/000010_Pop__base.mp3,MusicGen 原始续写 3 秒,3.1
+生成式音频,audio/000010_Pop__ft.mp3,LoRA 续写 3 秒,3.1
+生成式音频,audio/000010_Pop__prompt.mp3,5 秒前缀（模型输入）,5.0
+生成式音频,audio/000010_Pop__true.mp3,真实后 3 秒,3.1
+生成式音频,audio/000182_Rock__base.mp3,MusicGen 原始续写 3 秒,3.1
+生成式音频,audio/000182_Rock__ft.mp3,LoRA 续写 3 秒,3.1
+生成式音频,audio/000182_Rock__prompt.mp3,5 秒前缀（模型输入）,5.0
+生成式音频,audio/000182_Rock__true.mp3,真实后 3 秒,3.1
+生成式音频,audio/000704_International__base.mp3,MusicGen 原始续写 3 秒,3.1
+生成式音频,audio/000704_International__ft.mp3,LoRA 续写 3 秒,3.1
+生成式音频,audio/000704_International__prompt.mp3,5 秒前缀（模型输入）,5.0
+生成式音频,audio/000704_International__true.mp3,真实后 3 秒,3.1
+生成式音频,audio/000814_Folk__base.mp3,MusicGen 原始续写 3 秒,3.1
+生成式音频,audio/000814_Folk__ft.mp3,LoRA 续写 3 秒,3.1
+生成式音频,audio/000814_Folk__prompt.mp3,5 秒前缀（模型输入）,5.0
+生成式音频,audio/000814_Folk__true.mp3,真实后 3 秒,3.1
+生成式音频,audio/000995_Experimental__base.mp3,MusicGen 原始续写 3 秒,3.1
+生成式音频,audio/000995_Experimental__ft.mp3,LoRA 续写 3 秒,3.1
+生成式音频,audio/000995_Experimental__prompt.mp3,5 秒前缀（模型输入）,5.0
+生成式音频,audio/000995_Experimental__true.mp3,真实后 3 秒,3.1
+生成式音频,audio/001482_Electronic__base.mp3,MusicGen 原始续写 3 秒,3.1
+生成式音频,audio/001482_Electronic__ft.mp3,LoRA 续写 3 秒,3.1
+生成式音频,audio/001482_Electronic__prompt.mp3,5 秒前缀（模型输入）,5.0
+生成式音频,audio/001482_Electronic__true.mp3,真实后 3 秒,3.1
+生成式音频,audio/007481_Hip-Hop__base.mp3,MusicGen 原始续写 3 秒,3.1
+生成式音频,audio/007481_Hip-Hop__ft.mp3,LoRA 续写 3 秒,3.1
+生成式音频,audio/007481_Hip-Hop__prompt.mp3,5 秒前缀（模型输入）,5.0
+生成式音频,audio/007481_Hip-Hop__true.mp3,真实后 3 秒,3.1
+生成式音频,audio/014568_Instrumental__base.mp3,MusicGen 原始续写 3 秒,3.1
+生成式音频,audio/014568_Instrumental__ft.mp3,LoRA 续写 3 秒,3.1
+生成式音频,audio/014568_Instrumental__prompt.mp3,5 秒前缀（模型输入）,5.0
+生成式音频,audio/014568_Instrumental__true.mp3,真实后 3 秒,3.1
+生成式音频,audio/AB__000010_Pop.mp3,四段串联：前缀 → 真实 → 原始 → LoRA（16 秒，含间隔）,16.5
+生成式音频,audio/AB__000995_Experimental.mp3,四段串联：前缀 → 真实 → 原始 → LoRA（16 秒，含间隔）,16.5
+生成式音频,audio/AB__001482_Electronic.mp3,四段串联：前缀 → 真实 → 原始 → LoRA（16 秒，含间隔）,16.5
+生成式音频,audio/FULL30__000010_Pop.mp3,整曲 30 秒原始素材,30.0
+生成式音频,audio/FULL30__000182_Rock.mp3,整曲 30 秒原始素材,30.1
+生成式音频,audio/FULL30__000704_International.mp3,整曲 30 秒原始素材,30.0
+生成式音频,audio/FULL30__000814_Folk.mp3,整曲 30 秒原始素材,30.0
+生成式音频,audio/FULL30__000995_Experimental.mp3,整曲 30 秒原始素材,30.1
+生成式音频,audio/FULL30__001482_Electronic.mp3,整曲 30 秒原始素材,30.0
+生成式音频,audio/FULL30__007481_Hip-Hop.mp3,整曲 30 秒原始素材,30.0
+生成式音频,audio/FULL30__014568_Instrumental.mp3,整曲 30 秒原始素材,30.0
+生成式音频,audio/GENbase__000010_Pop.mp3,无缝：5 秒前缀 + 原始模型续写,8.1
+生成式音频,audio/GENbase__000995_Experimental.mp3,无缝：5 秒前缀 + 原始模型续写,8.1
+生成式音频,audio/GENbase__001482_Electronic.mp3,无缝：5 秒前缀 + 原始模型续写,8.1
+生成式音频,audio/GENft__000010_Pop.mp3,无缝：5 秒前缀 + LoRA 续写,8.1
+生成式音频,audio/GENft__000995_Experimental.mp3,无缝：5 秒前缀 + LoRA 续写,8.1
+生成式音频,audio/GENft__001482_Electronic.mp3,无缝：5 秒前缀 + LoRA 续写,8.1
+生成式音频,audio/LONG__000995_Experimental__base12s.mp3,长样例：5 秒前缀 + 8/12 秒续写,17.1
+生成式音频,audio/LONG__000995_Experimental__base8s.mp3,长样例：5 秒前缀 + 8/12 秒续写,13.1
+生成式音频,audio/LONG__000995_Experimental__lora8s.mp3,长样例：5 秒前缀 + 8/12 秒续写,13.1
+生成式音频,audio/REAL__000010_Pop.mp3,无缝：5 秒前缀 + 真实后 3 秒,8.1
+生成式音频,audio/REAL__000995_Experimental.mp3,无缝：5 秒前缀 + 真实后 3 秒,8.1
+生成式音频,audio/REAL__001482_Electronic.mp3,无缝：5 秒前缀 + 真实后 3 秒,8.1
+生成式音频,audio/TOK__000010_Pop__pred.mp3,Token 预测的 1 秒（pred=模型、true=真实）,1.0
+生成式音频,audio/TOK__000010_Pop__true.mp3,Token 预测的 1 秒（pred=模型、true=真实）,1.0
+生成式音频,audio/TOK__000995_Experimental__pred.mp3,Token 预测的 1 秒（pred=模型、true=真实）,1.0
+生成式音频,audio/TOK__000995_Experimental__true.mp3,Token 预测的 1 秒（pred=模型、true=真实）,1.0
+生成式音频,audio/TOK__001482_Electronic__pred.mp3,Token 预测的 1 秒（pred=模型、true=真实）,1.0
+生成式音频,audio/TOK__001482_Electronic__true.mp3,Token 预测的 1 秒（pred=模型、true=真实）,1.0
+判别式示例,classification/000182_Rock.mp3,中心 5 秒（模型实际输入），配 README 里的五模型判断表,5.1
+判别式示例,classification/000182_Rock_context15.mp3,同一曲目中心 15 秒（只给人听，模型不看）,15.1
+判别式示例,classification/000814_Folk.mp3,中心 5 秒（模型实际输入），配 README 里的五模型判断表,5.1
+判别式示例,classification/000814_Folk_context15.mp3,同一曲目中心 15 秒（只给人听，模型不看）,15.1
+判别式示例,classification/000995_Experimental.mp3,中心 5 秒（模型实际输入），配 README 里的五模型判断表,5.1
+判别式示例,classification/000995_Experimental_context15.mp3,同一曲目中心 15 秒（只给人听，模型不看）,15.1
+判别式示例,classification/014576_Instrumental.mp3,中心 5 秒（模型实际输入），配 README 里的五模型判断表,5.1
+判别式示例,classification/014576_Instrumental_context15.mp3,同一曲目中心 15 秒（只给人听，模型不看）,15.1
+判别式示例,classification/047835_Pop.mp3,中心 5 秒（模型实际输入），配 README 里的五模型判断表,5.1
+判别式示例,classification/047835_Pop_context15.mp3,同一曲目中心 15 秒（只给人听，模型不看）,15.1
+判别式示例,classification/073776_International.mp3,中心 5 秒（模型实际输入），配 README 里的五模型判断表,5.1
+判别式示例,classification/073776_International_context15.mp3,同一曲目中心 15 秒（只给人听，模型不看）,15.1
+判别式示例,classification/117944_International.mp3,中心 5 秒（模型实际输入），配 README 里的五模型判断表,5.1
+判别式示例,classification/117944_International_context15.mp3,同一曲目中心 15 秒（只给人听，模型不看）,15.1
+判别式示例,classification/122201_Experimental.mp3,中心 5 秒（模型实际输入），配 README 里的五模型判断表,5.1
+判别式示例,classification/122201_Experimental_context15.mp3,同一曲目中心 15 秒（只给人听，模型不看）,15.1
+其他,README.md,说明文档（先读这个）,
+其他,arena_pk.csv,擂台表的 CSV 版,
+其他,arena_pk.md,GTZAN 擂台表（8 首分歧最大 + 4 首全对）,
+其他,audio/README.md,说明文档（先读这个）,
+其他,classification/README.md,说明文档（先读这个）,
+其他,classification/verdicts.json,五模型对 8 段示例的判断（机器可读）,
+其他,pairs/README.md,说明文档（先读这个）,

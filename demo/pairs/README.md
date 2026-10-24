@@ -1,6 +1,15 @@
 # 原曲 / 生成曲 对照包
 
-每个文件的名字就是说明：开头数字表示播放顺序，后面是「曲目号_流派」与这一段是什么。
+文件名为纯 ASCII，避免 Windows 解开 zip 时中文变乱码。含义如下：
+
+| 文件名里的标记 | 含义 |
+|---|---|
+| `ORIGINAL_30s` | 原曲整段 30 秒 |
+| `PREFIX5_TRUE3` | 5 秒前缀 + 真实后 3 秒 |
+| `PREFIX5_BASE3` | 5 秒前缀 + MusicGen 原始续写 3 秒 |
+| `PREFIX5_LORA3` | 5 秒前缀 + LoRA 适配后续写 3 秒 |
+| `PREFIX5_BASE12` / `PREFIX5_LORA8` | 更长的续写样例（仅 000995） |
+| `AB_PREFIX-TRUE-BASE-LORA` | 四段串联，一条听完 |
 
 **播放顺序**：1 听原曲 → 2 听真实后续 → 3 听原始模型续写 → 4 听 LoRA 续写。
 2/3/4 三条的**前 5 秒完全相同**（同一段前缀），只有后面的 3 秒不同。
@@ -20,48 +29,48 @@ RMSE 是「生成频谱与真实后 3 秒的距离」，越低越好；8 首均�
 
 ## 文件清单
 
-- `1_000010_Pop_原曲30秒.mp3`
-- `1_000182_Rock_原曲30秒.mp3`
-- `1_000704_International_原曲30秒.mp3`
-- `1_000814_Folk_原曲30秒.mp3`
-- `1_000995_Experimental_原曲30秒.mp3`
-- `1_001482_Electronic_原曲30秒.mp3`
-- `1_007481_Hip-Hop_原曲30秒.mp3`
-- `1_014568_Instrumental_原曲30秒.mp3`
-- `2_000010_Pop_前缀5秒+真实3秒.mp3`
-- `2_000182_Rock_前缀5秒+真实3秒.mp3`
-- `2_000704_International_前缀5秒+真实3秒.mp3`
-- `2_000814_Folk_前缀5秒+真实3秒.mp3`
-- `2_000995_Experimental_前缀5秒+真实3秒.mp3`
-- `2_001482_Electronic_前缀5秒+真实3秒.mp3`
-- `2_007481_Hip-Hop_前缀5秒+真实3秒.mp3`
-- `2_014568_Instrumental_前缀5秒+真实3秒.mp3`
-- `3_000010_Pop_前缀5秒+原始模型续写3秒.mp3`
-- `3_000182_Rock_前缀5秒+原始模型续写3秒.mp3`
-- `3_000704_International_前缀5秒+原始模型续写3秒.mp3`
-- `3_000814_Folk_前缀5秒+原始模型续写3秒.mp3`
-- `3_000995_Experimental_前缀5秒+原始模型续写3秒.mp3`
-- `3_001482_Electronic_前缀5秒+原始模型续写3秒.mp3`
-- `3_007481_Hip-Hop_前缀5秒+原始模型续写3秒.mp3`
-- `3_014568_Instrumental_前缀5秒+原始模型续写3秒.mp3`
-- `4_000010_Pop_前缀5秒+LoRA续写3秒.mp3`
-- `4_000182_Rock_前缀5秒+LoRA续写3秒.mp3`
-- `4_000704_International_前缀5秒+LoRA续写3秒.mp3`
-- `4_000814_Folk_前缀5秒+LoRA续写3秒.mp3`
-- `4_000995_Experimental_前缀5秒+LoRA续写3秒.mp3`
-- `4_001482_Electronic_前缀5秒+LoRA续写3秒.mp3`
-- `4_007481_Hip-Hop_前缀5秒+LoRA续写3秒.mp3`
-- `4_014568_Instrumental_前缀5秒+LoRA续写3秒.mp3`
-- `5_000010_Pop_四段串联_前缀-真实-原始-LoRA.mp3`
-- `5_000182_Rock_四段串联_前缀-真实-原始-LoRA.mp3`
-- `5_000704_International_四段串联_前缀-真实-原始-LoRA.mp3`
-- `5_000814_Folk_四段串联_前缀-真实-原始-LoRA.mp3`
-- `5_000995_Experimental_前缀5秒+原始模型续写12秒.mp3`
-- `5_001482_Electronic_四段串联_前缀-真实-原始-LoRA.mp3`
-- `5_007481_Hip-Hop_四段串联_前缀-真实-原始-LoRA.mp3`
-- `5_014568_Instrumental_四段串联_前缀-真实-原始-LoRA.mp3`
-- `6_000995_Experimental_前缀5秒+LoRA续写8秒.mp3`
-- `7_000995_Experimental_四段串联_前缀-真实-原始-LoRA.mp3`
+- `1_000010_Pop_ORIGINAL_30s.mp3`
+- `1_000182_Rock_ORIGINAL_30s.mp3`
+- `1_000704_International_ORIGINAL_30s.mp3`
+- `1_000814_Folk_ORIGINAL_30s.mp3`
+- `1_000995_Experimental_ORIGINAL_30s.mp3`
+- `1_001482_Electronic_ORIGINAL_30s.mp3`
+- `1_007481_Hip-Hop_ORIGINAL_30s.mp3`
+- `1_014568_Instrumental_ORIGINAL_30s.mp3`
+- `2_000010_Pop_PREFIX5_TRUE3.mp3`
+- `2_000182_Rock_PREFIX5_TRUE3.mp3`
+- `2_000704_International_PREFIX5_TRUE3.mp3`
+- `2_000814_Folk_PREFIX5_TRUE3.mp3`
+- `2_000995_Experimental_PREFIX5_TRUE3.mp3`
+- `2_001482_Electronic_PREFIX5_TRUE3.mp3`
+- `2_007481_Hip-Hop_PREFIX5_TRUE3.mp3`
+- `2_014568_Instrumental_PREFIX5_TRUE3.mp3`
+- `3_000010_Pop_PREFIX5_BASE3.mp3`
+- `3_000182_Rock_PREFIX5_BASE3.mp3`
+- `3_000704_International_PREFIX5_BASE3.mp3`
+- `3_000814_Folk_PREFIX5_BASE3.mp3`
+- `3_000995_Experimental_PREFIX5_BASE3.mp3`
+- `3_001482_Electronic_PREFIX5_BASE3.mp3`
+- `3_007481_Hip-Hop_PREFIX5_BASE3.mp3`
+- `3_014568_Instrumental_PREFIX5_BASE3.mp3`
+- `4_000010_Pop_PREFIX5_LORA3.mp3`
+- `4_000182_Rock_PREFIX5_LORA3.mp3`
+- `4_000704_International_PREFIX5_LORA3.mp3`
+- `4_000814_Folk_PREFIX5_LORA3.mp3`
+- `4_000995_Experimental_PREFIX5_LORA3.mp3`
+- `4_001482_Electronic_PREFIX5_LORA3.mp3`
+- `4_007481_Hip-Hop_PREFIX5_LORA3.mp3`
+- `4_014568_Instrumental_PREFIX5_LORA3.mp3`
+- `5_000010_Pop_AB_PREFIX-TRUE-BASE-LORA.mp3`
+- `5_000182_Rock_AB_PREFIX-TRUE-BASE-LORA.mp3`
+- `5_000704_International_AB_PREFIX-TRUE-BASE-LORA.mp3`
+- `5_000814_Folk_AB_PREFIX-TRUE-BASE-LORA.mp3`
+- `5_000995_Experimental_PREFIX5_BASE12.mp3`
+- `5_001482_Electronic_AB_PREFIX-TRUE-BASE-LORA.mp3`
+- `5_007481_Hip-Hop_AB_PREFIX-TRUE-BASE-LORA.mp3`
+- `5_014568_Instrumental_AB_PREFIX-TRUE-BASE-LORA.mp3`
+- `6_000995_Experimental_PREFIX5_LORA8.mp3`
+- `7_000995_Experimental_AB_PREFIX-TRUE-BASE-LORA.mp3`
 
 ## 说明
 
